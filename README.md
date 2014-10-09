@@ -1,8 +1,9 @@
 ## SpotCommander
 
+* [Visit website](http://www.olejon.net/code/spotcommander/)
 * [How to install](http://www.olejon.net/code/spotcommander/?install)
 
-#### Changelog
+#### Changelog v 11.2 (October 8th, 2014)
 
 * Remember scroll position
 * Edit playlist names
