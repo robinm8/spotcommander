@@ -1,7 +1,8 @@
 ## SpotCommander
 
-* [Visit website](http://www.olejon.net/code/spotcommander/)
+* [Website](http://www.olejon.net/code/spotcommander/)
 * [How to install](http://www.olejon.net/code/spotcommander/?install)
+* [Wiki](http://www.olejon.net/code/spotcommander/?wiki)
 
 #### Changelog v 11.2
 
