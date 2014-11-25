@@ -6,5 +6,9 @@ SpotCommander is the most elegant, intuitive, feature-rich and universal remote 
 
 #### Links
 * [Project website](http://www.olejon.net/code/spotcommander/)
-* [How to install](http://www.olejon.net/code/spotcommander/?install)
+* [Download & install](http://www.olejon.net/code/spotcommander/?download)
 * [Wiki](http://www.olejon.net/code/spotcommander/?wiki)
+
+### News
+
+ * The Android app is now open source
