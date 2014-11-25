@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android" style="@style/playlists_layout">
+
+    <RelativeLayout android:layout_alignParentTop="true" style="@style/playlists_inner_layout">
+
+        <TextView android:id="@+id/toolbar" android:layout_alignParentTop="true" android:text="@string/playlists_title" style="@style/playlists_toolbar" />
+
+        <ListView android:id="@+id/list" android:layout_below="@+id/toolbar" style="@style/playlist_listview" />
+
+        <ProgressBar android:id="@+id/progressbar" android:layout_centerInParent="true" style="@style/progressbar" />
+
+        <TextView android:id="@+id/error" android:text="@string/playlists_error" android:layout_centerInParent="true" style="@style/playlists_error_textview" />
+
+    </RelativeLayout>
+
+</RelativeLayout>
