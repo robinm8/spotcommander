@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <dimen name="main_layout_width">-1dp</dimen>
+    <dimen name="settings_inner_layout_width">-1dp</dimen>
+    <dimen name="add_computer_body_layout_width">-1dp</dimen>
+    <dimen name="add_computer_body_layout_padding_top">0dp</dimen>
+    <dimen name="playlists_layout_padding_top">32dp</dimen>
+    <dimen name="playlists_layout_padding_right">32dp</dimen>
+    <dimen name="playlists_layout_padding_bottom">32dp</dimen>
+    <dimen name="playlists_layout_padding_left">32dp</dimen>
+    <dimen name="widget_margin">8dp</dimen>
+
+</resources>

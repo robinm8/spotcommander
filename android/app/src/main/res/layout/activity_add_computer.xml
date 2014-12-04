@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" style="@style/add_computer_layout">
+
+    <android.support.v7.widget.Toolbar android:id="@+id/toolbar" android:layout_alignParentTop="true" app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar" style="@style/toolbar">
+        <ProgressBar android:id="@+id/progressbar" style="@style/progressbar" />
+    </android.support.v7.widget.Toolbar>
+
+    <LinearLayout android:id="@+id/toolbar_extension_layout" android:layout_below="@+id/toolbar" style="@style/add_computer_toolbar_extension_layout">
+
+        <com.rengwuxian.materialedittext.MaterialEditText android:id="@+id/name" android:text="@string/add_computer_name_edittext_text" android:hint="@string/add_computer_name_edittext_hint" style="@style/add_computer_toolbar_extension_edittext" />
+        <com.rengwuxian.materialedittext.MaterialEditText android:id="@+id/uri" android:text="@string/add_computer_uri_edittext_text" android:hint="@string/add_computer_uri_edittext_hint" style="@style/add_computer_toolbar_extension_edittext" />
+
+    </LinearLayout>
+
+    <ScrollView android:layout_below="@+id/toolbar_extension_layout" style="@style/scrollview">
+
+        <LinearLayout style="@style/add_computer_body_layout">
+
+            <TextView android:text="@string/add_computer_authentication" style="@style/add_computer_header_textview" />
+
+            <LinearLayout style="@style/add_computer_body_inner_layout">
+
+                <com.rengwuxian.materialedittext.MaterialEditText android:id="@+id/username" android:hint="@string/add_computer_username_edittext_hint" android:inputType="textNoSuggestions" style="@style/add_computer_body_edittext" />
+                <com.rengwuxian.materialedittext.MaterialEditText android:id="@+id/password" android:hint="@string/add_computer_password_edittext_hint" android:inputType="textPassword" style="@style/add_computer_body_edittext" />
+
+                <TextView android:id="@+id/add_computer_information" android:text="@string/add_computer_information" style="@style/add_computer_information_textview" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </ScrollView>
+
+    <View android:id="@+id/shadow" android:layout_below="@+id/toolbar_extension_layout" style="@style/toolbar_shadow" />
+
+</RelativeLayout>

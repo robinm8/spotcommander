@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+
+    <!-- Main -->
+    <style name="main_make_donation_button_base">
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
+    <!-- Donate -->
+    <style name="donate_button_base" />
+
+    <!-- Playlists -->
+    <style name="playlists_toolbar_base">
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
+    <!-- Header -->
+    <style name="header_textview_base">
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
+    <!-- Listviews -->
+    <style name="listview_base" parent="android:Widget.Material.Light.ListView">
+        <item name="android:scrollbarThumbVertical">@drawable/scrollbar</item>
+        <item name="android:scrollbarSize">6dp</item>
+    </style>
+
+    <!-- Progress bar -->
+    <style name="progressbar_base" parent="@android:Widget.Material.ProgressBar.Large">
+        <item name="android:indeterminateTint">@color/white</item>
+        <item name="android:indeterminateTintMode">src_in</item>
+    </style>
+
+    <!-- Dialogs -->
+    <style name="dialog_title_base">
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
+    <style name="dialog_message_base">
+        <item name="android:fontFamily">sans-serif-light</item>
+    </style>
+
+    <style name="dialog_button1_base">
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
+</resources>
