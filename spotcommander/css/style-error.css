@@ -1,0 +1,156 @@
+/*
+
+Copyright 2014 Ole Jon Bjørkum
+
+This file is part of SpotCommander.
+
+SpotCommander is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+SpotCommander is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with SpotCommander.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
+/* Viewport */
+
+@viewport
+{
+	width: device-width;
+}
+
+@-webkit-viewport
+{
+	width: device-width;
+}
+
+@-moz-viewport
+{
+	width: device-width;
+}
+
+@-ms-viewport
+{
+	width: device-width;
+}
+
+/* Body */
+
+body
+{
+	margin: 0;
+	padding: 0;
+	background-color: #f5f5f5;
+	font-family: "roboto", "helvetica neue", "helvetica", "arial", "liberation sans", "sans-serif";
+	font-size: 16px;
+	cursor: default;
+	overflow-x: hidden;
+	overflow-y: scroll;
+	content-zooming: none;
+	-webkit-content-zooming: none;
+	-moz-content-zooming: none;
+	-ms-content-zooming: none;
+	touch-callout: none;
+	-webkit-touch-callout: none;
+	-moz-touch-callout: none;
+	-ms-touch-callout: none;
+	tap-highlight-color: rgba(170, 170, 170, 0.5);
+	-webkit-tap-highlight-color: rgba(170, 170, 170, 0.5);
+	-moz-tap-highlight-color: rgba(170, 170, 170, 0.5);
+	-ms-tap-highlight-color: rgba(170, 170, 170, 0.5);
+}
+
+/* Divisions */
+
+div
+{
+	user-select: none;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+}
+
+div#background_div
+{
+	height: 160px;
+	background-color: #689f38;
+}
+
+div#card_div
+{
+	position: fixed;
+	top: 5%;
+	left: 5%;
+	width: 90%;
+	background-color: #fff;
+	border-bottom: 2px solid #e0e0e0;
+	border-radius: 2px;
+}
+
+@media screen and (min-width: 480px)
+{
+	div#card_div
+	{
+		top: 80px;
+		left: 50%;
+		width: 360px;
+		margin: 0 0 0 -180px;
+	}	
+}
+
+div#card_title_div
+{
+	padding: 16px 16px 8px 16px;
+	font-size: 24px;
+	font-weight: 600;
+}
+
+div#card_body_div
+{
+	padding: 8px 16px 16px 16px;
+	border-bottom: 1px solid #e0e0e0;
+	font-size: 15px;
+	font-weight: 200;
+	line-height: 1.5;
+}
+
+div#card_buttons_div
+{
+	padding: 8px;
+}
+
+div#clear_div
+{
+	clear: both;
+}
+
+/* Links */
+
+a
+{
+	display: block;
+	float: left;
+	padding: 8px 12px;
+	border-radius: 2px;
+	font-size: 14px;
+	font-weight: 600;
+	text-decoration: none;
+	color: #000;
+}
+
+a:active
+{
+	background-color: #e0e0e0;
+}
+
+a#highlighted_a
+{
+	color: #8bc34a;
+}
