@@ -11,4 +11,5 @@ SpotCommander is the most elegant, intuitive, feature-rich and universal remote 
 
 ### News
 
- * The Android app is now open source
+* Updated Fedora installation instructions to Fedora 21
+* The Android app is now open source
