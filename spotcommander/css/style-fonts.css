@@ -1,0 +1,134 @@
+/*
+
+Copyright 2015 Ole Jon Bjørkum
+
+This file is part of SpotCommander.
+
+SpotCommander is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+SpotCommander is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with SpotCommander.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
+/* Fonts */
+
+@font-face
+{
+        font-family: "roboto";
+        font-style: normal;
+        font-weight: normal;
+        src: url("../fonts/roboto.ttf");
+}
+
+@font-face
+{
+        font-family: "roboto";
+        font-style: normal;
+        font-weight: 600;
+        src: url("../fonts/roboto-medium.ttf");
+}
+
+@font-face
+{
+        font-family: "roboto";
+        font-style: italic;
+        font-weight: 600;
+        src: url("../fonts/roboto-medium-italic.ttf");
+}
+
+@font-face
+{
+        font-family: "roboto";
+        font-style: normal;
+        font-weight: bold;
+        src: url("../fonts/roboto-bold.ttf");
+}
+
+@font-face
+{
+        font-family: "roboto";
+        font-style: italic;
+        font-weight: normal;
+        src: url("../fonts/roboto-italic.ttf");
+}
+
+@font-face
+{
+        font-family: "roboto";
+        font-style: italic;
+        font-weight: bold;
+        src: url("../fonts/roboto-italic-bold.ttf");
+}
+
+@font-face
+{
+        font-family: "roboto";
+        font-style: normal;
+        font-weight: 200;
+        src: url("../fonts/roboto-light.ttf");
+}
+
+@font-face
+{
+        font-family: "roboto";
+        font-style: italic;
+        font-weight: 200;
+        src: url("../fonts/roboto-light-italic.ttf");
+}
+
+@font-face
+{
+        font-family: "roboto condensed";
+        font-style: normal;
+        font-weight: normal;
+        src: url("../fonts/roboto-condensed.ttf");
+}
+
+@font-face
+{
+        font-family: "roboto condensed";
+        font-style: normal;
+        font-weight: bold;
+        src: url("../fonts/roboto-condensed-bold.ttf");
+}
+
+@font-face
+{
+        font-family: "roboto condensed";
+        font-style: italic;
+        font-weight: normal;
+        src: url("../fonts/roboto-condensed-italic.ttf");
+}
+
+@font-face
+{
+        font-family: "roboto condensed";
+        font-style: italic;
+        font-weight: bold;
+        src: url("../fonts/roboto-condensed-italic-bold.ttf");
+}
+
+@font-face
+{
+        font-family: "roboto condensed";
+        font-style: normal;
+        font-weight: 200;
+        src: url("../fonts/roboto-condensed-light.ttf");
+}
+
+@font-face
+{
+        font-family: "roboto condensed";
+        font-style: italic;
+        font-weight: 200;
+        src: url("../fonts/roboto-condensed-light-italic.ttf");
+}
