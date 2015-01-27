@@ -1,16 +1,16 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" style="@style/donate_layout">
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" style="@style/donate_layout">
 
-    <android.support.v7.widget.Toolbar android:id="@+id/toolbar" app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar" app:popupTheme="@style/Theme.AppCompat.Light" style="@style/toolbar" />
+    <android.support.v7.widget.Toolbar android:id="@+id/donate_toolbar" style="@style/toolbar"/>
 
-    <View android:id="@+id/shadow" style="@style/toolbar_shadow" />
+    <View style="@style/toolbar_shadow"/>
 
     <LinearLayout style="@style/donate_inner_layout">
 
-        <Button android:id="@+id/make_small_donation_button" android:text="@string/donate_getting_product" style="@style/donate_button" />
-        <Button android:id="@+id/make_medium_donation_button" android:text="@string/donate_getting_product" style="@style/donate_button" />
-        <Button android:id="@+id/make_big_donation_button" android:text="@string/donate_getting_product" style="@style/donate_button" />
+        <Button android:id="@+id/donate_make_small_donation" android:text="@string/donate_getting_product" style="@style/donate_button"/>
+        <Button android:id="@+id/donate_make_medium_donation" android:text="@string/donate_getting_product" style="@style/donate_button"/>
+        <Button android:id="@+id/donate_make_big_donation" android:text="@string/donate_getting_product" style="@style/donate_button"/>
 
-        <TextView android:text="@string/donate_text" style="@style/donate_textview" />
+        <TextView android:text="@string/donate_information" style="@style/donate_information"/>
 
     </LinearLayout>
 

@@ -1,5 +1,26 @@
 package net.olejon.spotcommander;
 
+/*
+
+Copyright 2015 Ole Jon Bjørkum
+
+This file is part of SpotCommander.
+
+SpotCommander is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+SpotCommander is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with SpotCommander.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
@@ -28,26 +49,14 @@ import org.apache.http.util.EntityUtils;
 import java.util.ArrayList;
 import java.util.List;
 
-final class MyMethod
+final class MyTools
 {
 	private final Context mContext;
 	
-	public MyMethod(Context context)
+	public MyTools(Context context)
 	{
 		mContext = context;
 	}
-	
-	// Allow landscape?
-    public boolean allowLandscape()
-    {
-    	return ((mContext.getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) == Configuration.SCREENLAYOUT_SIZE_LARGE || (mContext.getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) == Configuration.SCREENLAYOUT_SIZE_XLARGE);
-    }
-	
-    // Toast
-    public void showToast(String toast, int length)
-    {
-        Toast.makeText(mContext, toast, length).show();
-    }
     
     // Default shared preferences
     public boolean getDefaultSharedPreferencesBoolean(String preference)
@@ -98,7 +107,24 @@ final class MyMethod
     	sharedPreferencesEditor.putLong(preference, l);
     	sharedPreferencesEditor.apply();
     }
-    
+
+    // Project version
+    public String getProjectVersionName()
+    {
+        String name = "0.0";
+
+        try
+        {
+            name = mContext.getPackageManager().getPackageInfo(mContext.getPackageName(), 0).versionName;
+        }
+        catch(Exception e)
+        {
+            Log.e("MyTools", Log.getStackTraceString(e));
+        }
+
+        return name;
+    }
+
     // Current network
     public String getCurrentNetwork()
     {
@@ -107,6 +133,20 @@ final class MyMethod
     	if(wifiManager.isWifiEnabled()) return wifiManager.getConnectionInfo().getSSID();
 
     	return "";
+    }
+
+    // Allow landscape?
+    public boolean allowLandscape()
+    {
+        int size = mContext.getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK;
+
+        return ((size) == Configuration.SCREENLAYOUT_SIZE_LARGE || (size) == Configuration.SCREENLAYOUT_SIZE_XLARGE);
+    }
+
+    // Toast
+    public void showToast(String toast, int length)
+    {
+        Toast.makeText(mContext, toast, length).show();
     }
     
     // Computer
@@ -155,18 +195,24 @@ final class MyMethod
 	    @Override
 	    protected void onPostExecute(String[] response)
 	    {
-            if(response[0].equals("error"))
-    		{
-    			showToast(mContext.getString(R.string.remote_control_error)+" "+response[1], 1);
-    		}
-    		else if(response[0].equals("timeout"))
-    		{
-    			showToast(mContext.getString(R.string.remote_control_timeout), 1);
-    		}
-    		else if(response[0].equals("authentication_failed"))
-    		{
-    			showToast(mContext.getString(R.string.remote_control_authentication_failed), 1);
-    		}
+            switch(response[0])
+            {
+                case "error":
+                {
+                    showToast(mContext.getString(R.string.remote_control_error)+" "+response[1], 1);
+                    break;
+                }
+                case "timeout":
+                {
+                    showToast(mContext.getString(R.string.remote_control_timeout), 1);
+                    break;
+                }
+                case "authentication_failed":
+                {
+                    showToast(mContext.getString(R.string.remote_control_authentication_failed), 1);
+                    break;
+                }
+            }
 	    }
 
 	    @Override
@@ -189,7 +235,7 @@ final class MyMethod
 		
 		    try
 		    {
-			    List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(2);
+			    List<NameValuePair> nameValuePairs = new ArrayList<>(2);
 			    nameValuePairs.add(new BasicNameValuePair("action", action));
 			    nameValuePairs.add(new BasicNameValuePair("data", data));
 			    httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
@@ -216,7 +262,7 @@ final class MyMethod
 		    {
 		    	response[0] = "timeout";
 
-                Log.e("RemoteControlTask doInBackground", Log.getStackTraceString(e));
+                Log.e("MyTools", Log.getStackTraceString(e));
 		    }
 			
 			return response;

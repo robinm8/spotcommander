@@ -2,13 +2,13 @@
 
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
-	<PreferenceCategory android:title="@string/settings_category_appearance" android:layout="@layout/header_settings">
-	    <CheckBoxPreference android:key="HIDE_STATUS_BAR" android:defaultValue="false" android:title="@string/settings_hide_status_bar_title" android:summary="@string/settings_hide_status_bar_summary" android:layout="@layout/settings_checkbox" />
+	<PreferenceCategory android:title="@string/settings_category_appearance" android:layout="@layout/settings_subheader">
+	    <CheckBoxPreference android:key="HIDE_STATUS_BAR" android:defaultValue="false" android:title="@string/settings_hide_status_bar_title" android:summary="@string/settings_hide_status_bar_summary" android:layout="@layout/settings_checkbox"/>
 	</PreferenceCategory>
 
-	<PreferenceCategory android:title="@string/settings_category_advanced" android:layout="@layout/header_settings">
-		<CheckBoxPreference android:key="OPEN_AUTOMATICALLY" android:defaultValue="false" android:title="@string/settings_open_automatically_title" android:summary="@string/settings_open_automatically_summary" android:layout="@layout/settings_checkbox" />
-		<CheckBoxPreference android:key="HARDWARE_ACCELERATED_ANIMATIONS" android:defaultValue="true" android:title="@string/settings_hardware_accelerated_animations_title" android:summary="@string/settings_hardware_accelerated_animations_summary" android:layout="@layout/settings_checkbox" />
+	<PreferenceCategory android:title="@string/settings_category_advanced" android:layout="@layout/settings_subheader">
+		<CheckBoxPreference android:key="OPEN_AUTOMATICALLY" android:defaultValue="false" android:title="@string/settings_open_automatically_title" android:summary="@string/settings_open_automatically_summary" android:layout="@layout/settings_checkbox"/>
+		<CheckBoxPreference android:key="HARDWARE_ACCELERATED_ANIMATIONS" android:defaultValue="true" android:title="@string/settings_hardware_accelerated_animations_title" android:summary="@string/settings_hardware_accelerated_animations_summary" android:layout="@layout/settings_checkbox"/>
 	</PreferenceCategory>
 
 </PreferenceScreen>

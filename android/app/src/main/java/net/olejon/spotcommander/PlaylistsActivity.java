@@ -1,5 +1,26 @@
 package net.olejon.spotcommander;
 
+/*
+
+Copyright 2015 Ole Jon Bjørkum
+
+This file is part of SpotCommander.
+
+SpotCommander is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+SpotCommander is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with SpotCommander.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
@@ -32,12 +53,12 @@ import java.util.Iterator;
 
 public class PlaylistsActivity extends Activity
 {
-    private final MyMethod mMethod = new MyMethod(this);
+    private final MyTools mTools = new MyTools(this);
 
-    private ProgressBar mProgress;
-    private ListView listView;
+    private ProgressBar mProgressBar;
+    private ListView mListView;
 
-    private final ArrayList<String> playlistUris = new ArrayList<String>();
+    private final ArrayList<String> mPlaylistUris = new ArrayList<>();
 
     // Create activity
     @Override
@@ -46,32 +67,32 @@ public class PlaylistsActivity extends Activity
         super.onCreate(savedInstanceState);
 
         // Allow landscape?
-        if(!mMethod.allowLandscape()) setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        if(!mTools.allowLandscape()) setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
         // Intent
         Intent intent = getIntent();
-        String stringIntentExtra = intent.getStringExtra(WidgetLarge.WIDGET_LARGE_INTENT_EXTRA);
 
         // Computer
-        final long computerId = mMethod.getSharedPreferencesLong("WIDGET_"+stringIntentExtra+"_COMPUTER_ID");
-        final String[] computer = mMethod.getComputer(computerId);
+        final long computerId = mTools.getSharedPreferencesLong("WIDGET_"+intent.getStringExtra(WidgetLarge.WIDGET_LARGE_INTENT_EXTRA)+"_COMPUTER_ID");
+
+        final String[] computer = mTools.getComputer(computerId);
 
         // Layout
         setContentView(R.layout.activity_playlists);
 
         // Progress bar
-        mProgress = (ProgressBar) findViewById(R.id.progressbar);
-        mProgress.setVisibility(View.VISIBLE);
+        mProgressBar = (ProgressBar) findViewById(R.id.playlists_progressbar);
+        mProgressBar.setVisibility(View.VISIBLE);
 
         // Listview
-        listView = (ListView) findViewById(R.id.list);
+        mListView = (ListView) findViewById(R.id.playlists_list);
 
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id)
             {
-                mMethod.remoteControl(computerId, "shuffle_play_uri", playlistUris.get(position));
+                mTools.remoteControl(computerId, "shuffle_play_uri", mPlaylistUris.get(position));
             }
         });
 
@@ -87,27 +108,29 @@ public class PlaylistsActivity extends Activity
         {
             if(response.equals(""))
             {
-                mProgress.setVisibility(View.GONE);
+                mProgressBar.setVisibility(View.GONE);
 
-                TextView textView = (TextView) findViewById(R.id.error);
+                TextView textView = (TextView) findViewById(R.id.playlists_error);
                 textView.setVisibility(View.VISIBLE);
             }
             else
             {
                 try
                 {
-                    JSONObject playlists = new JSONObject(response);
-                    ArrayList<String> playlistNames = new ArrayList<String>();
-                    Iterator<?> keys = playlists.keys();
+                    JSONObject playlistsJsonObject = new JSONObject(response);
 
-                    while(keys.hasNext())
+                    ArrayList<String> playlistNamesArrayList = new ArrayList<>();
+
+                    Iterator<?> iterator = playlistsJsonObject.keys();
+
+                    while(iterator.hasNext())
                     {
-                        String key = (String) keys.next();
+                        String key = (String) iterator.next();
 
-                        playlistNames.add(key);
+                        playlistNamesArrayList.add(key);
                     }
 
-                    Collections.sort(playlistNames, new Comparator<String>()
+                    Collections.sort(playlistNamesArrayList, new Comparator<String>()
                     {
                         @Override
                         public int compare(String string1, String string2)
@@ -116,24 +139,28 @@ public class PlaylistsActivity extends Activity
                         }
                     });
 
-                    Collections.swap(playlistNames, playlistNames.indexOf("Starred"), 0);
+                    Collections.swap(playlistNamesArrayList, playlistNamesArrayList.indexOf("Starred"), 0);
 
-                    for(String playlistName : playlistNames) playlistUris.add(playlists.getString(playlistName));
+                    for(String playlistName : playlistNamesArrayList)
+                    {
+                        mPlaylistUris.add(playlistsJsonObject.getString(playlistName));
+                    }
 
-                    ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(getApplicationContext(), R.layout.list_item_playlist, playlistNames);
+                    ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(getApplicationContext(), R.layout.playlists_list_item, playlistNamesArrayList);
 
-                    mProgress.setVisibility(View.GONE);
+                    mProgressBar.setVisibility(View.GONE);
 
-                    listView.setAdapter(arrayAdapter);
+                    mListView.setAdapter(arrayAdapter);
+                    mListView.setVisibility(View.VISIBLE);
                 }
                 catch(Exception e)
                 {
-                    mProgress.setVisibility(View.GONE);
+                    mProgressBar.setVisibility(View.GONE);
 
-                    TextView textView = (TextView) findViewById(R.id.error);
+                    TextView textView = (TextView) findViewById(R.id.playlists_error);
                     textView.setVisibility(View.VISIBLE);
 
-                    Log.e("GetPlaylistsTask onPostExecute", Log.getStackTraceString(e));
+                    Log.e("PlaylistsActivity", Log.getStackTraceString(e));
                 }
             }
         }
@@ -146,11 +173,14 @@ public class PlaylistsActivity extends Activity
             String password = strings[2];
 
             HttpParams httpParameters = new BasicHttpParams();
+
             HttpConnectionParams.setConnectionTimeout(httpParameters, 2000);
             HttpConnectionParams.setSoTimeout(httpParameters, 20000);
+
             HttpClient httpClient = new DefaultHttpClient(httpParameters);
+
             HttpGet httpGet = new HttpGet(uri+"/playlists.php?get_playlists_including_starred_as_json");
-            httpGet.setHeader("Authorization", "Basic "+ Base64.encodeToString((username + ":" + password).getBytes(), Base64.NO_WRAP));
+            httpGet.setHeader("Authorization", "Basic "+ Base64.encodeToString((username+":"+password).getBytes(), Base64.NO_WRAP));
 
             String response;
 
@@ -164,7 +194,7 @@ public class PlaylistsActivity extends Activity
             {
                 response = "";
 
-                Log.e("GetPlaylistsTask doInBackground", Log.getStackTraceString(e));
+                Log.e("PlaylistsActivity", Log.getStackTraceString(e));
             }
 
             return response;

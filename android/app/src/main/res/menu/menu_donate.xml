@@ -2,6 +2,6 @@
 
 <menu xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <item android:id="@+id/action_reset" android:orderInCategory="1" app:showAsAction="never" android:title="@string/action_reset" />
+    <item android:id="@+id/donate_menu_reset" android:orderInCategory="1" app:showAsAction="never" android:title="@string/donate_menu_reset"/>
 
 </menu>

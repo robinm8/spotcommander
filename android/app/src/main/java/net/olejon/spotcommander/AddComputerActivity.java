@@ -1,9 +1,28 @@
 package net.olejon.spotcommander;
 
-import android.app.AlertDialog;
+/*
+
+Copyright 2015 Ole Jon Bjørkum
+
+This file is part of SpotCommander.
+
+SpotCommander is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+SpotCommander is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with SpotCommander.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.pm.ActivityInfo;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.wifi.WifiInfo;
@@ -11,7 +30,7 @@ import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.PowerManager;
-import android.support.v7.app.ActionBar;
+import android.support.v4.app.NavUtils;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.method.LinkMovementMethod;
@@ -23,6 +42,8 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+
+import com.afollestad.materialdialogs.MaterialDialog;
 
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
@@ -37,13 +58,18 @@ import org.apache.http.util.EntityUtils;
 
 public class AddComputerActivity extends ActionBarActivity
 {
-	private final MyMethod mMethod = new MyMethod(this);
-	
-	private NetworkScanTask networkScanTask;
-	private PowerManager.WakeLock wakeLock;
-	private MenuItem scanMenuItem;
-	private ProgressBar mProgress;
-	
+    private final Context mContext = this;
+
+	private final MyTools mTools = new MyTools(mContext);
+
+	private PowerManager.WakeLock mWakeLock;
+
+	private MenuItem mMenuItem;
+
+	private ProgressBar mProgressBar;
+
+    private NetworkScanTask mNetworkScanTask;
+
 	// Create activity
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
@@ -51,49 +77,37 @@ public class AddComputerActivity extends ActionBarActivity
 		super.onCreate(savedInstanceState);
 
 		// Allow landscape?
-		if(!mMethod.allowLandscape()) setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+		if(!mTools.allowLandscape()) setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
 		// Power manager
 		PowerManager powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
-		wakeLock = powerManager.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, "wakeLock");
+        mWakeLock = powerManager.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, "wakeLock");
 
 		// Layout
 		setContentView(R.layout.activity_add_computer);
 
         // Toolbar
-        Toolbar mToolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(mToolbar);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.add_computer_toolbar);
 
-        ActionBar mActionBar = getSupportActionBar();
-        mActionBar.setDisplayHomeAsUpEnabled(true);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
 		// Progress bar
-		mProgress = (ProgressBar) findViewById(R.id.progressbar);
+        mProgressBar = (ProgressBar) findViewById(R.id.add_computer_progressbar);
 
-        // Clickable link
+        // Information
         TextView textView = (TextView) findViewById(R.id.add_computer_information);
         textView.setMovementMethod(LinkMovementMethod.getInstance());
 
         // Dialog
-        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
-
-        alertDialogBuilder.setTitle(R.string.add_computer_dialog_title).setMessage(R.string.add_computer_dialog_message).setPositiveButton(R.string.add_computer_dialog_positive_button, new DialogInterface.OnClickListener()
+        new MaterialDialog.Builder(mContext).title(getString(R.string.add_computer_scan_dialog_title)).content(getString(R.string.add_computer_scan_dialog_message)).positiveText(getString(R.string.add_computer_scan_dialog_positive_button)).negativeText(getString(R.string.add_computer_scan_dialog_negative_button)).callback(new MaterialDialog.ButtonCallback()
         {
             @Override
-            public void onClick(DialogInterface dialogInterface, int i)
+            public void onPositive(MaterialDialog dialog)
             {
                 scanNetwork();
-
-                dialogInterface.dismiss();
             }
-        }).setNegativeButton(R.string.add_computer_dialog_negative_button, new DialogInterface.OnClickListener()
-        {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i)
-            {
-                dialogInterface.dismiss();
-            }
-        }).create().show();
+        }).contentColor(getResources().getColor(R.color.black)).negativeColor(getResources().getColor(R.color.black)).show();
 	}
 	
 	// Pause activity
@@ -101,66 +115,69 @@ public class AddComputerActivity extends ActionBarActivity
 	protected void onPause()
 	{
 		super.onPause();
-		
-		// Cancel network scan
-		if(networkScanTask != null && networkScanTask.getStatus() == AsyncTask.Status.RUNNING) networkScanTask.cancel(true);
-		
-		// Release wake lock
-		if(wakeLock.isHeld()) wakeLock.release();
+
+		if(mNetworkScanTask != null && mNetworkScanTask.getStatus() == AsyncTask.Status.RUNNING) mNetworkScanTask.cancel(true);
+
+		if(mWakeLock.isHeld()) mWakeLock.release();
 	}
 	
 	// Menu
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu)
 	{
-		getMenuInflater().inflate(R.menu.add_computer, menu);
+		getMenuInflater().inflate(R.menu.menu_add_computer, menu);
 
-		scanMenuItem = menu.findItem(R.id.action_scan_network);
-		
+        mMenuItem = menu.findItem(R.id.add_computer_menu_scan_network);
+
 		return true;
 	}
 	
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item)
 	{
-		if(item.getItemId() == android.R.id.home)
-		{
-			finish();
-			return true;
-		}
-		else if(item.getItemId() == R.id.action_scan_network)
-		{
-			scanNetwork();
-			return true;
-		}
-		else if(item.getItemId() == R.id.action_add_computer)
-		{
-			addComputer();
-			return true;
-		}
-		
-		return super.onOptionsItemSelected(item);
+        switch(item.getItemId())
+        {
+            case android.R.id.home:
+            {
+                NavUtils.navigateUpFromSameTask(this);
+                return true;
+            }
+            case R.id.add_computer_menu_scan_network:
+            {
+                scanNetwork();
+                return true;
+            }
+            case R.id.add_computer_menu_add_computer:
+            {
+                addComputer();
+                return true;
+            }
+            default:
+            {
+                return super.onOptionsItemSelected(item);
+            }
+        }
 	}
-	
+
 	// Add computer
 	private void addComputer()
 	{
-    	EditText nameEditText = (EditText) findViewById(R.id.name);
-    	EditText uriEditText = (EditText) findViewById(R.id.uri);
-    	EditText usernameEditText = (EditText) findViewById(R.id.username);
-    	EditText passwordEditText = (EditText) findViewById(R.id.password);
-    	
+    	EditText nameEditText = (EditText) findViewById(R.id.add_computer_name);
+    	EditText uriEditText = (EditText) findViewById(R.id.add_computer_uri);
+    	EditText usernameEditText = (EditText) findViewById(R.id.add_computer_username);
+    	EditText passwordEditText = (EditText) findViewById(R.id.add_computer_password);
+
     	String name = nameEditText.getText().toString();
     	String uri = uriEditText.getText().toString();
     	String username = usernameEditText.getText().toString();
     	String password = passwordEditText.getText().toString();
 
         InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-        inputMethodManager.hideSoftInputFromWindow(nameEditText.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
-		
-    	if(networkScanTask != null && networkScanTask.getStatus() == AsyncTask.Status.RUNNING)
+        inputMethodManager.hideSoftInputFromWindow(nameEditText.getWindowToken(), InputMethodManager.HIDE_IMPLICIT_ONLY);
+
+    	if(mNetworkScanTask != null && mNetworkScanTask.getStatus() == AsyncTask.Status.RUNNING)
     	{
-    		mMethod.showToast(getString(R.string.add_computer_scanning_network), 0);
+    		mTools.showToast(getString(R.string.add_computer_scanning_network), 0);
     	}
     	else if(name.equals(""))
     	{
@@ -191,9 +208,9 @@ public class AddComputerActivity extends ActionBarActivity
 	// Scan network
 	private void scanNetwork()
 	{
-		if(networkScanTask != null && networkScanTask.getStatus() == AsyncTask.Status.RUNNING)
+		if(mNetworkScanTask != null && mNetworkScanTask.getStatus() == AsyncTask.Status.RUNNING)
 		{
-			networkScanTask.cancel(true);
+            mNetworkScanTask.cancel(true);
 		}
 		else
 		{
@@ -202,41 +219,43 @@ public class AddComputerActivity extends ActionBarActivity
 			if(wifiManager.isWifiEnabled())
 			{	
 				WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+
 				int wifiIpAddress = wifiInfo.getIpAddress();
+
 				String wifiSubnet = String.format("%d.%d.%d", (wifiIpAddress & 0xff), (wifiIpAddress >> 8 & 0xff), (wifiIpAddress >> 16 & 0xff));
 				
 				if(wifiSubnet.equals("0.0.0"))
 				{
-					mMethod.showToast(getString(R.string.add_computer_wifi_not_connected), 0);
+					mTools.showToast(getString(R.string.add_computer_wifi_not_connected), 0);
 				}
 				else
-				{	
-					networkScanTask = new NetworkScanTask();
-					networkScanTask.execute(wifiSubnet);
+				{
+                    mNetworkScanTask = new NetworkScanTask();
+                    mNetworkScanTask.execute(wifiSubnet);
 				}
 			}
 			else
 			{
-				mMethod.showToast(getString(R.string.add_computer_wifi_not_connected), 0);
+				mTools.showToast(getString(R.string.add_computer_wifi_not_connected), 0);
 			}
 		}
 	}
 	
     public class NetworkScanTask extends AsyncTask<String, String, String[]>
 	{
-    	final EditText nameEditText = (EditText) findViewById(R.id.name);
-    	final EditText uriEditText = (EditText) findViewById(R.id.uri);
+    	final EditText nameEditText = (EditText) findViewById(R.id.add_computer_name);
+    	final EditText uriEditText = (EditText) findViewById(R.id.add_computer_uri);
 		
         @Override
         protected void onPreExecute()
         {
-        	if(!wakeLock.isHeld()) wakeLock.acquire();
-        	
-        	scanMenuItem.setTitle(getString(R.string.add_computer_stop));
+        	if(!mWakeLock.isHeld()) mWakeLock.acquire();
 
-        	mProgress.setVisibility(View.VISIBLE);
+            mMenuItem.setTitle(getString(R.string.add_computer_stop));
+
+            mProgressBar.setVisibility(View.VISIBLE);
         	
-        	mMethod.showToast(getString(R.string.add_computer_scanning_network), 0);
+        	mTools.showToast(getString(R.string.add_computer_scanning_network), 0);
         	
 			nameEditText.setEnabled(false);
 			nameEditText.setText(getString(R.string.add_computer_scanning)+getString(R.string.ellipsis), TextView.BufferType.EDITABLE);
@@ -253,9 +272,9 @@ public class AddComputerActivity extends ActionBarActivity
         @Override
         protected void onPostExecute(String[] string)
         {
-        	scanMenuItem.setTitle(getString(R.string.add_computer_scan));
-        	
-        	mProgress.setVisibility(View.GONE);
+            mMenuItem.setTitle(getString(R.string.add_computer_scan));
+
+            mProgressBar.setVisibility(View.GONE);
         	
         	String computerIpAddress = string[0];
         	String computerHostname = (string[1].equals("")) ? "Unknown" : string[1];
@@ -265,16 +284,16 @@ public class AddComputerActivity extends ActionBarActivity
         	
         	if(computerIpAddress.equals(""))
         	{
-        		mMethod.showToast(getString(R.string.add_computer_installation_not_found), 1);
+        		mTools.showToast(getString(R.string.add_computer_installation_not_found), 1);
 
-        		nameEditText.setText(getString(R.string.add_computer_name_edittext_text), TextView.BufferType.EDITABLE);
-        		uriEditText.setText(getString(R.string.add_computer_uri_edittext_text), TextView.BufferType.EDITABLE);
+        		nameEditText.setText(getString(R.string.add_computer_name_text), TextView.BufferType.EDITABLE);
+        		uriEditText.setText(getString(R.string.add_computer_uri_text), TextView.BufferType.EDITABLE);
         	}
         	else
         	{	
         		String foundOn = (computerHostname.equals("Computer")) ? getString(R.string.add_computer_computer_with_authentication_enabled) : computerHostname;
   
-        		mMethod.showToast(getString(R.string.add_computer_installation_found)+" "+foundOn, 1);
+        		mTools.showToast(getString(R.string.add_computer_installation_found)+" "+foundOn, 1);
 
         		nameEditText.setText(computerHostname, TextView.BufferType.EDITABLE);
         		uriEditText.setText("http://"+computerIpAddress+"/spotcommander/", TextView.BufferType.EDITABLE);
@@ -284,17 +303,17 @@ public class AddComputerActivity extends ActionBarActivity
         @Override
         protected void onCancelled()
         {
-        	if(wakeLock.isHeld()) wakeLock.release();
-        	
-        	scanMenuItem.setTitle(getString(R.string.add_computer_scan));
-        	
-        	mProgress.setVisibility(View.GONE);
+        	if(mWakeLock.isHeld()) mWakeLock.release();
+
+            mMenuItem.setTitle(getString(R.string.add_computer_scan));
+
+            mProgressBar.setVisibility(View.GONE);
         	
 			nameEditText.setEnabled(true);
-			nameEditText.setText(getString(R.string.add_computer_name_edittext_text), TextView.BufferType.EDITABLE);
+			nameEditText.setText(getString(R.string.add_computer_name_text), TextView.BufferType.EDITABLE);
 			
 			uriEditText.setEnabled(true);
-			uriEditText.setText(getString(R.string.add_computer_uri_edittext_text), TextView.BufferType.EDITABLE);
+			uriEditText.setText(getString(R.string.add_computer_uri_text), TextView.BufferType.EDITABLE);
         }
     	
         @Override
@@ -303,12 +322,14 @@ public class AddComputerActivity extends ActionBarActivity
         	String wifiSubnet = strings[0];
         	
             HttpParams httpParameters = new BasicHttpParams();
+
             HttpConnectionParams.setConnectionTimeout(httpParameters, 250);
             HttpConnectionParams.setSoTimeout(httpParameters, 2500);
+
             HttpClient httpClient = new DefaultHttpClient(httpParameters);
 
             String[] networkScanResult = {"", ""};
-            
+
             outerLoop: for(int i = 1; i <= 254; i++)
             {
             	if(isCancelled()) break;
@@ -316,9 +337,9 @@ public class AddComputerActivity extends ActionBarActivity
             	String computerIpAddress = wifiSubnet+"."+i;
             	
             	String[] progress = {computerIpAddress, String.valueOf(i)};
-            	
+
             	publishProgress(progress);
-            	
+
                 HttpGet httpGet = new HttpGet("http://"+computerIpAddress+"/spotcommander/main.php?hostname");
 
                 try
@@ -337,6 +358,7 @@ public class AddComputerActivity extends ActionBarActivity
         				for(Header header : headers)
         				{
         					headerString = header.toString();
+
         				    if(headerString.contains("TP-LINK") || headerString.contains("ZyXEL")) continue outerLoop;
         				}
         				
@@ -349,7 +371,7 @@ public class AddComputerActivity extends ActionBarActivity
         				for(Header header : headers)
         				{
         					headerString = header.toString();
-        				    if(headerString.contains(getString(R.string.app_name))) isApp = true;
+        				    if(headerString.contains(getString(R.string.project_name))) isApp = true;
         				}
         				
         				if(!isApp) continue;
@@ -366,7 +388,7 @@ public class AddComputerActivity extends ActionBarActivity
                 }
                 catch(Exception e)
                 {
-                    Log.v("NetworkScanTask", getString(R.string.add_computer_installation_not_found)+": "+computerIpAddress);
+                    Log.i("AddComputerActivity", getString(R.string.add_computer_installation_not_found)+": "+computerIpAddress);
                 }
             }
             

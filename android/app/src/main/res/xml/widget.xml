@@ -8,4 +8,4 @@
 	android:previewImage="@drawable/widget_preview"
 	android:configure="net.olejon.spotcommander.WidgetActivity"
 	android:widgetCategory="home_screen|keyguard"
-    android:initialKeyguardLayout="@layout/widget" />
+    android:initialKeyguardLayout="@layout/widget"/>

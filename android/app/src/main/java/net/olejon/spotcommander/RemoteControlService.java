@@ -1,5 +1,26 @@
 package net.olejon.spotcommander;
 
+/*
+
+Copyright 2015 Ole Jon Bjørkum
+
+This file is part of SpotCommander.
+
+SpotCommander is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+SpotCommander is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with SpotCommander.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -14,71 +35,71 @@ import android.telephony.TelephonyManager;
 
 public class RemoteControlService extends Service implements SensorEventListener
 {
-	private final MyMethod mMethod = new MyMethod(this);
+	private final MyTools mTools = new MyTools(this);
 
-	private PhoneStateListener phoneStateListener;
-	private TelephonyManager telephonyManager;
-	private SensorManager sensorManager;
-	private Sensor sensor;
+	private PhoneStateListener mPhoneStateListener;
+	private TelephonyManager mTelephonyManager;
+	private SensorManager mSensorManager;
+	private Sensor mSensor;
 
-	private String currentNetwork;
-	
-	private boolean pauseOnIncomingCall = false;
-	private boolean pauseOnOutgoingCall = false;
-	private boolean flipToPause = false;
-	private boolean shakeToSkip = false;
-	private boolean isIncomingCall = false;
-	private boolean deviceHasAccelerometer = false;
-	private boolean isFlipped = false;
-	private boolean isShaked = false;
-	
-	private int shakeToSkipSensitivityInt;
-	
-	private float shakeToSkipChange;
-	private float shakeToSkipCurrent;
-	private float shakeToSkipLast;
-	
+	private String mCurrentNetwork;
+
+	private boolean mPauseOnIncomingCall = false;
+	private boolean mPauseOnOutgoingCall = false;
+    private boolean mDeviceHasAccelerometer = false;
+	private boolean mFlipToPause = false;
+	private boolean mShakeToSkip = false;
+	private boolean mIsIncomingCall = false;
+	private boolean mIsFlipped = false;
+	private boolean mIsShaked = false;
+
+	private int mShakeToSkipSensitivityInt;
+
+	private float mShakeToSkipChange;
+	private float mShakeToSkipCurrent;
+	private float mShakeToSkipLast;
+
 	// Create service
 	@Override
 	public void onCreate()
 	{
 		// Calls
-		phoneStateListener = new PhoneStateListener()
+        mPhoneStateListener = new PhoneStateListener()
 		{
 		    @Override
 		    public void onCallStateChanged(int state, String incomingNumber)
 		    {
-		    	pauseOnIncomingCall = mMethod.getSharedPreferencesBoolean("PAUSE_ON_INCOMING_CALL");
-		    	pauseOnOutgoingCall = mMethod.getSharedPreferencesBoolean("PAUSE_ON_OUTGOING_CALL");
+                mPauseOnIncomingCall = mTools.getSharedPreferencesBoolean("PAUSE_ON_INCOMING_CALL");
+                mPauseOnOutgoingCall = mTools.getSharedPreferencesBoolean("PAUSE_ON_OUTGOING_CALL");
 		    	
-		    	long computerId = mMethod.getSharedPreferencesLong("LAST_COMPUTER_ID");
+		    	final long computerId = mTools.getSharedPreferencesLong("LAST_COMPUTER_ID");
 		    	
 		    	if(state == TelephonyManager.CALL_STATE_RINGING)
 		    	{	
-		    		if(pauseOnIncomingCall && currentNetwork.equals(mMethod.getCurrentNetwork())) mMethod.remoteControl(computerId, "pause", "");
-		    		
-		    		isIncomingCall = true;
+		    		if(mPauseOnIncomingCall && mCurrentNetwork.equals(mTools.getCurrentNetwork())) mTools.remoteControl(computerId, "pause", "");
+
+                    mIsIncomingCall = true;
 		    	}
-		    	else if(state == TelephonyManager.CALL_STATE_OFFHOOK && !isIncomingCall)
+		    	else if(state == TelephonyManager.CALL_STATE_OFFHOOK && !mIsIncomingCall)
 		    	{
-		    		if(pauseOnOutgoingCall && currentNetwork.equals(mMethod.getCurrentNetwork())) mMethod.remoteControl(computerId, "pause", "");
+		    		if(mPauseOnOutgoingCall && mCurrentNetwork.equals(mTools.getCurrentNetwork())) mTools.remoteControl(computerId, "pause", "");
 		    	}
 		    	else if(state == TelephonyManager.CALL_STATE_IDLE)
 		    	{
-		    		isIncomingCall = false;
+                    mIsIncomingCall = false;
 		    	}
 		        
 		        super.onCallStateChanged(state, incomingNumber);
 		    }
 		};
-		
-		telephonyManager = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
+
+        mTelephonyManager = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
 		
 		// Accelerometer
-		sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-		sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 		
-		if(sensor != null) deviceHasAccelerometer = true;
+		if(mSensor != null) mDeviceHasAccelerometer = true;
 	}
 	
 	// Start service
@@ -86,62 +107,65 @@ public class RemoteControlService extends Service implements SensorEventListener
 	public int onStartCommand(Intent intent, int flags, int startId)
 	{
 		// Current network
-		currentNetwork = mMethod.getCurrentNetwork();
+        mCurrentNetwork = mTools.getCurrentNetwork();
 		
 		// Calls
-		pauseOnIncomingCall = mMethod.getSharedPreferencesBoolean("PAUSE_ON_INCOMING_CALL");
-		pauseOnOutgoingCall = mMethod.getSharedPreferencesBoolean("PAUSE_ON_OUTGOING_CALL");
+        mPauseOnIncomingCall = mTools.getSharedPreferencesBoolean("PAUSE_ON_INCOMING_CALL");
+        mPauseOnOutgoingCall = mTools.getSharedPreferencesBoolean("PAUSE_ON_OUTGOING_CALL");
 		
-		if(pauseOnIncomingCall || pauseOnOutgoingCall)
+		if(mPauseOnIncomingCall || mPauseOnOutgoingCall)
 		{
-			telephonyManager.listen(phoneStateListener, PhoneStateListener.LISTEN_CALL_STATE);
+            mTelephonyManager.listen(mPhoneStateListener, PhoneStateListener.LISTEN_CALL_STATE);
 		}
 		else
 		{
-			telephonyManager.listen(phoneStateListener, PhoneStateListener.LISTEN_NONE);
+            mTelephonyManager.listen(mPhoneStateListener, PhoneStateListener.LISTEN_NONE);
 		}
 		
 		// Accelerometer
-		if(deviceHasAccelerometer)
+		if(mDeviceHasAccelerometer)
 		{
-			flipToPause = mMethod.getSharedPreferencesBoolean("FLIP_TO_PAUSE");	
-			shakeToSkip = mMethod.getSharedPreferencesBoolean("SHAKE_TO_SKIP");
+            mFlipToPause = mTools.getSharedPreferencesBoolean("FLIP_TO_PAUSE");
+            mShakeToSkip = mTools.getSharedPreferencesBoolean("SHAKE_TO_SKIP");
 			
-			if(flipToPause || shakeToSkip)
+			if(mFlipToPause || mShakeToSkip)
 			{
-				sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL);
+                mSensorManager.registerListener(this, mSensor, SensorManager.SENSOR_DELAY_NORMAL);
 				
-				if(shakeToSkip)
+				if(mShakeToSkip)
 				{
-					String shakeToSkipSensitivity = mMethod.getSharedPreferencesString("SHAKE_TO_SKIP_SENSITIVITY");
+					String shakeToSkipSensitivity = mTools.getSharedPreferencesString("SHAKE_TO_SKIP_SENSITIVITY");
 
-					shakeToSkipSensitivityInt = 14;
+                    mShakeToSkipSensitivityInt = 14;
 
-					if(shakeToSkipSensitivity.equals("higher"))
-					{
-						shakeToSkipSensitivityInt = 10;
-					}
-					else if(shakeToSkipSensitivity.equals("high"))
-					{
-						shakeToSkipSensitivityInt = 12;
-					}
-					else if(shakeToSkipSensitivity.equals("low"))
-					{
-						shakeToSkipSensitivityInt = 16;
-					}
-					else if(shakeToSkipSensitivity.equals("lower"))
-					{
-						shakeToSkipSensitivityInt = 18;
-					}
-					
-					shakeToSkipChange = 0.00f;
-					shakeToSkipCurrent = SensorManager.GRAVITY_EARTH;
-					shakeToSkipLast = SensorManager.GRAVITY_EARTH;
+                    switch(shakeToSkipSensitivity)
+                    {
+                        case "higher":
+                        {
+                            mShakeToSkipSensitivityInt = 10;
+                        }
+                        case "high":
+                        {
+                            mShakeToSkipSensitivityInt = 12;
+                        }
+                        case "low":
+                        {
+                            mShakeToSkipSensitivityInt = 16;
+                        }
+                        case "lower":
+                        {
+                            mShakeToSkipSensitivityInt = 18;
+                        }
+                    }
+
+                    mShakeToSkipChange = 0.00f;
+                    mShakeToSkipCurrent = SensorManager.GRAVITY_EARTH;
+                    mShakeToSkipLast = SensorManager.GRAVITY_EARTH;
 				}
 			}
 			else
 			{
-				sensorManager.unregisterListener(this);
+                mSensorManager.unregisterListener(this);
 			}
 		}
 		
@@ -154,25 +178,24 @@ public class RemoteControlService extends Service implements SensorEventListener
 	{
 		return null;
 	}
-	
+
 	// Destroy service
 	@Override
 	public void onDestroy()
 	{
+        super.onDestroy();
+
 		// Calls
-		telephonyManager.listen(phoneStateListener, PhoneStateListener.LISTEN_NONE);
-		
+        mTelephonyManager.listen(mPhoneStateListener, PhoneStateListener.LISTEN_NONE);
+
 		// Accelerometer
-		if(deviceHasAccelerometer) sensorManager.unregisterListener(this);
+		if(mDeviceHasAccelerometer) mSensorManager.unregisterListener(this);
 	}
-	
+
 	// Accelerometer
 	@Override
-	public final void onAccuracyChanged(Sensor sensor, int accuracy)
-	{
-		
-	}
-	
+	public final void onAccuracyChanged(Sensor sensor, int accuracy) { }
+
 	@Override
 	public final void onSensorChanged(SensorEvent event)
 	{	
@@ -181,71 +204,73 @@ public class RemoteControlService extends Service implements SensorEventListener
 		float z = event.values[2];
 
 		// Flip to pause
-		if(flipToPause)
+		if(mFlipToPause)
 		{
 			if(z < -9.5)
 			{
-				if(!isFlipped && currentNetwork.equals(mMethod.getCurrentNetwork()))
+				if(!mIsFlipped && mCurrentNetwork.equals(mTools.getCurrentNetwork()))
 				{
 					Runnable isFlippedRunnable= new Runnable()
 					{
 						public void run()
 						{
-							if(isFlipped)
+							if(mIsFlipped)
 							{
-								long computerId = mMethod.getSharedPreferencesLong("LAST_COMPUTER_ID");
-								
-								mMethod.remoteControl(computerId, "pause", "");
+								long computerId = mTools.getSharedPreferencesLong("LAST_COMPUTER_ID");
+
+                                mTools.remoteControl(computerId, "pause", "");
 							}
 						}			
 					};
 					
-					Handler isFlippedHandler = new Handler();			
-					isFlippedHandler.removeCallbacks(isFlippedRunnable);	
+					Handler isFlippedHandler = new Handler();
+
+					isFlippedHandler.removeCallbacks(isFlippedRunnable);
 					isFlippedHandler.postDelayed(isFlippedRunnable, 1000);
 				}
-			
-				isFlipped = true;
+
+                mIsFlipped = true;
 			}
 			else if(z > -7)
-			{	
-				isFlipped = false;
+			{
+                mIsFlipped = false;
 			}
 		}
 		
 		// Shake to skip
-		if(shakeToSkip)
+		if(mShakeToSkip)
 		{
-			shakeToSkipLast = shakeToSkipCurrent;
-			shakeToSkipCurrent = (float) Math.sqrt((double) (x*x + y*y + z*z));
+            mShakeToSkipLast = mShakeToSkipCurrent;
+            mShakeToSkipCurrent = (float) Math.sqrt((double) (x*x + y*y + z*z));
 		
-			float shakeToSkipDelta = shakeToSkipCurrent - shakeToSkipLast;
+			float shakeToSkipDelta = mShakeToSkipCurrent - mShakeToSkipLast;
+
+            mShakeToSkipChange = mShakeToSkipChange * 0.9f + shakeToSkipDelta;
 			
-			shakeToSkipChange = shakeToSkipChange * 0.9f + shakeToSkipDelta;
-			
-			if(shakeToSkipChange > shakeToSkipSensitivityInt)
+			if(mShakeToSkipChange > mShakeToSkipSensitivityInt)
 			{
-				if(!isShaked && currentNetwork.equals(mMethod.getCurrentNetwork()))
+				if(!mIsShaked && mCurrentNetwork.equals(mTools.getCurrentNetwork()))
 				{
-					isShaked = true;
+                    mIsShaked = true;
+
+                    mTools.showToast("Shake detected, playing next track", 0);
 					
-					mMethod.showToast("Shake detected, playing next track", 0);
-					
-					long computerId = mMethod.getSharedPreferencesLong("LAST_COMPUTER_ID");
-					
-					mMethod.remoteControl(computerId, "next", "");
+					long computerId = mTools.getSharedPreferencesLong("LAST_COMPUTER_ID");
+
+                    mTools.remoteControl(computerId, "next", "");
 				}
 				
 				Runnable isShakedRunnable= new Runnable()
 				{
 					public void run()
 					{
-						isShaked = false;
+                        mIsShaked = false;
 					}			
 				};
 				
-				Handler isShakedHandler = new Handler();			
-				isShakedHandler.removeCallbacks(isShakedRunnable);	
+				Handler isShakedHandler = new Handler();
+
+				isShakedHandler.removeCallbacks(isShakedRunnable);
 				isShakedHandler.postDelayed(isShakedRunnable, 500);
 			}
 		}

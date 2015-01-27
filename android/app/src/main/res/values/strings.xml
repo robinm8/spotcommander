@@ -2,39 +2,46 @@
 
 <resources>
 
-    <!-- App -->
-    <string name="app_name">SpotCommander</string>
-    <string name="app_minimum_version">12.2</string>
+    <!-- Project -->
+    <string name="project_name">SpotCommander</string>
+    <string name="project_minimum_version">12.2</string>
+    <string name="project_website">http://www.olejon.net/code/spotcommander/</string>
 
     <!-- Main -->
     <string name="main_title">Computers</string>
     <string name="main_list_header">All</string>
     <string name="main_list_empty">No computers. Tap the round green button to add a computer.</string>
     <string name="main_make_donation">MAKE A DONATION</string>
-    <string name="main_dialog_title">Information</string>
-    <string name="main_dialog_message">If you experience that the app becomes unresponsive, disable accelerated animations in Settings, which can be opened from the top action bar.\n\nThis is a known issue on some devices running Android 4.3 or older, especially Samsung devices.</string>
-    <string name="main_dialog_positive_button">Got It</string>
+    <string name="main_information_dialog_title">Information</string>
+    <string name="main_information_dialog_message">If you experience that the app becomes unresponsive, disable accelerated animations in Settings, which can be opened from the top toolbar.\n\nThis is a known issue on some devices running Android versions older than Android 4.4.</string>
+    <string name="main_information_dialog_positive_button">GOT IT</string>
+    <string name="main_message_dialog_positive_button">CLOSE</string>
+    <string name="main_menu_settings">Settings</string>
+    <string name="main_menu_troubleshooting">Troubleshooting</string>
+    <string name="main_menu_report_issue">Report Issue</string>
+    <string name="main_menu_make_donation">Make a Donation</string>
+    <string name="main_menu_remove">Remove</string>
 
     <!-- Settings -->
     <string name="settings_title">Settings</string>
     <string name="settings_category_appearance">Appearance</string>
     <string name="settings_category_advanced">Advanced</string>
     <string name="settings_hide_status_bar_title">Hide status bar</string>
-    <string name="settings_hide_status_bar_summary">Check this to hide the status bar in the app.</string>
+    <string name="settings_hide_status_bar_summary">Check this to hide the status bar in the app</string>
     <string name="settings_open_automatically_title">Open automatically</string>
-    <string name="settings_open_automatically_summary">Check this to open the most recently used computer automatically.</string>
+    <string name="settings_open_automatically_summary">Check this to open the most recently used computer automatically</string>
     <string name="settings_hardware_accelerated_animations_title">Accelerated animations</string>
-    <string name="settings_hardware_accelerated_animations_summary">Uncheck this if you experience that the app becomes unresponsive. This is a known issue on some devices running Android 4.3 or older, especially Samsung devices.</string>
+    <string name="settings_hardware_accelerated_animations_summary">Uncheck this if you experience that the app becomes unresponsive. This is a known issue on some devices running Android versions older than Android 4.4. Unchecking this will not have any effect on Android 4.4 and newer</string>
 
     <!-- Add computer -->
     <string name="add_computer_title">Add Computer</string>
     <string name="add_computer_authentication">Authentication</string>
-    <string name="add_computer_name_edittext_text">Computer</string>
-    <string name="add_computer_name_edittext_hint">Name</string>
-    <string name="add_computer_uri_edittext_text">http://</string>
-    <string name="add_computer_uri_edittext_hint">URL</string>
-    <string name="add_computer_username_edittext_hint">Username</string>
-    <string name="add_computer_password_edittext_hint">Password</string>
+    <string name="add_computer_name_text">Computer</string>
+    <string name="add_computer_name_hint">Name</string>
+    <string name="add_computer_uri_text">http://</string>
+    <string name="add_computer_uri_hint">URL</string>
+    <string name="add_computer_username_hint">Username</string>
+    <string name="add_computer_password_hint">Password</string>
     <string name="add_computer_information">Leave username and password blank unless you have enabled <a href="http://www.olejon.net/code/spotcommander/?authentication">authentication</a>\n\nSpotCommander must already be <a href="http://www.olejon.net/code/spotcommander/?install">installed</a> on the computer running Spotify</string>
     <string name="add_computer_invalid_name">Name can not be empty</string>
     <string name="add_computer_invalid_uri">Not a valid URL</string>
@@ -47,10 +54,12 @@
     <string name="add_computer_installation_found">SpotCommander installation found on</string>
     <string name="add_computer_installation_not_found">SpotCommander installation not found</string>
     <string name="add_computer_computer_with_authentication_enabled">computer with authentication enabled</string>
-    <string name="add_computer_dialog_title">Scan</string>
-    <string name="add_computer_dialog_message">Do you want to scan your network for the computer running SpotCommander?</string>
-    <string name="add_computer_dialog_positive_button">Yes</string>
-    <string name="add_computer_dialog_negative_button">No</string>
+    <string name="add_computer_scan_dialog_title">Scan</string>
+    <string name="add_computer_scan_dialog_message">Do you want to scan your network for the computer running SpotCommander?</string>
+    <string name="add_computer_scan_dialog_positive_button">YES</string>
+    <string name="add_computer_scan_dialog_negative_button">NO</string>
+    <string name="add_computer_menu_add_computer">Add computer</string>
+    <string name="add_computer_menu_scan_network">Scan</string>
 
     <!-- Webview -->
     <string name="webview_back">Long-press the back button to go back to the list of computers</string>
@@ -62,24 +71,15 @@
     <string name="donate_title">Donate</string>
     <string name="donate_getting_product">GETTING PRODUCT…</string>
     <string name="donate_donate">DONATE</string>
-    <string name="donate_text">Tapping one of the buttons will open a dialog where you can confirm or cancel the donation\n\nThank you very much!</string>
-    <string name="donate_something_went_wrong">Something went wrong. Please try again.</string>
+    <string name="donate_information">Tapping one of the buttons will open a dialog where you can confirm or cancel the donation\n\nThank you very much!</string>
     <string name="donate_thank_you">Thank you for your donation!</string>
-    <string name="donate_reset_successful">Reset successful</string>
+    <string name="donate_reset_successful">Success</string>
+    <string name="donate_something_went_wrong">Something went wrong. Please try again.</string>
+    <string name="donate_menu_reset">Reset</string>
 
     <!-- Playlists -->
     <string name="playlists_title">Shuffle Play</string>
     <string name="playlists_error">Could not get playlists</string>
-
-    <!-- Actions -->
-    <string name="action_settings">Settings</string>
-    <string name="action_troubleshooting">Troubleshooting</string>
-    <string name="action_report_issue">Report Issue</string>
-    <string name="action_make_donation">Make a Donation</string>
-    <string name="action_add_computer">Add computer</string>
-    <string name="action_scan_network">Scan</string>
-    <string name="action_remove">Remove</string>
-    <string name="action_reset">Reset</string>
 
     <!-- Widget -->
     <string name="widget_label">SpotCommander 4x1</string>

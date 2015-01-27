@@ -1,5 +1,26 @@
 package net.olejon.spotcommander;
 
+/*
+
+Copyright 2015 Ole Jon Bjørkum
+
+This file is part of SpotCommander.
+
+SpotCommander is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+SpotCommander is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with SpotCommander.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
@@ -20,10 +41,10 @@ public class Widget extends AppWidgetProvider
         {
             String id = String.valueOf(appWidgetId);
 
-            Intent launchIntent = new Intent(context, MainActivity.class);
-            launchIntent.setAction("android.intent.action.MAIN");
-            launchIntent.addCategory("android.intent.category.LAUNCHER");
-            PendingIntent launchPendingIntent = PendingIntent.getActivity(context, appWidgetId, launchIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+            Intent launchActivityIntent = new Intent(context, MainActivity.class);
+            launchActivityIntent.setAction("android.intent.action.MAIN");
+            launchActivityIntent.addCategory("android.intent.category.LAUNCHER");
+            PendingIntent launchActivityPendingIntent = PendingIntent.getActivity(context, appWidgetId, launchActivityIntent, PendingIntent.FLAG_CANCEL_CURRENT);
 
             Intent previousIntent = new Intent(context, Widget.class);
             previousIntent.setAction("previous");
@@ -42,7 +63,7 @@ public class Widget extends AppWidgetProvider
 
             RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget);
 
-            views.setOnClickPendingIntent(R.id.widget_launcher_button, launchPendingIntent);
+            views.setOnClickPendingIntent(R.id.widget_launcher_button, launchActivityPendingIntent);
             views.setOnClickPendingIntent(R.id.widget_previous_button, previousPendingIntent);
             views.setOnClickPendingIntent(R.id.widget_play_button, playPausePendingIntent);
             views.setOnClickPendingIntent(R.id.widget_next_button, nextPendingIntent);
@@ -57,17 +78,15 @@ public class Widget extends AppWidgetProvider
 	{
 		super.onReceive(context, intent);
 		
-		MyMethod mMethod = new MyMethod(context);
+		MyTools mTools = new MyTools(context);
 
-        String intentAction = intent.getAction();
-
-        if(!intentAction.contains("android"))
+        if(!intent.getAction().contains("android"))
         {
             String[] action = intent.getStringArrayExtra(WIDGET_INTENT_EXTRA);
 
-            long computerId = mMethod.getSharedPreferencesLong("WIDGET_"+action[0]+"_COMPUTER_ID");
+            long computerId = mTools.getSharedPreferencesLong("WIDGET_"+action[0]+"_COMPUTER_ID");
 
-            mMethod.remoteControl(computerId, action[1], action[2]);
+            mTools.remoteControl(computerId, action[1], action[2]);
         }
 	}
 }

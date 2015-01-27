@@ -1,6 +1,28 @@
 package net.olejon.spotcommander;
 
+/*
+
+Copyright 2015 Ole Jon Bjørkum
+
+This file is part of SpotCommander.
+
+SpotCommander is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+SpotCommander is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with SpotCommander.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
 import android.appwidget.AppWidgetManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.database.Cursor;
@@ -14,62 +36,66 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 
 public class WidgetActivity extends ActionBarActivity
-{	
-	private final MyMethod mMethod = new MyMethod(this);
-	
+{
+    private final Context mContext = this;
+
+	private final MyTools mTools = new MyTools(mContext);
+
 	private SQLiteDatabase mDatabase;
 	private Cursor mCursor;
-	private ListView listView;
-	
-	private int appWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
-	
+
+	private ListView mListView;
+
+	private int mAppWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
+
 	// Create activity
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
-		
+
 		// Allow landscape?
-		if(!mMethod.allowLandscape()) setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-		
+		if(!mTools.allowLandscape()) setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+
 		// Database
-		mDatabase = new MySQLiteHelper(this).getWritableDatabase();
-		
+		mDatabase = new MySQLiteHelper(mContext).getWritableDatabase();
+
 		// Intent
 		setResult(RESULT_CANCELED);
-		
+
 		Intent intent = getIntent();
-		Bundle extras = intent.getExtras();
-		
-		if(extras != null) appWidgetId = extras.getInt(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID);
-		
-        if(appWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID) finish();
-		
+		Bundle bundle = intent.getExtras();
+
+		if(bundle != null) mAppWidgetId = bundle.getInt(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID);
+
+        if(mAppWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID) finish();
+
 		// Layout
 		setContentView(R.layout.activity_widget);
 
         // Toolbar
-        Toolbar mToolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(mToolbar);
-		
+        final Toolbar toolbar = (Toolbar) findViewById(R.id.widget_toolbar);
+
+        setSupportActionBar(toolbar);
+
 		// Listview
-		listView = (ListView) findViewById(R.id.list);
+        mListView = (ListView) findViewById(R.id.widget_list);
 		
-		View listViewHeader = getLayoutInflater().inflate(R.layout.header_main, listView, false);
-		listView.addHeaderView(listViewHeader, null, false);
+		View listViewHeader = getLayoutInflater().inflate(R.layout.main_subheader, mListView, false);
+        mListView.addHeaderView(listViewHeader, null, false);
 
-        View listViewEmpty = findViewById(R.id.empty);
-        listView.setEmptyView(listViewEmpty);
+        View listViewEmpty = findViewById(R.id.widget_empty);
+        mListView.setEmptyView(listViewEmpty);
 
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener()
+        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener()
         {
             @Override
-            public void onItemClick(AdapterView< ?> parent, View view, int position, long id)
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id)
             {
-                mMethod.setSharedPreferencesLong("WIDGET_"+appWidgetId+"_COMPUTER_ID", id);
+                mTools.setSharedPreferencesLong("WIDGET_"+mAppWidgetId+"_COMPUTER_ID", id);
 
                 Intent result = new Intent();
-                result.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
+                result.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, mAppWidgetId);
                 setResult(RESULT_OK, result);
 
                 finish();
@@ -78,27 +104,26 @@ public class WidgetActivity extends ActionBarActivity
 
         listComputers();
 	}
-	
+
 	// Destroy activity
 	@Override
 	protected void onDestroy()
 	{
 		super.onDestroy();
-		
-		mCursor.close();
-		mDatabase.close();
+
+		if(mCursor != null && !mCursor.isClosed()) mCursor.close();
+		if(mDatabase != null && mDatabase.isOpen()) mDatabase.close();
 	}
-	
+
 	// Computers
 	private void listComputers()
 	{	
 		String[] queryColumns = {MySQLiteHelper.COLUMN_ID, MySQLiteHelper.COLUMN_NAME};
 		mCursor = mDatabase.query(MySQLiteHelper.TABLE_COMPUTERS, queryColumns, null, null, null, null, null);
-		
+
 		String[] fromColumns = {MySQLiteHelper.COLUMN_NAME};
-		int[] toViews = {R.id.list_item_textview};
-		
-		SimpleCursorAdapter adapter = new SimpleCursorAdapter(this, R.layout.list_item_computer, mCursor, fromColumns, toViews, 0);
-		listView.setAdapter(adapter);
+		int[] toViews = {R.id.main_list_item};
+
+        mListView.setAdapter(new SimpleCursorAdapter(mContext, R.layout.main_list_item, mCursor, fromColumns, toViews, 0));
 	}
 }

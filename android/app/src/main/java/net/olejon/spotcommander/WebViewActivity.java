@@ -1,6 +1,7 @@
 package net.olejon.spotcommander;
 
 import android.app.Activity;
+import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
@@ -15,6 +16,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.support.annotation.NonNull;
+import android.support.v4.app.NavUtils;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 import android.support.v7.graphics.Palette;
@@ -38,26 +40,30 @@ import java.util.Arrays;
 
 public class WebViewActivity extends Activity
 {
+    public static boolean ACTIVITY_IS_PAUSED = false;
+
 	public final static int NOTIFICATION_ID = 1;
-	
-	public static boolean activityIsPaused = false;
-	
-	private final MyMethod mMethod = new MyMethod(this);
 
-	private PowerManager.WakeLock wakeLock;
-	private NotificationCompat.Builder notificationBuilder;
-	private NotificationManagerCompat notificationManager;
-	private WebView webView;
-	
-	private String appVersion;
-	private String currentNetwork;
-	
-	private boolean hasLongPressedBack = false;
-	private boolean persistentNotification = false;
-	private boolean persistentNotificationIsSupported = false;
+    private final Activity mActivity = this;
 
-    private int statusBarPrimaryColor = 0;
-    private int statusBarCoverArtColor = 0;
+    private final Context mContext = this;
+
+	private final MyTools mTools = new MyTools(mContext);
+
+	private PowerManager.WakeLock mWakeLock;
+	private NotificationCompat.Builder mNotificationBuilder;
+	private NotificationManagerCompat mNotificationManager;
+	private WebView mWebView;
+	
+	private String mProjectVersionName;
+	private String mCurrentNetwork;
+	
+	private boolean mHasLongPressedBack = false;
+	private boolean mPersistentNotification = false;
+	private boolean mPersistentNotificationIsSupported = false;
+
+    private int mStatusBarPrimaryColor = 0;
+    private int mStatusBarCoverArtColor = 0;
 
 	// Create activity
 	protected void onCreate(Bundle savedInstanceState)
@@ -65,26 +71,27 @@ public class WebViewActivity extends Activity
 		super.onCreate(savedInstanceState);
 		
 		// Allow landscape?
-		if(!mMethod.allowLandscape()) setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+		if(!mTools.allowLandscape()) setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 		
 		// Hide the status bar?
-		boolean hideStatusBar = mMethod.getDefaultSharedPreferencesBoolean("HIDE_STATUS_BAR");
+		boolean hideStatusBar = mTools.getDefaultSharedPreferencesBoolean("HIDE_STATUS_BAR");
 		if(hideStatusBar) getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		
 		// Power manager
 		PowerManager powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
-		wakeLock = powerManager.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, "wakeLock");
+        mWakeLock = powerManager.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, "wakeLock");
 		
 		// Settings
-		mMethod.setSharedPreferencesBoolean("CAN_CLOSE_COVER", false);
+        mTools.setSharedPreferencesBoolean("CAN_CLOSE_COVER", false);
 		
-		// Wi-Fi
-		currentNetwork = mMethod.getCurrentNetwork();
+		// Current network
+        mCurrentNetwork = mTools.getCurrentNetwork();
 		
 		// Computer
-		final long computerId = mMethod.getSharedPreferencesLong("LAST_COMPUTER_ID");
-		final String[] computer = mMethod.getComputer(computerId);
-		
+		final long computerId = mTools.getSharedPreferencesLong("LAST_COMPUTER_ID");
+
+		final String[] computer = mTools.getComputer(computerId);
+
 		final String uri = computer[0];
 		final String username = computer[1];
 		final String password = computer[2];
@@ -95,59 +102,62 @@ public class WebViewActivity extends Activity
         // Status bar color
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
         {
-            statusBarPrimaryColor = getWindow().getStatusBarColor();
-            statusBarCoverArtColor = statusBarPrimaryColor;
+            mStatusBarPrimaryColor = getWindow().getStatusBarColor();
+            mStatusBarCoverArtColor = mStatusBarPrimaryColor;
         }
 		
 		// Notification
-		persistentNotificationIsSupported = (Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN);
+        mPersistentNotificationIsSupported = (Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN);
 		
-		if(persistentNotificationIsSupported)
+		if(mPersistentNotificationIsSupported)
 		{
-			notificationManager = NotificationManagerCompat.from(this);
-			
-			Intent launchActivityIntent = new Intent(this, MainActivity.class);
+			Intent launchActivityIntent = new Intent(mContext, MainActivity.class);
 			launchActivityIntent.setAction("android.intent.action.MAIN");
 			launchActivityIntent.addCategory("android.intent.category.LAUNCHER");
-	        PendingIntent launchActivityPendingIntent = PendingIntent.getActivity(this, 0, launchActivityIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+	        PendingIntent launchActivityPendingIntent = PendingIntent.getActivity(mContext, 0, launchActivityIntent, PendingIntent.FLAG_CANCEL_CURRENT);
 			
-			Intent hideIntent = new Intent(this, RemoteControlIntentService.class);
+			Intent hideIntent = new Intent(mContext, RemoteControlIntentService.class);
 			hideIntent.setAction("hide_notification");
 			hideIntent.putExtra(RemoteControlIntentService.REMOTE_CONTROL_INTENT_SERVICE_EXTRA, computerId);
-			PendingIntent hidePendingIntent = PendingIntent.getService(this, 0, hideIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+			PendingIntent hidePendingIntent = PendingIntent.getService(mContext, 0, hideIntent, PendingIntent.FLAG_CANCEL_CURRENT);
 			
-			Intent playPauseIntent = new Intent(this, RemoteControlIntentService.class);
+			Intent playPauseIntent = new Intent(mContext, RemoteControlIntentService.class);
 			playPauseIntent.setAction("play_pause");
 			playPauseIntent.putExtra(RemoteControlIntentService.REMOTE_CONTROL_INTENT_SERVICE_EXTRA, computerId);
-			PendingIntent playPausePendingIntent = PendingIntent.getService(this, 0, playPauseIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+			PendingIntent playPausePendingIntent = PendingIntent.getService(mContext, 0, playPauseIntent, PendingIntent.FLAG_CANCEL_CURRENT);
 			
-			Intent nextIntent = new Intent(this, RemoteControlIntentService.class);
+			Intent nextIntent = new Intent(mContext, RemoteControlIntentService.class);
 			nextIntent.setAction("next");
 			nextIntent.putExtra(RemoteControlIntentService.REMOTE_CONTROL_INTENT_SERVICE_EXTRA, computerId);
-			PendingIntent nextPendingIntent = PendingIntent.getService(this, 0, nextIntent, PendingIntent.FLAG_CANCEL_CURRENT);
-			
-			notificationBuilder = new NotificationCompat.Builder(this);
+			PendingIntent nextPendingIntent = PendingIntent.getService(mContext, 0, nextIntent, PendingIntent.FLAG_CANCEL_CURRENT);
 
             Bitmap largeIcon = BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher);
 
-			notificationBuilder.setOngoing(true)
-            .setLargeIcon(largeIcon)
-			.setSmallIcon(R.drawable.ic_play_arrow_white_24dp)
-			.setContentTitle(getString(R.string.app_name))
-			.setContentText(getString(R.string.notification_text))
-			.setWhen(0)
-			.setContentIntent(launchActivityPendingIntent)
-			.addAction(R.drawable.ic_close_white_24dp, getString(R.string.notification_action_hide), hidePendingIntent)
-			.addAction(R.drawable.ic_play_arrow_white_24dp, getString(R.string.notification_action_play_pause), playPausePendingIntent)
-			.addAction(R.drawable.ic_skip_next_white_24dp, getString(R.string.notification_action_next), nextPendingIntent);
-		}
-		
-		// Webview
-		webView = (WebView) findViewById(R.id.webview_webview);
-		webView.setBackgroundColor(getResources().getColor(R.color.background));
-		webView.setScrollBarStyle(WebView.SCROLLBARS_INSIDE_OVERLAY);
+            mNotificationManager = NotificationManagerCompat.from(mContext);
+            mNotificationBuilder = new NotificationCompat.Builder(mContext);
 
-		webView.setWebViewClient(new WebViewClient()
+            mNotificationBuilder.setWhen(0)
+                    .setOngoing(true)
+                    .setPriority(Notification.PRIORITY_MAX)
+                    .setVisibility(Notification.VISIBILITY_PUBLIC)
+                    .setCategory(Notification.CATEGORY_TRANSPORT)
+                    .setLargeIcon(largeIcon)
+                    .setSmallIcon(R.drawable.ic_play_arrow_white_24dp)
+                    .setContentTitle(getString(R.string.project_name))
+                    .setContentText(getString(R.string.notification_text))
+                    .setContentIntent(launchActivityPendingIntent)
+                    .addAction(R.drawable.ic_close_white_24dp, getString(R.string.notification_action_hide), hidePendingIntent)
+                    .addAction(R.drawable.ic_play_arrow_white_24dp, getString(R.string.notification_action_play_pause), playPausePendingIntent)
+                    .addAction(R.drawable.ic_skip_next_white_24dp, getString(R.string.notification_action_next), nextPendingIntent);
+		}
+
+		// Web view
+        mWebView = (WebView) findViewById(R.id.webview_webview);
+
+        mWebView.setBackgroundColor(getResources().getColor(R.color.background));
+        mWebView.setScrollBarStyle(WebView.SCROLLBARS_INSIDE_OVERLAY);
+
+        mWebView.setWebViewClient(new WebViewClient()
 		{
 			@Override
 			public boolean shouldOverrideUrlLoading(WebView view, String url)
@@ -155,6 +165,7 @@ public class WebViewActivity extends Activity
 				if(url != null && !url.contains(uri) && !url.contains("olejon.net/code/spotcommander/api/1/spotify/") && !url.contains("accounts.spotify.com/") && !url.contains("facebook.com/"))
 				{
 					view.getContext().startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
+
 					return true;
 				}
 
@@ -171,8 +182,10 @@ public class WebViewActivity extends Activity
 				else
 				{
 					handler.cancel();
-					mMethod.showToast(getString(R.string.webview_authentication_failed), 1);
-					finish();
+
+                    mTools.showToast(getString(R.string.webview_authentication_failed), 1);
+
+                    NavUtils.navigateUpFromSameTask(mActivity);
 				}
 			}
 			
@@ -185,48 +198,47 @@ public class WebViewActivity extends Activity
 			@Override
 			public void onReceivedError(WebView view, int errorCode, String description, String failingUrl)
 			{
-				mMethod.showToast(getString(R.string.webview_error), 1);
-				finish();
+                mTools.showToast(getString(R.string.webview_error), 1);
+
+                NavUtils.navigateUpFromSameTask(mActivity);
 			}
 		});
 
 		// Prepare user agent
-		try
-		{
-			appVersion = getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
-		}
-		catch(Exception e)
-		{
-			appVersion = "0.0";
-
-            Log.e("getPackageName", Log.getStackTraceString(e));
-		}
+        mProjectVersionName = mTools.getProjectVersionName();
 
 		boolean authenticationIsEnabled = (!username.equals("") && !password.equals(""));
-		boolean hardwareAcceleratedAnimations = mMethod.getDefaultSharedPreferencesBoolean("HARDWARE_ACCELERATED_ANIMATIONS");
 
-		String ua_option_1 = (authenticationIsEnabled) ? "AUTHENTICATION_ENABLED " : "";
-		String ua_option_2 = (hardwareAcceleratedAnimations) ? "" : "DISABLE_CSSTRANSITIONS ";
-		String ua_option_3 = (hardwareAcceleratedAnimations) ? "" : "DISABLE_CSSTRANSFORMS3D ";
+		String ua_append_1 = (authenticationIsEnabled) ? "AUTHENTICATION_ENABLED " : "";
+        String ua_append_2 = "";
+        String ua_append_3 = "";
+
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT)
+        {
+            boolean hardwareAcceleratedAnimations = mTools.getDefaultSharedPreferencesBoolean("HARDWARE_ACCELERATED_ANIMATIONS");
+
+            ua_append_2 = (hardwareAcceleratedAnimations) ? "" : "DISABLE_CSSTRANSITIONS ";
+            ua_append_3 = (hardwareAcceleratedAnimations) ? "" : "DISABLE_CSSTRANSFORMS3D ";
+        }
 
 		// Web settings
-		WebSettings webSettings = webView.getSettings();
+		WebSettings webSettings = mWebView.getSettings();
 		webSettings.setJavaScriptEnabled(true);
 		webSettings.setSupportZoom(false);
-		webSettings.setUserAgentString(webSettings.getUserAgentString()+" "+getString(R.string.app_name)+"/"+appVersion+" "+ua_option_1+ua_option_2+ua_option_3);
+		webSettings.setUserAgentString(webSettings.getUserAgentString()+" "+getString(R.string.project_name)+"/"+mProjectVersionName+" "+ua_append_1+ua_append_2+ua_append_3);
 
 		// Load app
 		if(savedInstanceState != null)
 		{
-			webView.restoreState(savedInstanceState);
+            mWebView.restoreState(savedInstanceState);
 		}
 		else
 		{
-			webView.loadUrl(uri);
+            mWebView.loadUrl(uri);
 		}
 
 		// JavaScript interface
-		webView.addJavascriptInterface(new JavaScriptInterface(this), "Android");
+        mWebView.addJavascriptInterface(new JavaScriptInterface(), "Android");
 	}
 	
 	// Pause activity
@@ -234,30 +246,28 @@ public class WebViewActivity extends Activity
 	public void onPause()
 	{
 		super.onPause();
-		
-		// Release wake lock
-		if(wakeLock.isHeld()) wakeLock.release();
-		
-		// Notification
-		persistentNotification = mMethod.getSharedPreferencesBoolean("PERSISTENT_NOTIFICATION");
-		
-		if(persistentNotificationIsSupported && persistentNotification && !hasLongPressedBack)
+
+		if(mWakeLock.isHeld()) mWakeLock.release();
+
+        mPersistentNotification = mTools.getSharedPreferencesBoolean("PERSISTENT_NOTIFICATION");
+
+		if(mPersistentNotificationIsSupported && mPersistentNotification && !mHasLongPressedBack)
 		{
-			String nowplaying_artist = mMethod.getSharedPreferencesString("NOWPLAYING_ARTIST");
-			String nowplaying_title = mMethod.getSharedPreferencesString("NOWPLAYING_TITLE");
-			
+			String nowplaying_artist = mTools.getSharedPreferencesString("NOWPLAYING_ARTIST");
+			String nowplaying_title = mTools.getSharedPreferencesString("NOWPLAYING_TITLE");
+
 			if(!nowplaying_artist.equals(getString(R.string.notification_no_music_is_playing_artist)))
-			{	
-				notificationBuilder.setTicker(nowplaying_artist+" - "+nowplaying_title);
-				notificationManager.notify(NOTIFICATION_ID, notificationBuilder.build());
+			{
+                mNotificationBuilder.setTicker(nowplaying_artist+" - "+nowplaying_title);
+                mNotificationManager.notify(NOTIFICATION_ID, mNotificationBuilder.build());
 			}
 		}
-		
-		// Pause webview
-		CookieSyncManager.getInstance().sync();
-		webView.pauseTimers();
-		
-		activityIsPaused = true;
+
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) CookieSyncManager.getInstance().sync();
+
+        mWebView.pauseTimers();
+
+        ACTIVITY_IS_PAUSED = true;
 	}
 	
 	// Resume activity
@@ -266,128 +276,148 @@ public class WebViewActivity extends Activity
 	{
 		super.onResume();
 
-		// Notification
-		persistentNotification = mMethod.getSharedPreferencesBoolean("PERSISTENT_NOTIFICATION");
-		if(persistentNotificationIsSupported && persistentNotification) notificationManager.cancel(NOTIFICATION_ID);
-		
-		// Resume webview
-		if(currentNetwork.equals(mMethod.getCurrentNetwork()))
+        mPersistentNotification = mTools.getSharedPreferencesBoolean("PERSISTENT_NOTIFICATION");
+
+		if(mPersistentNotificationIsSupported && mPersistentNotification) mNotificationManager.cancel(NOTIFICATION_ID);
+
+		if(mCurrentNetwork.equals(mTools.getCurrentNetwork()))
 		{
-			webView.resumeTimers();
-			if(activityIsPaused) webView.loadUrl("javascript:nativeAppLoad(true)");
+            mWebView.resumeTimers();
+
+			if(ACTIVITY_IS_PAUSED) mWebView.loadUrl("javascript:nativeAppLoad(true)");
 		}
 		else
 		{
-			mMethod.showToast(getString(R.string.webview_network_changed), 1);
-			finish();
+            mTools.showToast(getString(R.string.webview_network_changed), 1);
+
+            NavUtils.navigateUpFromSameTask(mActivity);
 		}
 	}
-	
-	// Save activity
-	@Override
-	protected void onSaveInstanceState(@NonNull Bundle savedInstanceState)
-	{
-		super.onSaveInstanceState(savedInstanceState);
-		
-		// Save webview
-		CookieSyncManager.getInstance().sync();
-		webView.saveState(savedInstanceState);
-	}
-	
-	// Destroy activity
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState)
+    {
+        super.onSaveInstanceState(outState);
+
+        mWebView.saveState(outState);
+    }
+
+    // Destroy activity
 	@Override
 	protected void onDestroy()
 	{
 		super.onDestroy();
-		
-		activityIsPaused = false;
+
+        ACTIVITY_IS_PAUSED = false;
 	}
-	
+
 	// Key down
 	@Override
 	public boolean onKeyDown(int keyCode, @NonNull KeyEvent event)
 	{
-		if(keyCode == KeyEvent.KEYCODE_BACK)
-		{
-			event.startTracking();
-			return true;
-		}
-		else if(keyCode == KeyEvent.KEYCODE_MENU || keyCode == KeyEvent.KEYCODE_SEARCH || keyCode == KeyEvent.KEYCODE_VOLUME_DOWN || keyCode == KeyEvent.KEYCODE_VOLUME_UP)
-		{
-			return true;
-		}
-		
-		return super.onKeyDown(keyCode, event);	
+        switch(keyCode)
+        {
+            case KeyEvent.KEYCODE_BACK:
+            {
+                event.startTracking();
+                return true;
+            }
+            case KeyEvent.KEYCODE_MENU:
+            {
+                return true;
+            }
+            case KeyEvent.KEYCODE_SEARCH:
+            {
+                return true;
+            }
+            case KeyEvent.KEYCODE_VOLUME_DOWN:
+            {
+                return true;
+            }
+            case KeyEvent.KEYCODE_VOLUME_UP:
+            {
+                return true;
+            }
+            default:
+            {
+                return super.onKeyDown(keyCode, event);
+            }
+        }
 	}
 	
 	@Override
 	public boolean onKeyLongPress(int keyCode, KeyEvent event)
 	{
-		if(keyCode == KeyEvent.KEYCODE_BACK)
-		{
-			hasLongPressedBack = true;
-			finish();
-			return true;
-		}
-		
-		return super.onKeyLongPress(keyCode, event);
+        switch(keyCode)
+        {
+            case KeyEvent.KEYCODE_BACK:
+            {
+                mHasLongPressedBack = true;
+
+                NavUtils.navigateUpFromSameTask(mActivity);
+
+                return true;
+            }
+            default:
+            {
+                return super.onKeyLongPress(keyCode, event);
+            }
+        }
 	}
 	
 	// Key up
 	@Override
 	public boolean onKeyUp(int keyCode, @NonNull KeyEvent event)
-	{	
-		if(keyCode == KeyEvent.KEYCODE_MENU)
-		{
-			webView.loadUrl("javascript:nativeAppAction('menu')");
-			return true;
-		}
-		else if(keyCode == KeyEvent.KEYCODE_SEARCH)
-		{
-			webView.loadUrl("javascript:nativeAppAction('search')");
-			return true;
-		}
-		else if(keyCode == KeyEvent.KEYCODE_BACK)
-		{
-			if(hasLongPressedBack) return true;
-			
-			boolean canCloseCover = mMethod.getSharedPreferencesBoolean("CAN_CLOSE_COVER");
-			
-			if(webView.canGoBack() || canCloseCover)
-			{
-				webView.loadUrl("javascript:nativeAppAction('back')");
-				return true;
-			}
-			else
-			{
-				mMethod.showToast(getString(R.string.webview_back), 1);
-				return true;
-			}
-		}
-		else if(keyCode == KeyEvent.KEYCODE_VOLUME_DOWN)
-		{
-			webView.loadUrl("javascript:nativeAppAction('volume_down')");
-			return true;
-		}
-		else if(keyCode == KeyEvent.KEYCODE_VOLUME_UP)
-		{	
-			webView.loadUrl("javascript:nativeAppAction('volume_up')");
-			return true;
-		}
-		
-		return super.onKeyUp(keyCode, event);
+	{
+        switch(keyCode)
+        {
+            case KeyEvent.KEYCODE_MENU:
+            {
+                mWebView.loadUrl("javascript:nativeAppAction('menu')");
+                return true;
+            }
+            case KeyEvent.KEYCODE_SEARCH:
+            {
+                mWebView.loadUrl("javascript:nativeAppAction('search')");
+                return true;
+            }
+            case KeyEvent.KEYCODE_BACK:
+            {
+                if(mHasLongPressedBack) return true;
+
+                boolean canCloseCover = mTools.getSharedPreferencesBoolean("CAN_CLOSE_COVER");
+
+                if(mWebView.canGoBack() || canCloseCover)
+                {
+                    mWebView.loadUrl("javascript:nativeAppAction('back')");
+
+                    return true;
+                }
+
+                mTools.showToast(getString(R.string.webview_back), 1);
+
+                return true;
+            }
+            case KeyEvent.KEYCODE_VOLUME_DOWN:
+            {
+                mWebView.loadUrl("javascript:nativeAppAction('volume_down')");
+                return true;
+            }
+            case KeyEvent.KEYCODE_VOLUME_UP:
+            {
+                mWebView.loadUrl("javascript:nativeAppAction('volume_up')");
+                return true;
+            }
+            default:
+            {
+                return super.onKeyUp(keyCode, event);
+            }
+        }
 	}
 	
 	// JavaScript interface
-	public class JavaScriptInterface
+	private class JavaScriptInterface
 	{
-	    private final Context mContext;
-
-	    JavaScriptInterface(Context context)
-	    {
-	        mContext = context;
-	    }
-
         @JavascriptInterface
         public void JSmakeDonation()
         {
@@ -405,15 +435,15 @@ public class WebViewActivity extends Activity
 	    	Intent chooser = Intent.createChooser(intent, title);
 	    	startActivity(chooser);
 	    }
-	    
+
 	    @JavascriptInterface
 	    public void JSopenUri(String uri)
 	    {
-		    	Intent intent = new Intent(Intent.ACTION_VIEW);
-		    	intent.setData(Uri.parse(uri));
-		    	startActivity(intent);
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.setData(Uri.parse(uri));
+            startActivity(intent);
 	    }
-	    
+
 	    @JavascriptInterface
 	    public int JSsearchApp(String app, String string)
 	    {
@@ -434,30 +464,31 @@ public class WebViewActivity extends Activity
 	    	{
                 appFound = 0;
 
-                Log.e("getApplicationInfo", Log.getStackTraceString(e));
+                Log.e("WebViewActivity", Log.getStackTraceString(e));
 	    	}
 
             return appFound;
 	    }
-	    
+
 	    @JavascriptInterface
 	    public void JSkeepScreenOn(boolean keepScreenOn)
 	    {
 	    	if(keepScreenOn)
 	    	{
-	    		if(!wakeLock.isHeld()) wakeLock.acquire();
+	    		if(!mWakeLock.isHeld()) mWakeLock.acquire();
 	    	}
 	    	else
 	    	{
-	    		if(wakeLock.isHeld()) wakeLock.release();
+	    		if(mWakeLock.isHeld()) mWakeLock.release();
 	    	}
 	    }
-	    
+
 	    @JavascriptInterface
 	    public void JSfinishActivity()
 	    {
-	    	hasLongPressedBack = true;
-	    	finish();
+            mHasLongPressedBack = true;
+
+            NavUtils.navigateUpFromSameTask(mActivity);
 	    }
 
         @JavascriptInterface
@@ -465,17 +496,23 @@ public class WebViewActivity extends Activity
         {
             final int intColor;
 
-            if(color.equals("primary"))
+            switch(color)
             {
-                intColor = statusBarPrimaryColor;
-            }
-            else if(color.equals("cover_art"))
-            {
-                intColor = statusBarCoverArtColor;
-            }
-            else
-            {
-                intColor = Color.parseColor(color);
+                case "primary":
+                {
+                    intColor = mStatusBarPrimaryColor;
+                    break;
+                }
+                case "cover_art":
+                {
+                    intColor = mStatusBarCoverArtColor;
+                    break;
+                }
+                default:
+                {
+                    intColor = Color.parseColor(color);
+                    break;
+                }
             }
 
             runOnUiThread(new Runnable()
@@ -483,10 +520,7 @@ public class WebViewActivity extends Activity
                 @Override
                 public void run()
                 {
-                    if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-                    {
-                        getWindow().setStatusBarColor(intColor);
-                    }
+                    if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) getWindow().setStatusBarColor(intColor);
                 }
             });
         }
@@ -497,47 +531,47 @@ public class WebViewActivity extends Activity
             GetStatusBarColorFromImageTask getStatusBarColorFromImageTask = new GetStatusBarColorFromImageTask();
             getStatusBarColorFromImageTask.execute(uri);
         }
-	    
+
 	    @JavascriptInterface
 	    public void JSstartService()
 	    {
 			Intent intent = new Intent(mContext, RemoteControlService.class);
 			startService(intent);
 	    }
-	    
+
 	    @JavascriptInterface
 	    public String JSgetSharedString(String preference)
 	    {
-			return mMethod.getSharedPreferencesString(preference);
+			return mTools.getSharedPreferencesString(preference);
 	    }
-	    
+
 	    @JavascriptInterface
 	    public void JSsetSharedString(String preference, String string)
-	    {	
-			mMethod.setSharedPreferencesString(preference, string);
+	    {
+            mTools.setSharedPreferencesString(preference, string);
 	    }
-	    
+
 	    @JavascriptInterface
 	    public boolean JSgetSharedBoolean(String preference)
 	    {
-	    	return mMethod.getSharedPreferencesBoolean(preference);
+	    	return mTools.getSharedPreferencesBoolean(preference);
 	    }
-	    
+
 	    @JavascriptInterface
 	    public void JSsetSharedBoolean(String preference, boolean bool)
 	    {
-			mMethod.setSharedPreferencesBoolean(preference, bool);
+            mTools.setSharedPreferencesBoolean(preference, bool);
 	    }
-	    
+
 	    @JavascriptInterface
 	    public String JSgetVersions()
 	    {
-	    	String app_version = appVersion;
-	    	String app_minimum_version = getString(R.string.app_minimum_version);
+	    	String project_version = mProjectVersionName;
+	    	String project_minimum_version = getString(R.string.project_minimum_version);
 	    	
-	    	return new JSONArray(Arrays.asList(app_version, app_minimum_version)).toString();
+	    	return new JSONArray(Arrays.asList(project_version, project_minimum_version)).toString();
 	    }
-	    
+
 	    @JavascriptInterface
 	    public String JSgetPackageName()
 	    {
@@ -556,10 +590,10 @@ public class WebViewActivity extends Activity
                 {
                     getWindow().setStatusBarColor(getResources().getColor(R.color.green));
 
-                    statusBarCoverArtColor = R.color.black;
+                    mStatusBarCoverArtColor = R.color.black;
                 }
 
-                webView.loadUrl("javascript:setCoverArtFabColor('#689f38')");
+                mWebView.loadUrl("javascript:setCoverArtFabColor('#689f38')");
             }
             else
             {
@@ -572,8 +606,10 @@ public class WebViewActivity extends Activity
                         final String vibrantColorHex = String.format("#%06X", (0xFFFFFF & vibrantColor));
 
                         final float[] colorHsv = new float[3];
+
                         Color.colorToHSV(vibrantColor, colorHsv);
                         colorHsv[2] *= 0.8f;
+
                         final int darkVibrantColor = Color.HSVToColor(colorHsv);
 
                         runOnUiThread(new Runnable()
@@ -585,10 +621,10 @@ public class WebViewActivity extends Activity
                                 {
                                     getWindow().setStatusBarColor(darkVibrantColor);
 
-                                    statusBarCoverArtColor = darkVibrantColor;
+                                    mStatusBarCoverArtColor = darkVibrantColor;
                                 }
 
-                                webView.loadUrl("javascript:setCoverArtFabColor('"+vibrantColorHex+"')");
+                                mWebView.loadUrl("javascript:setCoverArtFabColor('"+vibrantColorHex+"')");
                             }
                         });
                     }
@@ -606,17 +642,19 @@ public class WebViewActivity extends Activity
                 URL uri = new URL(strings[0]);
 
                 HttpURLConnection httpURLConnection = (HttpURLConnection) uri.openConnection();
+
                 httpURLConnection.setDoInput(true);
                 httpURLConnection.setConnectTimeout(2000);
                 httpURLConnection.setReadTimeout(10000);
                 httpURLConnection.connect();
 
                 InputStream inputStream = httpURLConnection.getInputStream();
+
                 bitmap = BitmapFactory.decodeStream(inputStream);
             }
             catch(Exception e)
             {
-                Log.e("GetStatusBarColorFromImageTask doInBackground", Log.getStackTraceString(e));
+                Log.e("WebViewActivity", Log.getStackTraceString(e));
             }
 
             return bitmap;
