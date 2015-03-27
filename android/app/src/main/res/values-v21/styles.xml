@@ -4,6 +4,7 @@
 
     <!-- Main -->
     <style name="main_make_donation_button_base">
+        <item name="android:background">@drawable/main_make_donation_button</item>
         <item name="android:fontFamily">sans-serif-medium</item>
     </style>
 

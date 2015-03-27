@@ -34,18 +34,21 @@ public class SettingsActivity extends PreferenceActivity
     private final Activity mActivity = this;
 
 	private final MyTools mTools = new MyTools(this);
-	
+
 	// Create activity
-	@Override
+    @Override
 	protected void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
-		
+
 		// Allow landscape?
 		if(!mTools.allowLandscape()) setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-		
+
 		// Layout
-		addPreferencesFromResource(R.xml.settings);
+
+        //noinspection deprecation
+        addPreferencesFromResource(R.xml.settings);
+
 		setContentView(R.layout.activity_settings);
 
         // Toolbar
@@ -53,6 +56,7 @@ public class SettingsActivity extends PreferenceActivity
 
         toolbar.setTitle(getString(R.string.settings_title));
 
+        //noinspection deprecation
         toolbar.setNavigationIcon(getResources().getDrawable(R.drawable.ic_arrow_back_white_24dp));
 
         toolbar.setNavigationOnClickListener(new View.OnClickListener()

@@ -1,5 +1,6 @@
 package net.olejon.spotcommander;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Notification;
 import android.app.PendingIntent;
@@ -54,10 +55,10 @@ public class WebViewActivity extends Activity
 	private NotificationCompat.Builder mNotificationBuilder;
 	private NotificationManagerCompat mNotificationManager;
 	private WebView mWebView;
-	
+
 	private String mProjectVersionName;
 	private String mCurrentNetwork;
-	
+
 	private boolean mHasLongPressedBack = false;
 	private boolean mPersistentNotification = false;
 	private boolean mPersistentNotificationIsSupported = false;
@@ -66,27 +67,31 @@ public class WebViewActivity extends Activity
     private int mStatusBarCoverArtColor = 0;
 
 	// Create activity
-	protected void onCreate(Bundle savedInstanceState)
+    @SuppressLint({"AddJavascriptInterface", "SetJavaScriptEnabled"})
+    protected void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
-		
+
 		// Allow landscape?
 		if(!mTools.allowLandscape()) setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-		
+
 		// Hide the status bar?
 		boolean hideStatusBar = mTools.getDefaultSharedPreferencesBoolean("HIDE_STATUS_BAR");
+
 		if(hideStatusBar) getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-		
+
 		// Power manager
 		PowerManager powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
+
+        //noinspection deprecation
         mWakeLock = powerManager.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, "wakeLock");
-		
+
 		// Settings
         mTools.setSharedPreferencesBoolean("CAN_CLOSE_COVER", false);
-		
+
 		// Current network
         mCurrentNetwork = mTools.getCurrentNetwork();
-		
+
 		// Computer
 		final long computerId = mTools.getSharedPreferencesLong("LAST_COMPUTER_ID");
 
@@ -95,7 +100,7 @@ public class WebViewActivity extends Activity
 		final String uri = computer[0];
 		final String username = computer[1];
 		final String password = computer[2];
-		
+
 		// Layout
 		setContentView(R.layout.activity_webview);
 
@@ -105,27 +110,27 @@ public class WebViewActivity extends Activity
             mStatusBarPrimaryColor = getWindow().getStatusBarColor();
             mStatusBarCoverArtColor = mStatusBarPrimaryColor;
         }
-		
+
 		// Notification
         mPersistentNotificationIsSupported = (Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN);
-		
+
 		if(mPersistentNotificationIsSupported)
 		{
 			Intent launchActivityIntent = new Intent(mContext, MainActivity.class);
 			launchActivityIntent.setAction("android.intent.action.MAIN");
 			launchActivityIntent.addCategory("android.intent.category.LAUNCHER");
 	        PendingIntent launchActivityPendingIntent = PendingIntent.getActivity(mContext, 0, launchActivityIntent, PendingIntent.FLAG_CANCEL_CURRENT);
-			
+
 			Intent hideIntent = new Intent(mContext, RemoteControlIntentService.class);
 			hideIntent.setAction("hide_notification");
 			hideIntent.putExtra(RemoteControlIntentService.REMOTE_CONTROL_INTENT_SERVICE_EXTRA, computerId);
 			PendingIntent hidePendingIntent = PendingIntent.getService(mContext, 0, hideIntent, PendingIntent.FLAG_CANCEL_CURRENT);
-			
+
 			Intent playPauseIntent = new Intent(mContext, RemoteControlIntentService.class);
 			playPauseIntent.setAction("play_pause");
 			playPauseIntent.putExtra(RemoteControlIntentService.REMOTE_CONTROL_INTENT_SERVICE_EXTRA, computerId);
 			PendingIntent playPausePendingIntent = PendingIntent.getService(mContext, 0, playPauseIntent, PendingIntent.FLAG_CANCEL_CURRENT);
-			
+
 			Intent nextIntent = new Intent(mContext, RemoteControlIntentService.class);
 			nextIntent.setAction("next");
 			nextIntent.putExtra(RemoteControlIntentService.REMOTE_CONTROL_INTENT_SERVICE_EXTRA, computerId);
@@ -138,9 +143,6 @@ public class WebViewActivity extends Activity
 
             mNotificationBuilder.setWhen(0)
                     .setOngoing(true)
-                    .setPriority(Notification.PRIORITY_MAX)
-                    .setVisibility(Notification.VISIBILITY_PUBLIC)
-                    .setCategory(Notification.CATEGORY_TRANSPORT)
                     .setLargeIcon(largeIcon)
                     .setSmallIcon(R.drawable.ic_play_arrow_white_24dp)
                     .setContentTitle(getString(R.string.project_name))
@@ -149,6 +151,14 @@ public class WebViewActivity extends Activity
                     .addAction(R.drawable.ic_close_white_24dp, getString(R.string.notification_action_hide), hidePendingIntent)
                     .addAction(R.drawable.ic_play_arrow_white_24dp, getString(R.string.notification_action_play_pause), playPausePendingIntent)
                     .addAction(R.drawable.ic_skip_next_white_24dp, getString(R.string.notification_action_next), nextPendingIntent);
+
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) mNotificationBuilder.setPriority(Notification.PRIORITY_MAX);
+
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+            {
+                mNotificationBuilder.setVisibility(Notification.VISIBILITY_PUBLIC);
+                mNotificationBuilder.setCategory(Notification.CATEGORY_TRANSPORT);
+            }
 		}
 
 		// Web view
@@ -171,7 +181,7 @@ public class WebViewActivity extends Activity
 
 				return false;
 			}
-			
+
 			@Override
 			public void onReceivedHttpAuthRequest(WebView view, @NonNull HttpAuthHandler handler, String host, String realm)
 			{	
@@ -188,13 +198,13 @@ public class WebViewActivity extends Activity
                     NavUtils.navigateUpFromSameTask(mActivity);
 				}
 			}
-			
+
 			@Override
 			public void onReceivedSslError(WebView view, @NonNull SslErrorHandler handler, SslError error)
 			{
 				handler.proceed();
 			}
-			
+
 			@Override
 			public void onReceivedError(WebView view, int errorCode, String description, String failingUrl)
 			{
@@ -240,7 +250,7 @@ public class WebViewActivity extends Activity
 		// JavaScript interface
         mWebView.addJavascriptInterface(new JavaScriptInterface(), "Android");
 	}
-	
+
 	// Pause activity
 	@Override
 	public void onPause()
@@ -263,13 +273,17 @@ public class WebViewActivity extends Activity
 			}
 		}
 
-        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) CookieSyncManager.getInstance().sync();
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP)
+        {
+            //noinspection deprecation
+            CookieSyncManager.getInstance().sync();
+        }
 
         mWebView.pauseTimers();
 
         ACTIVITY_IS_PAUSED = true;
 	}
-	
+
 	// Resume activity
 	@Override
 	public void onResume()
@@ -344,7 +358,7 @@ public class WebViewActivity extends Activity
             }
         }
 	}
-	
+
 	@Override
 	public boolean onKeyLongPress(int keyCode, KeyEvent event)
 	{
@@ -364,7 +378,7 @@ public class WebViewActivity extends Activity
             }
         }
 	}
-	
+
 	// Key up
 	@Override
 	public boolean onKeyUp(int keyCode, @NonNull KeyEvent event)
@@ -414,7 +428,7 @@ public class WebViewActivity extends Activity
             }
         }
 	}
-	
+
 	// JavaScript interface
 	private class JavaScriptInterface
 	{
@@ -452,7 +466,7 @@ public class WebViewActivity extends Activity
 	    	try
 	    	{
 				getPackageManager().getApplicationInfo(app, 0);
-				
+
 		    	Intent intent = new Intent(Intent.ACTION_SEARCH);
 		    	intent.setPackage(app);
 		    	intent.putExtra("query", string);
@@ -568,7 +582,7 @@ public class WebViewActivity extends Activity
 	    {
 	    	String project_version = mProjectVersionName;
 	    	String project_minimum_version = getString(R.string.project_minimum_version);
-	    	
+
 	    	return new JSONArray(Arrays.asList(project_version, project_minimum_version)).toString();
 	    }
 

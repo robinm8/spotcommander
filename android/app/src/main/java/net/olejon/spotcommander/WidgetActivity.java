@@ -58,15 +58,14 @@ public class WidgetActivity extends ActionBarActivity
 		if(!mTools.allowLandscape()) setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
 		// Database
-		mDatabase = new MySQLiteHelper(mContext).getWritableDatabase();
+		mDatabase = new MySQLiteHelper(mContext).getReadableDatabase();
 
 		// Intent
 		setResult(RESULT_CANCELED);
 
-		Intent intent = getIntent();
-		Bundle bundle = intent.getExtras();
+		final Intent intent = getIntent();
 
-		if(bundle != null) mAppWidgetId = bundle.getInt(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID);
+		if(intent.getExtras() != null) mAppWidgetId = intent.getExtras().getInt(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID);
 
         if(mAppWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID) finish();
 
@@ -80,8 +79,8 @@ public class WidgetActivity extends ActionBarActivity
 
 		// Listview
         mListView = (ListView) findViewById(R.id.widget_list);
-		
-		View listViewHeader = getLayoutInflater().inflate(R.layout.main_subheader, mListView, false);
+
+		View listViewHeader = getLayoutInflater().inflate(R.layout.activity_main_subheader, mListView, false);
         mListView.addHeaderView(listViewHeader, null, false);
 
         View listViewEmpty = findViewById(R.id.widget_empty);
@@ -124,6 +123,6 @@ public class WidgetActivity extends ActionBarActivity
 		String[] fromColumns = {MySQLiteHelper.COLUMN_NAME};
 		int[] toViews = {R.id.main_list_item};
 
-        mListView.setAdapter(new SimpleCursorAdapter(mContext, R.layout.main_list_item, mCursor, fromColumns, toViews, 0));
+        mListView.setAdapter(new SimpleCursorAdapter(mContext, R.layout.activity_main_list_item, mCursor, fromColumns, toViews, 0));
 	}
 }

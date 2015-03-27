@@ -22,12 +22,11 @@ along with SpotCommander.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Base64;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -35,25 +34,27 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.params.BasicHttpParams;
-import org.apache.http.params.HttpConnectionParams;
-import org.apache.http.params.HttpParams;
-import org.apache.http.protocol.HTTP;
-import org.apache.http.util.EntityUtils;
+import com.android.volley.DefaultRetryPolicy;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
+
 import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Iterator;
 
 public class PlaylistsActivity extends Activity
 {
-    private final MyTools mTools = new MyTools(this);
+    private final Context mContext = this;
+
+    private final MyTools mTools = new MyTools(mContext);
 
     private ProgressBar mProgressBar;
     private ListView mListView;
@@ -70,7 +71,7 @@ public class PlaylistsActivity extends Activity
         if(!mTools.allowLandscape()) setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
         // Intent
-        Intent intent = getIntent();
+        final Intent intent = getIntent();
 
         // Computer
         final long computerId = mTools.getSharedPreferencesLong("WIDGET_"+intent.getStringExtra(WidgetLarge.WIDGET_LARGE_INTENT_EXTRA)+"_COMPUTER_ID");
@@ -87,41 +88,19 @@ public class PlaylistsActivity extends Activity
         // Listview
         mListView = (ListView) findViewById(R.id.playlists_list);
 
-        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id)
-            {
-                mTools.remoteControl(computerId, "shuffle_play_uri", mPlaylistUris.get(position));
-            }
-        });
-
         // Get playlists
-        GetPlaylistsTask getPlaylistsTask = new GetPlaylistsTask();
-        getPlaylistsTask.execute(computer[0], computer[1], computer[2]);
-    }
+        RequestQueue requestQueue = Volley.newRequestQueue(mContext);
 
-    private class GetPlaylistsTask extends AsyncTask<String, Void, String>
-    {
-        @Override
-        protected void onPostExecute(String response)
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, computer[0]+"/playlists.php?get_playlists_including_starred_as_json", new Response.Listener<JSONObject>()
         {
-            if(response.equals(""))
-            {
-                mProgressBar.setVisibility(View.GONE);
-
-                TextView textView = (TextView) findViewById(R.id.playlists_error);
-                textView.setVisibility(View.VISIBLE);
-            }
-            else
+            @Override
+            public void onResponse(JSONObject response)
             {
                 try
                 {
-                    JSONObject playlistsJsonObject = new JSONObject(response);
-
                     ArrayList<String> playlistNamesArrayList = new ArrayList<>();
 
-                    Iterator<?> iterator = playlistsJsonObject.keys();
+                    Iterator<?> iterator = response.keys();
 
                     while(iterator.hasNext())
                     {
@@ -143,15 +122,24 @@ public class PlaylistsActivity extends Activity
 
                     for(String playlistName : playlistNamesArrayList)
                     {
-                        mPlaylistUris.add(playlistsJsonObject.getString(playlistName));
+                        mPlaylistUris.add(response.getString(playlistName));
                     }
 
-                    ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(getApplicationContext(), R.layout.playlists_list_item, playlistNamesArrayList);
+                    ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(getApplicationContext(), R.layout.activity_playlists_list_item, playlistNamesArrayList);
 
                     mProgressBar.setVisibility(View.GONE);
 
                     mListView.setAdapter(arrayAdapter);
                     mListView.setVisibility(View.VISIBLE);
+
+                    mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+                        @Override
+                        public void onItemClick(AdapterView<?> parent, View view, int position, long id)
+                        {
+                            mTools.remoteControl(computerId, "shuffle_play_uri", mPlaylistUris.get(position));
+                        }
+                    });
                 }
                 catch(Exception e)
                 {
@@ -159,45 +147,33 @@ public class PlaylistsActivity extends Activity
 
                     TextView textView = (TextView) findViewById(R.id.playlists_error);
                     textView.setVisibility(View.VISIBLE);
-
-                    Log.e("PlaylistsActivity", Log.getStackTraceString(e));
                 }
             }
-        }
-
-        @Override
-        protected String doInBackground(String... strings)
+        }, new Response.ErrorListener()
         {
-            String uri = strings[0];
-            String username = strings[1];
-            String password = strings[2];
-
-            HttpParams httpParameters = new BasicHttpParams();
-
-            HttpConnectionParams.setConnectionTimeout(httpParameters, 2000);
-            HttpConnectionParams.setSoTimeout(httpParameters, 20000);
-
-            HttpClient httpClient = new DefaultHttpClient(httpParameters);
-
-            HttpGet httpGet = new HttpGet(uri+"/playlists.php?get_playlists_including_starred_as_json");
-            httpGet.setHeader("Authorization", "Basic "+ Base64.encodeToString((username+":"+password).getBytes(), Base64.NO_WRAP));
-
-            String response;
-
-            try
+            @Override
+            public void onErrorResponse(VolleyError error)
             {
-                HttpResponse httpResponse = httpClient.execute(httpGet);
+                mProgressBar.setVisibility(View.GONE);
 
-                response = EntityUtils.toString(httpResponse.getEntity(), HTTP.UTF_8);
+                TextView textView = (TextView) findViewById(R.id.playlists_error);
+                textView.setVisibility(View.VISIBLE);
             }
-            catch(Exception e)
+        })
+        {
+            @Override
+            public HashMap<String, String> getHeaders()
             {
-                response = "";
+                HashMap<String, String> hashMap = new HashMap<>();
 
-                Log.e("PlaylistsActivity", Log.getStackTraceString(e));
+                if(!computer[1].equals("") && !computer[2].equals("")) hashMap.put("Authorization", "Basic "+Base64.encodeToString((computer[1]+":"+computer[2]).getBytes(), Base64.NO_WRAP));
+
+                return hashMap;
             }
+        };
 
-            return response;
-        }
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(2500, 0, 0));
+
+        requestQueue.add(jsonObjectRequest);
     }
 }

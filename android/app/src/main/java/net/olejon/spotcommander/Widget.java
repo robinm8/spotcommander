@@ -71,13 +71,13 @@ public class Widget extends AppWidgetProvider
             appWidgetManager.updateAppWidget(appWidgetId, views);
         }
     }
-    
+
 	// Receive
 	@Override
 	public void onReceive(@NonNull Context context, @NonNull Intent intent)
 	{
 		super.onReceive(context, intent);
-		
+
 		MyTools mTools = new MyTools(context);
 
         if(!intent.getAction().contains("android"))

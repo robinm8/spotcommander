@@ -65,9 +65,9 @@ public class DonateActivity extends ActionBarActivity
         setContentView(R.layout.activity_donate);
 
         // Toolbar
-        Toolbar mToolbar = (Toolbar) findViewById(R.id.donate_toolbar);
+        final Toolbar toolbar = (Toolbar) findViewById(R.id.donate_toolbar);
 
-        setSupportActionBar(mToolbar);
+        setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         // In-app billing
@@ -83,7 +83,6 @@ public class DonateActivity extends ActionBarActivity
         super.onDestroy();
 
         if(mService != null) unbindService(mServiceConnection);
-
         if(mGetProductsTask != null && mGetProductsTask.getStatus() == AsyncTask.Status.RUNNING) mGetProductsTask.cancel(true);
     }
 
@@ -112,7 +111,7 @@ public class DonateActivity extends ActionBarActivity
                 {
                     mTools.showToast(getString(R.string.donate_something_went_wrong), 1);
 
-                    Log.e("onActivityResult", Log.getStackTraceString(e));
+                    Log.e("DonateActivity", Log.getStackTraceString(e));
                 }
             }
         }
@@ -162,7 +161,7 @@ public class DonateActivity extends ActionBarActivity
         {
             mTools.showToast(getString(R.string.donate_something_went_wrong), 1);
 
-            Log.e("makeDonation", Log.getStackTraceString(e));
+            Log.e("DonateActivity", Log.getStackTraceString(e));
         }
     }
 
@@ -176,7 +175,7 @@ public class DonateActivity extends ActionBarActivity
         {
             mTools.showToast(getString(R.string.donate_something_went_wrong), 1);
 
-            Log.e("consumeDonation", Log.getStackTraceString(e));
+            Log.e("DonateActivity", Log.getStackTraceString(e));
         }
     }
 
@@ -201,7 +200,7 @@ public class DonateActivity extends ActionBarActivity
                     consumeDonation(purchaseToken);
                 }
 
-                mTools.showToast(getString(R.string.donate_reset_successful), 0);
+                mTools.showToast(getString(R.string.donate_reset_success), 0);
             }
             else
             {
@@ -212,7 +211,7 @@ public class DonateActivity extends ActionBarActivity
         {
             mTools.showToast(getString(R.string.donate_something_went_wrong), 1);
 
-            Log.e("resetDonations", Log.getStackTraceString(e));
+            Log.e("DonateActivity", Log.getStackTraceString(e));
         }
     }
 
@@ -302,7 +301,7 @@ public class DonateActivity extends ActionBarActivity
                 {
                     mTools.showToast(getString(R.string.donate_something_went_wrong), 1);
 
-                    Log.e("GetProductsTask onPostExecute", Log.getStackTraceString(e));
+                    Log.e("DonateActivity", Log.getStackTraceString(e));
                 }
             }
         }
@@ -327,7 +326,7 @@ public class DonateActivity extends ActionBarActivity
             }
             catch(Exception e)
             {
-                Log.e("GetProductsTask doInBackground", Log.getStackTraceString(e));
+                Log.e("DonateActivity", Log.getStackTraceString(e));
 
                 skuDetails = null;
             }

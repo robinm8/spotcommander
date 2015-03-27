@@ -38,6 +38,8 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
@@ -69,6 +71,7 @@ public class MainActivity extends ActionBarActivity
 
     private ActionMode mActionMode;
 
+    private ImageButton mFloatingActionButton;
 	private ListView mListView;
 
 	private String mCurrentNetwork;
@@ -78,10 +81,10 @@ public class MainActivity extends ActionBarActivity
 	protected void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
-		
+
 		// Allow landscape?
 		if(!mTools.allowLandscape()) setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-		
+
 		// Settings
 		PreferenceManager.setDefaultValues(mContext, R.xml.settings, false);
 
@@ -93,9 +96,9 @@ public class MainActivity extends ActionBarActivity
 
 		boolean openAutomatically = mTools.getDefaultSharedPreferencesBoolean("OPEN_AUTOMATICALLY");
 		boolean networkHasChanged = (!mCurrentNetwork.equals(mTools.getSharedPreferencesString("LAST_NETWORK_ID")));
-		
+
 		long lastComputerId = mTools.getSharedPreferencesLong("LAST_COMPUTER_ID");
-		
+
 		if(openAutomatically && !networkHasChanged && savedInstanceState == null) openApp(lastComputerId, false);
 
 		// Layout
@@ -110,8 +113,8 @@ public class MainActivity extends ActionBarActivity
 
 		// Listview
         mListView = (ListView) findViewById(R.id.main_list);
-		
-		View listViewHeader = getLayoutInflater().inflate(R.layout.main_subheader, mListView, false);
+
+		View listViewHeader = getLayoutInflater().inflate(R.layout.activity_main_subheader, mListView, false);
         mListView.addHeaderView(listViewHeader, null, false);
 
         View listViewEmpty = findViewById(R.id.main_empty);
@@ -148,9 +151,10 @@ public class MainActivity extends ActionBarActivity
             }
         });
 
-        ImageButton imageButton = (ImageButton) findViewById(R.id.main_fab);
+        // Floating action button
+        mFloatingActionButton = (ImageButton) findViewById(R.id.main_fab);
 
-        imageButton.setOnClickListener(new View.OnClickListener()
+        mFloatingActionButton.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View view)
@@ -160,6 +164,7 @@ public class MainActivity extends ActionBarActivity
             }
         });
 
+        // Make donation button
         Button button = (Button) findViewById(R.id.main_make_donation_button);
 
         button.setOnClickListener(new View.OnClickListener()
@@ -186,7 +191,7 @@ public class MainActivity extends ActionBarActivity
                     {
                         mTools.setSharedPreferencesBoolean("SKIP_INFORMATION_DIALOG", true);
                     }
-                }).contentColor(getResources().getColor(R.color.black)).show();
+                }).contentColorRes(R.color.black).show();
             }
         }
 
@@ -206,7 +211,7 @@ public class MainActivity extends ActionBarActivity
             Log.e("MainActivity", Log.getStackTraceString(e));
         }
 
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, getString(R.string.project_website)+"api/1/android/message/?version_name="+projectVersionName+"&device="+device, null, new Response.Listener<JSONObject>()
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, getString(R.string.project_website)+"api/1/android/message/?version_name="+projectVersionName+"&device="+device, new Response.Listener<JSONObject>()
         {
             @Override
             public void onResponse(JSONObject response)
@@ -219,9 +224,14 @@ public class MainActivity extends ActionBarActivity
 
                     final long lastId = mTools.getSharedPreferencesLong("MESSAGE_LAST_ID");
 
-                    if(lastId != 0 && id != lastId) new MaterialDialog.Builder(mContext).title(title).content(message).positiveText(getString(R.string.main_message_dialog_positive_button)).contentColor(getResources().getColor(R.color.black)).show();
-
-                    mTools.setSharedPreferencesLong("MESSAGE_LAST_ID", id);
+                    if(lastId != 0 && id != lastId) new MaterialDialog.Builder(mContext).title(title).content(message).positiveText(getString(R.string.main_message_dialog_positive_button)).callback(new MaterialDialog.ButtonCallback()
+                    {
+                        @Override
+                        public void onPositive(MaterialDialog dialog)
+                        {
+                            mTools.setSharedPreferencesLong("MESSAGE_LAST_ID", id);
+                        }
+                    }).contentColorRes(R.color.black).show();
                 }
                 catch(Exception e)
                 {
@@ -241,22 +251,22 @@ public class MainActivity extends ActionBarActivity
 
         requestQueue.add(jsonObjectRequest);
 	}
-	
+
 	// Resume activity
 	@Override
 	protected void onResume()
 	{
 		super.onResume();
-		
+
 		listComputers();
 	}
-	
+
 	// Destroy activity
 	@Override
 	protected void onDestroy()
 	{
 		super.onDestroy();
-		
+
 		if(mCursor != null && !mCursor.isClosed()) mCursor.close();
 		if(mDatabase != null && mDatabase.isOpen()) mDatabase.close();
     }
@@ -268,7 +278,7 @@ public class MainActivity extends ActionBarActivity
         getMenuInflater().inflate(R.menu.menu_main, menu);
 		return true;
 	}
-	
+
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item)
 	{
@@ -304,7 +314,7 @@ public class MainActivity extends ActionBarActivity
             }
         }
 	}
-	
+
 	// Action mode
 	private void startMyActionMode(long id)
 	{	
@@ -318,34 +328,34 @@ public class MainActivity extends ActionBarActivity
             mActionMode = startSupportActionMode(new MyActionMode(id, name));
 		}
 	}
-	
+
 	private final class MyActionMode implements ActionMode.Callback
 	{
 		final long itemId;
 
 		final String itemName;
-		
+
 		public MyActionMode(long id, String name)
 		{
 			itemId = id;
 
 			itemName = name;
 		}
-		
+
 		@Override
 		public boolean onCreateActionMode(ActionMode mode, Menu menu)
 		{
 			getMenuInflater().inflate(R.menu.menu_main_actionmode, menu);
 			return true;
 		}
-	
+
 		@Override
 		public boolean onPrepareActionMode(ActionMode mode, Menu menu)
 		{
 			mode.setTitle(itemName);
 			return true;
 		}
-	
+
 		@Override
 		public boolean onActionItemClicked(ActionMode mode, MenuItem item)
 		{
@@ -357,7 +367,7 @@ public class MainActivity extends ActionBarActivity
 
 			return true;
 		}
-	
+
 		@Override
 		public void onDestroyActionMode(ActionMode mode)
 		{
@@ -385,7 +395,12 @@ public class MainActivity extends ActionBarActivity
         String[] fromColumns = {MySQLiteHelper.COLUMN_NAME};
         int[] toViews = {R.id.main_list_item};
 
-        mListView.setAdapter(new SimpleCursorAdapter(mContext, R.layout.main_list_item, mCursor, fromColumns, toViews, 0));
+        mListView.setAdapter(new SimpleCursorAdapter(mContext, R.layout.activity_main_list_item, mCursor, fromColumns, toViews, 0));
+
+        Animation animation = AnimationUtils.loadAnimation(mContext, R.anim.fab);
+
+        mFloatingActionButton.startAnimation(animation);
+        mFloatingActionButton.setVisibility(View.VISIBLE);
     }
 
     private void removeComputer(long id)

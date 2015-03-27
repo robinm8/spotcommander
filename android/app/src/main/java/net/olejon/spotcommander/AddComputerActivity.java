@@ -45,16 +45,15 @@ import android.widget.TextView;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 
-import org.apache.http.Header;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.params.BasicHttpParams;
-import org.apache.http.params.HttpConnectionParams;
-import org.apache.http.params.HttpParams;
-import org.apache.http.protocol.HTTP;
-import org.apache.http.util.EntityUtils;
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class AddComputerActivity extends ActionBarActivity
 {
@@ -65,7 +64,6 @@ public class AddComputerActivity extends ActionBarActivity
 	private PowerManager.WakeLock mWakeLock;
 
 	private MenuItem mMenuItem;
-
 	private ProgressBar mProgressBar;
 
     private NetworkScanTask mNetworkScanTask;
@@ -81,13 +79,15 @@ public class AddComputerActivity extends ActionBarActivity
 
 		// Power manager
 		PowerManager powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
+
+        //noinspection deprecation
         mWakeLock = powerManager.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, "wakeLock");
 
 		// Layout
 		setContentView(R.layout.activity_add_computer);
 
         // Toolbar
-        Toolbar toolbar = (Toolbar) findViewById(R.id.add_computer_toolbar);
+        final Toolbar toolbar = (Toolbar) findViewById(R.id.add_computer_toolbar);
 
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -107,9 +107,9 @@ public class AddComputerActivity extends ActionBarActivity
             {
                 scanNetwork();
             }
-        }).contentColor(getResources().getColor(R.color.black)).negativeColor(getResources().getColor(R.color.black)).show();
+        }).contentColorRes(R.color.black).negativeColorRes(R.color.black).show();
 	}
-	
+
 	// Pause activity
 	@Override
 	protected void onPause()
@@ -120,7 +120,7 @@ public class AddComputerActivity extends ActionBarActivity
 
 		if(mWakeLock.isHeld()) mWakeLock.release();
 	}
-	
+
 	// Menu
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu)
@@ -131,7 +131,7 @@ public class AddComputerActivity extends ActionBarActivity
 
 		return true;
 	}
-	
+
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item)
 	{
@@ -190,21 +190,24 @@ public class AddComputerActivity extends ActionBarActivity
     	else
     	{
             ContentValues contentValues = new ContentValues();
-    		
+
     		contentValues.put(MySQLiteHelper.COLUMN_NAME, name);
     		contentValues.put(MySQLiteHelper.COLUMN_URI, uri);
     		contentValues.put(MySQLiteHelper.COLUMN_USERNAME, username);
     		contentValues.put(MySQLiteHelper.COLUMN_PASSWORD, password);
-    		
-    		SQLiteDatabase database = new MySQLiteHelper(this).getWritableDatabase();
-    		
+            contentValues.put(MySQLiteHelper.COLUMN_NETWORK_NAME, "");
+            contentValues.put(MySQLiteHelper.COLUMN_NETWORK_DEFAULT, 0);
+
+    		SQLiteDatabase database = new MySQLiteHelper(mContext).getWritableDatabase();
+
     		database.insert(MySQLiteHelper.TABLE_COMPUTERS, null, contentValues);
+
     		database.close();
 
             finish();
     	}
 	}
-	
+
 	// Scan network
 	private void scanNetwork()
 	{
@@ -215,7 +218,7 @@ public class AddComputerActivity extends ActionBarActivity
 		else
 		{
 			WifiManager wifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
-	
+
 			if(wifiManager.isWifiEnabled())
 			{	
 				WifiInfo wifiInfo = wifiManager.getConnectionInfo();
@@ -223,7 +226,7 @@ public class AddComputerActivity extends ActionBarActivity
 				int wifiIpAddress = wifiInfo.getIpAddress();
 
 				String wifiSubnet = String.format("%d.%d.%d", (wifiIpAddress & 0xff), (wifiIpAddress >> 8 & 0xff), (wifiIpAddress >> 16 & 0xff));
-				
+
 				if(wifiSubnet.equals("0.0.0"))
 				{
 					mTools.showToast(getString(R.string.add_computer_wifi_not_connected), 0);
@@ -240,48 +243,48 @@ public class AddComputerActivity extends ActionBarActivity
 			}
 		}
 	}
-	
+
     public class NetworkScanTask extends AsyncTask<String, String, String[]>
 	{
     	final EditText nameEditText = (EditText) findViewById(R.id.add_computer_name);
     	final EditText uriEditText = (EditText) findViewById(R.id.add_computer_uri);
-		
+
         @Override
         protected void onPreExecute()
         {
         	if(!mWakeLock.isHeld()) mWakeLock.acquire();
 
-            mMenuItem.setTitle(getString(R.string.add_computer_stop));
+            mMenuItem.setTitle(getString(R.string.add_computer_menu_stop));
 
             mProgressBar.setVisibility(View.VISIBLE);
-        	
+
         	mTools.showToast(getString(R.string.add_computer_scanning_network), 0);
-        	
+
 			nameEditText.setEnabled(false);
 			nameEditText.setText(getString(R.string.add_computer_scanning)+getString(R.string.ellipsis), TextView.BufferType.EDITABLE);
-			
+
 			uriEditText.setEnabled(false);
         }
-        
+
         @Override
         protected void onProgressUpdate(String... strings)
         {
         	uriEditText.setText(getString(R.string.add_computer_trying)+" "+strings[0]+getString(R.string.ellipsis), TextView.BufferType.EDITABLE);
         }
-        
+
         @Override
         protected void onPostExecute(String[] string)
         {
-            mMenuItem.setTitle(getString(R.string.add_computer_scan));
+            mMenuItem.setTitle(getString(R.string.add_computer_menu_scan));
 
             mProgressBar.setVisibility(View.GONE);
-        	
+
         	String computerIpAddress = string[0];
         	String computerHostname = (string[1].equals("")) ? "Unknown" : string[1];
-        	
+
         	nameEditText.setEnabled(true);
         	uriEditText.setEnabled(true);
-        	
+
         	if(computerIpAddress.equals(""))
         	{
         		mTools.showToast(getString(R.string.add_computer_installation_not_found), 1);
@@ -290,108 +293,124 @@ public class AddComputerActivity extends ActionBarActivity
         		uriEditText.setText(getString(R.string.add_computer_uri_text), TextView.BufferType.EDITABLE);
         	}
         	else
-        	{	
+        	{
         		String foundOn = (computerHostname.equals("Computer")) ? getString(R.string.add_computer_computer_with_authentication_enabled) : computerHostname;
-  
+
         		mTools.showToast(getString(R.string.add_computer_installation_found)+" "+foundOn, 1);
 
         		nameEditText.setText(computerHostname, TextView.BufferType.EDITABLE);
         		uriEditText.setText("http://"+computerIpAddress+"/spotcommander/", TextView.BufferType.EDITABLE);
         	}
         }
-        
+
         @Override
         protected void onCancelled()
         {
         	if(mWakeLock.isHeld()) mWakeLock.release();
 
-            mMenuItem.setTitle(getString(R.string.add_computer_scan));
+            mMenuItem.setTitle(getString(R.string.add_computer_menu_scan));
 
             mProgressBar.setVisibility(View.GONE);
-        	
+
 			nameEditText.setEnabled(true);
 			nameEditText.setText(getString(R.string.add_computer_name_text), TextView.BufferType.EDITABLE);
-			
+
 			uriEditText.setEnabled(true);
 			uriEditText.setText(getString(R.string.add_computer_uri_text), TextView.BufferType.EDITABLE);
         }
-    	
+
         @Override
         protected String[] doInBackground(String... strings)
         {
         	String wifiSubnet = strings[0];
-        	
-            HttpParams httpParameters = new BasicHttpParams();
-
-            HttpConnectionParams.setConnectionTimeout(httpParameters, 250);
-            HttpConnectionParams.setSoTimeout(httpParameters, 2500);
-
-            HttpClient httpClient = new DefaultHttpClient(httpParameters);
 
             String[] networkScanResult = {"", ""};
 
             outerLoop: for(int i = 1; i <= 254; i++)
             {
-            	if(isCancelled()) break;
-            	
-            	String computerIpAddress = wifiSubnet+"."+i;
-            	
-            	String[] progress = {computerIpAddress, String.valueOf(i)};
+                if(isCancelled()) break;
 
-            	publishProgress(progress);
+                String computerIpAddress = wifiSubnet+"."+i;
 
-                HttpGet httpGet = new HttpGet("http://"+computerIpAddress+"/spotcommander/main.php?hostname");
+                publishProgress(computerIpAddress);
+
+                HttpURLConnection httpURLConnection = null;
 
                 try
                 {
-    				HttpResponse httpResponse = httpClient.execute(httpGet);
-    				Header[] headers = httpResponse.getAllHeaders();
-    				int httpStatusCode = httpResponse.getStatusLine().getStatusCode();
-    				
-    				String headerString;
-    				String computerHostname = "Computer";
-    				
-    				if(httpStatusCode == 200)
-    				{	
-    					computerHostname = EntityUtils.toString(httpResponse.getEntity(), HTTP.UTF_8);
-    					
-        				for(Header header : headers)
-        				{
-        					headerString = header.toString();
+                    URL url = new URL("http://"+computerIpAddress+"/spotcommander/main.php?hostname");
 
-        				    if(headerString.contains("TP-LINK") || headerString.contains("ZyXEL")) continue outerLoop;
-        				}
-        				
-        				if(computerHostname.contains("html")) continue;
-    				}
-    				else if(httpStatusCode == 401)
-    				{
-    					boolean isApp = false;
-    					
-        				for(Header header : headers)
-        				{
-        					headerString = header.toString();
-        				    if(headerString.contains(getString(R.string.project_name))) isApp = true;
-        				}
-        				
-        				if(!isApp) continue;
-    				}
-    				else
-    				{
-    					continue;
-    				}
-    				
-					networkScanResult[0] = computerIpAddress;
-					networkScanResult[1] = computerHostname;
-					
-					break;
+                    httpURLConnection = (HttpURLConnection) url.openConnection();
+
+                    httpURLConnection.setConnectTimeout(375);
+                    httpURLConnection.setReadTimeout(2500);
+
+                    InputStream inputStream = new BufferedInputStream(httpURLConnection.getInputStream());
+
+                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+
+                    StringBuilder stringBuilder = new StringBuilder();
+
+                    String line;
+
+                    while((line = bufferedReader.readLine()) != null)
+                    {
+                        stringBuilder.append(line);
+                    }
+
+                    String computerHostname = stringBuilder.toString();
+
+                    Map<String, List<String>> headerFields = httpURLConnection.getHeaderFields();
+                    Set<String> headerFieldsKeys = headerFields.keySet();
+
+                    for(String headerKey : headerFieldsKeys)
+                    {
+                        String headerString = headerFields.get(headerKey).toString();
+
+                        if(headerString.contains("TP-LINK") || headerString.contains("ZyXEL")) continue outerLoop;
+                    }
+
+                    if(computerHostname.contains("html")) continue;
+
+                    networkScanResult[0] = computerIpAddress;
+                    networkScanResult[1] = computerHostname;
+
+                    break;
                 }
-                catch(Exception e)
+                catch(Exception e1)
                 {
-                    Log.i("AddComputerActivity", getString(R.string.add_computer_installation_not_found)+": "+computerIpAddress);
+                    try
+                    {
+                        if(httpURLConnection != null)
+                        {
+                            int responseCode = httpURLConnection.getResponseCode();
+
+                            if(responseCode == 401)
+                            {
+                                String computerHostname = "Computer";
+
+                                String headerField = httpURLConnection.getHeaderField("WWW-Authenticate");
+
+                                if(!headerField.contains(getString(R.string.project_name))) continue;
+
+                                networkScanResult[0] = computerIpAddress;
+                                networkScanResult[1] = computerHostname;
+
+                                break;
+                            }
+                        }
+                    }
+                    catch(Exception e2)
+                    {
+                        Log.w("AddComputerActivity", getString(R.string.add_computer_installation_not_found)+": "+computerIpAddress);
+                    }
+                }
+                finally
+                {
+                    if(httpURLConnection != null) httpURLConnection.disconnect();
                 }
             }
-            
+
             return networkScanResult;
         }
     }

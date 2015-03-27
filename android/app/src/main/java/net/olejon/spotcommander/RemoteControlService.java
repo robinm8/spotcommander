@@ -71,9 +71,9 @@ public class RemoteControlService extends Service implements SensorEventListener
 		    {
                 mPauseOnIncomingCall = mTools.getSharedPreferencesBoolean("PAUSE_ON_INCOMING_CALL");
                 mPauseOnOutgoingCall = mTools.getSharedPreferencesBoolean("PAUSE_ON_OUTGOING_CALL");
-		    	
+
 		    	final long computerId = mTools.getSharedPreferencesLong("LAST_COMPUTER_ID");
-		    	
+
 		    	if(state == TelephonyManager.CALL_STATE_RINGING)
 		    	{	
 		    		if(mPauseOnIncomingCall && mCurrentNetwork.equals(mTools.getCurrentNetwork())) mTools.remoteControl(computerId, "pause", "");
@@ -88,31 +88,31 @@ public class RemoteControlService extends Service implements SensorEventListener
 		    	{
                     mIsIncomingCall = false;
 		    	}
-		        
+
 		        super.onCallStateChanged(state, incomingNumber);
 		    }
 		};
 
         mTelephonyManager = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
-		
+
 		// Accelerometer
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-		
+
 		if(mSensor != null) mDeviceHasAccelerometer = true;
 	}
-	
+
 	// Start service
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId)
 	{
 		// Current network
         mCurrentNetwork = mTools.getCurrentNetwork();
-		
+
 		// Calls
         mPauseOnIncomingCall = mTools.getSharedPreferencesBoolean("PAUSE_ON_INCOMING_CALL");
         mPauseOnOutgoingCall = mTools.getSharedPreferencesBoolean("PAUSE_ON_OUTGOING_CALL");
-		
+
 		if(mPauseOnIncomingCall || mPauseOnOutgoingCall)
 		{
             mTelephonyManager.listen(mPhoneStateListener, PhoneStateListener.LISTEN_CALL_STATE);
@@ -121,17 +121,17 @@ public class RemoteControlService extends Service implements SensorEventListener
 		{
             mTelephonyManager.listen(mPhoneStateListener, PhoneStateListener.LISTEN_NONE);
 		}
-		
+
 		// Accelerometer
 		if(mDeviceHasAccelerometer)
 		{
             mFlipToPause = mTools.getSharedPreferencesBoolean("FLIP_TO_PAUSE");
             mShakeToSkip = mTools.getSharedPreferencesBoolean("SHAKE_TO_SKIP");
-			
+
 			if(mFlipToPause || mShakeToSkip)
 			{
                 mSensorManager.registerListener(this, mSensor, SensorManager.SENSOR_DELAY_NORMAL);
-				
+
 				if(mShakeToSkip)
 				{
 					String shakeToSkipSensitivity = mTools.getSharedPreferencesString("SHAKE_TO_SKIP_SENSITIVITY");
@@ -168,10 +168,10 @@ public class RemoteControlService extends Service implements SensorEventListener
                 mSensorManager.unregisterListener(this);
 			}
 		}
-		
+
 		return START_STICKY;
 	}
-	
+
 	// RPC
 	@Override
 	public IBinder onBind(Intent arg0)
@@ -222,7 +222,7 @@ public class RemoteControlService extends Service implements SensorEventListener
 							}
 						}			
 					};
-					
+
 					Handler isFlippedHandler = new Handler();
 
 					isFlippedHandler.removeCallbacks(isFlippedRunnable);
@@ -236,17 +236,17 @@ public class RemoteControlService extends Service implements SensorEventListener
                 mIsFlipped = false;
 			}
 		}
-		
+
 		// Shake to skip
 		if(mShakeToSkip)
 		{
             mShakeToSkipLast = mShakeToSkipCurrent;
             mShakeToSkipCurrent = (float) Math.sqrt((double) (x*x + y*y + z*z));
-		
+
 			float shakeToSkipDelta = mShakeToSkipCurrent - mShakeToSkipLast;
 
             mShakeToSkipChange = mShakeToSkipChange * 0.9f + shakeToSkipDelta;
-			
+
 			if(mShakeToSkipChange > mShakeToSkipSensitivityInt)
 			{
 				if(!mIsShaked && mCurrentNetwork.equals(mTools.getCurrentNetwork()))
@@ -254,12 +254,12 @@ public class RemoteControlService extends Service implements SensorEventListener
                     mIsShaked = true;
 
                     mTools.showToast("Shake detected, playing next track", 0);
-					
+
 					long computerId = mTools.getSharedPreferencesLong("LAST_COMPUTER_ID");
 
                     mTools.remoteControl(computerId, "next", "");
 				}
-				
+
 				Runnable isShakedRunnable= new Runnable()
 				{
 					public void run()
@@ -267,7 +267,7 @@ public class RemoteControlService extends Service implements SensorEventListener
                         mIsShaked = false;
 					}			
 				};
-				
+
 				Handler isShakedHandler = new Handler();
 
 				isShakedHandler.removeCallbacks(isShakedRunnable);

@@ -32,8 +32,6 @@ public class ShareActivity extends Activity
 
 	private final MyTools mTools = new MyTools(mContext);
 
-	private String mUri;
-
 	// Create activity
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
@@ -41,27 +39,28 @@ public class ShareActivity extends Activity
 		super.onCreate(savedInstanceState);
 
 		// Intent
-		Intent intent = getIntent();
-		String intentAction = intent.getAction();
+		final Intent intent = getIntent();
 
-		if(intentAction != null && intentAction.equals(Intent.ACTION_SEND))
+        String shareUri = null;
+
+		if(intent.getAction() != null && intent.getAction().equals(Intent.ACTION_SEND))
 		{
-            mUri = intent.getStringExtra(Intent.EXTRA_TEXT);
+            shareUri = intent.getStringExtra(Intent.EXTRA_TEXT);
 		}
-		else if(intentAction != null && intentAction.equals(Intent.ACTION_VIEW))
+		else if(intent.getAction() != null && intent.getAction().equals(Intent.ACTION_VIEW))
 		{
-            mUri = intent.getData().toString();
+            shareUri = intent.getData().toString();
 		}
 
 		// Share uri
-		if(mUri == null)
+		if(shareUri == null)
         {
             finish();
         }
         else
         {
-            mTools.setSharedPreferencesString("SHARE_URI", mUri);
-			
+            mTools.setSharedPreferencesString("SHARE_URI", shareUri);
+
 			if(WebViewActivity.ACTIVITY_IS_PAUSED)
 			{
 				Intent launchActivityIntent = new Intent(mContext, WebViewActivity.class);
@@ -73,7 +72,7 @@ public class ShareActivity extends Activity
 				Intent launchActivityIntent = new Intent(mContext, MainActivity.class);
 				launchActivityIntent.setAction("android.intent.action.MAIN");
 				launchActivityIntent.addCategory("android.intent.category.LAUNCHER");
-				launchActivityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NO_ANIMATION);
+				launchActivityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_SINGLE_TOP|Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_NO_ANIMATION);
 				startActivity(launchActivityIntent);
 			}
 		}
