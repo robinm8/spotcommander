@@ -9,7 +9,4 @@ SpotCommander is the most elegant, intuitive, feature-rich and universal remote 
 * [Download & install](http://www.olejon.net/code/spotcommander/?download)
 * [Wiki](http://www.olejon.net/code/spotcommander/?wiki)
 
-### News
-
-* Updated Fedora installation instructions to Fedora 21
-* The Android app is now open source
+[![Image](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](http://www.olejon.net/code/spotcommander/?donate)
