@@ -49,8 +49,7 @@ public class DonateActivity extends ActionBarActivity
 {
     private final MyTools mTools = new MyTools(this);
 
-    private IInAppBillingService mService;
-    private GetProductsTask mGetProductsTask;
+    private IInAppBillingService mIInAppBillingService;
 
     // Create activity
     @Override
@@ -74,16 +73,6 @@ public class DonateActivity extends ActionBarActivity
         Intent serviceIntent = new Intent("com.android.vending.billing.InAppBillingService.BIND");
         serviceIntent.setPackage("com.android.vending");
         bindService(serviceIntent, mServiceConnection, Context.BIND_AUTO_CREATE);
-    }
-
-    // Destroy activity
-    @Override
-    protected void onDestroy()
-    {
-        super.onDestroy();
-
-        if(mService != null) unbindService(mServiceConnection);
-        if(mGetProductsTask != null && mGetProductsTask.getStatus() == AsyncTask.Status.RUNNING) mGetProductsTask.cancel(true);
     }
 
     // Activity result
@@ -115,6 +104,15 @@ public class DonateActivity extends ActionBarActivity
                 }
             }
         }
+    }
+
+    // Destroy activity
+    @Override
+    protected void onDestroy()
+    {
+        super.onDestroy();
+
+        if(mServiceConnection != null) unbindService(mServiceConnection);
     }
 
     // Menu
@@ -152,7 +150,7 @@ public class DonateActivity extends ActionBarActivity
     {
         try
         {
-            Bundle buyIntentBundle = mService.getBuyIntent(3, getPackageName(), product, "inapp", "");
+            Bundle buyIntentBundle = mIInAppBillingService.getBuyIntent(3, getPackageName(), product, "inapp", "");
             PendingIntent pendingIntent = buyIntentBundle.getParcelable("BUY_INTENT");
 
             startIntentSenderForResult(pendingIntent.getIntentSender(), 1, new Intent(), 0, 0, 0);
@@ -169,7 +167,7 @@ public class DonateActivity extends ActionBarActivity
     {
         try
         {
-            mService.consumePurchase(3, getPackageName(), purchaseToken);
+            mIInAppBillingService.consumePurchase(3, getPackageName(), purchaseToken);
         }
         catch(Exception e)
         {
@@ -183,7 +181,7 @@ public class DonateActivity extends ActionBarActivity
     {
         try
         {
-            Bundle ownedItems = mService.getPurchases(3, getPackageName(), "inapp", null);
+            Bundle ownedItems = mIInAppBillingService.getPurchases(3, getPackageName(), "inapp", null);
 
             int response = ownedItems.getInt("RESPONSE_CODE");
 
@@ -322,7 +320,7 @@ public class DonateActivity extends ActionBarActivity
 
             try
             {
-                skuDetails = mService.getSkuDetails(3, getPackageName(), "inapp", querySkus);
+                skuDetails = mIInAppBillingService.getSkuDetails(3, getPackageName(), "inapp", querySkus);
             }
             catch(Exception e)
             {
@@ -341,16 +339,16 @@ public class DonateActivity extends ActionBarActivity
         @Override
         public void onServiceDisconnected(ComponentName name)
         {
-            mService = null;
+            mIInAppBillingService = null;
         }
 
         @Override
         public void onServiceConnected(ComponentName name, IBinder service)
         {
-            mService = IInAppBillingService.Stub.asInterface(service);
+            mIInAppBillingService = IInAppBillingService.Stub.asInterface(service);
 
-            mGetProductsTask = new GetProductsTask();
-            mGetProductsTask.execute();
+            GetProductsTask getProductsTask = new GetProductsTask();
+            getProductsTask.execute();
         }
     };
 }

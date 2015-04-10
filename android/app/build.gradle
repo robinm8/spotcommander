@@ -1,28 +1,33 @@
 apply plugin: 'com.android.application'
 
-android {
+android
+{
     compileSdkVersion 22
     buildToolsVersion "22.0.1"
 
-    defaultConfig {
+    defaultConfig
+    {
         applicationId "net.olejon.spotcommander"
         minSdkVersion 10
         targetSdkVersion 22
-        versionCode 48
-        versionName "4.8"
+        versionCode 49
+        versionName "4.9"
     }
 
-    buildTypes {
-        release {
+    buildTypes
+    {
+        release
+        {
             minifyEnabled false
         }
     }
 }
 
-dependencies {
+dependencies
+{
     compile 'com.android.support:appcompat-v7:22.0.0'
     compile 'com.android.support:palette-v7:22.0.0'
     compile 'com.mcxiaoke.volley:library:1.0.15'
-    compile 'com.afollestad:material-dialogs:0.6.6.1'
-    compile 'com.rengwuxian.materialedittext:library:1.8.3'
+    compile 'com.afollestad:material-dialogs:0.7.1.1'
+    compile 'com.rengwuxian.materialedittext:library:2.0.3'
 }

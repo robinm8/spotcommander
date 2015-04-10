@@ -152,11 +152,11 @@
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:textSize">24sp</item>
-        <item name="baseColor">@color/white</item>
-        <item name="primaryColor">@color/white</item>
-        <item name="errorColor">@color/red</item>
-        <item name="floatingLabel">highlight</item>
-        <item name="singleLineEllipsis">true</item>
+        <item name="met_baseColor">@color/white</item>
+        <item name="met_primaryColor">@color/white</item>
+        <item name="met_errorColor">@color/red</item>
+        <item name="met_floatingLabel">highlight</item>
+        <item name="met_singleLineEllipsis">true</item>
     </style>
 
     <style name="add_computer_inner_layout">
