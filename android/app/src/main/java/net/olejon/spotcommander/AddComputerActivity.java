@@ -342,7 +342,7 @@ public class AddComputerActivity extends ActionBarActivity
 
                     httpURLConnection = (HttpURLConnection) url.openConnection();
 
-                    httpURLConnection.setConnectTimeout(375);
+                    httpURLConnection.setConnectTimeout(500);
                     httpURLConnection.setReadTimeout(2500);
 
                     InputStream inputStream = new BufferedInputStream(httpURLConnection.getInputStream());

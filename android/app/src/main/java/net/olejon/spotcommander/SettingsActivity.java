@@ -22,6 +22,7 @@ along with SpotCommander.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
@@ -33,7 +34,9 @@ public class SettingsActivity extends PreferenceActivity
 {
     private final Activity mActivity = this;
 
-	private final MyTools mTools = new MyTools(this);
+    private final Context mContext = this;
+
+	private final MyTools mTools = new MyTools(mContext);
 
 	// Create activity
     @Override
@@ -56,8 +59,7 @@ public class SettingsActivity extends PreferenceActivity
 
         toolbar.setTitle(getString(R.string.settings_title));
 
-        //noinspection deprecation
-        toolbar.setNavigationIcon(getResources().getDrawable(R.drawable.ic_arrow_back_white_24dp));
+        toolbar.setNavigationIcon(R.drawable.ic_arrow_back_white_24dp);
 
         toolbar.setNavigationOnClickListener(new View.OnClickListener()
         {
