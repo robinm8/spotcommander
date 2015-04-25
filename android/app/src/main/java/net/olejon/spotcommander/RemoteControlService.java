@@ -134,11 +134,9 @@ public class RemoteControlService extends Service implements SensorEventListener
 
 				if(mShakeToSkip)
 				{
-					String shakeToSkipSensitivity = mTools.getSharedPreferencesString("SHAKE_TO_SKIP_SENSITIVITY");
-
                     mShakeToSkipSensitivityInt = 14;
 
-                    switch(shakeToSkipSensitivity)
+                    switch(mTools.getSharedPreferencesString("SHAKE_TO_SKIP_SENSITIVITY"))
                     {
                         case "higher":
                         {
@@ -214,12 +212,7 @@ public class RemoteControlService extends Service implements SensorEventListener
 					{
 						public void run()
 						{
-							if(mIsFlipped)
-							{
-								long computerId = mTools.getSharedPreferencesLong("LAST_COMPUTER_ID");
-
-                                mTools.remoteControl(computerId, "pause", "");
-							}
+							if(mIsFlipped) mTools.remoteControl(mTools.getSharedPreferencesLong("LAST_COMPUTER_ID"), "pause", "");
 						}			
 					};
 
@@ -255,9 +248,7 @@ public class RemoteControlService extends Service implements SensorEventListener
 
                     mTools.showToast("Shake detected, playing next track", 0);
 
-					long computerId = mTools.getSharedPreferencesLong("LAST_COMPUTER_ID");
-
-                    mTools.remoteControl(computerId, "next", "");
+                    mTools.remoteControl(mTools.getSharedPreferencesLong("LAST_COMPUTER_ID"), "next", "");
 				}
 
 				Runnable isShakedRunnable= new Runnable()

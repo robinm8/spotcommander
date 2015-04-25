@@ -31,7 +31,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.app.NavUtils;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
@@ -45,7 +45,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-public class DonateActivity extends ActionBarActivity
+public class DonateActivity extends AppCompatActivity
 {
     private final MyTools mTools = new MyTools(this);
 
@@ -67,6 +67,8 @@ public class DonateActivity extends ActionBarActivity
         final Toolbar toolbar = (Toolbar) findViewById(R.id.donate_toolbar);
 
         setSupportActionBar(toolbar);
+
+        //noinspection ConstantConditions
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         // In-app billing

@@ -84,9 +84,7 @@ public class Widget extends AppWidgetProvider
         {
             String[] action = intent.getStringArrayExtra(WIDGET_INTENT_EXTRA);
 
-            long computerId = mTools.getSharedPreferencesLong("WIDGET_"+action[0]+"_COMPUTER_ID");
-
-            mTools.remoteControl(computerId, action[1], action[2]);
+            mTools.remoteControl(mTools.getSharedPreferencesLong("WIDGET_"+action[0]+"_COMPUTER_ID"), action[1], action[2]);
         }
 	}
 }

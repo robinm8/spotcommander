@@ -48,17 +48,15 @@ public class SettingsActivity extends PreferenceActivity
 		if(!mTools.allowLandscape()) setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
 		// Layout
+        setContentView(R.layout.activity_settings);
 
         //noinspection deprecation
         addPreferencesFromResource(R.xml.settings);
-
-		setContentView(R.layout.activity_settings);
 
         // Toolbar
         final Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
 
         toolbar.setTitle(getString(R.string.settings_title));
-
         toolbar.setNavigationIcon(R.drawable.ic_arrow_back_white_24dp);
 
         toolbar.setNavigationOnClickListener(new View.OnClickListener()

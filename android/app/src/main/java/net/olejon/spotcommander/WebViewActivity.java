@@ -1,5 +1,26 @@
 package net.olejon.spotcommander;
 
+/*
+
+Copyright 2015 Ole Jon Bjørkum
+
+This file is part of SpotCommander.
+
+SpotCommander is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+SpotCommander is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with SpotCommander.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Notification;
@@ -75,10 +96,8 @@ public class WebViewActivity extends Activity
 		// Allow landscape?
 		if(!mTools.allowLandscape()) setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
-		// Hide the status bar?
-		boolean hideStatusBar = mTools.getDefaultSharedPreferencesBoolean("HIDE_STATUS_BAR");
-
-		if(hideStatusBar) getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+		// Hide status bar?
+		if(mTools.getDefaultSharedPreferencesBoolean("HIDE_STATUS_BAR")) getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
 		// Power manager
 		PowerManager powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
@@ -225,10 +244,8 @@ public class WebViewActivity extends Activity
 
         if(Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT)
         {
-            boolean hardwareAcceleratedAnimations = mTools.getDefaultSharedPreferencesBoolean("HARDWARE_ACCELERATED_ANIMATIONS");
-
-            ua_append_2 = (hardwareAcceleratedAnimations) ? "" : "DISABLE_CSSTRANSITIONS ";
-            ua_append_3 = (hardwareAcceleratedAnimations) ? "" : "DISABLE_CSSTRANSFORMS3D ";
+            ua_append_2 = (mTools.getDefaultSharedPreferencesBoolean("HARDWARE_ACCELERATED_ANIMATIONS")) ? "" : "DISABLE_CSSTRANSITIONS ";
+            ua_append_3 = (mTools.getDefaultSharedPreferencesBoolean("HARDWARE_ACCELERATED_ANIMATIONS")) ? "" : "DISABLE_CSSTRANSFORMS3D ";
         }
 
 		// Web settings
@@ -399,9 +416,7 @@ public class WebViewActivity extends Activity
             {
                 if(mHasLongPressedBack) return true;
 
-                boolean canCloseCover = mTools.getSharedPreferencesBoolean("CAN_CLOSE_COVER");
-
-                if(mWebView.canGoBack() || canCloseCover)
+                if(mWebView.canGoBack() || mTools.getSharedPreferencesBoolean("CAN_CLOSE_COVER"))
                 {
                     mWebView.loadUrl("javascript:nativeAppAction('back')");
 
@@ -611,7 +626,7 @@ public class WebViewActivity extends Activity
             }
             else
             {
-                Palette.generateAsync(bitmap, new Palette.PaletteAsyncListener()
+                Palette.from(bitmap).generate(new Palette.PaletteAsyncListener()
                 {
                     public void onGenerated(Palette palette)
                     {

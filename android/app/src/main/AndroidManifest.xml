@@ -84,14 +84,14 @@
             </intent-filter>
         </activity>
 
-        <receiver android:name=".Widget" android:label="@string/widget_label">
+        <receiver android:name=".Widget" android:label="@string/project_name">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
             </intent-filter>
             <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget"/>
         </receiver>
 
-        <receiver android:name=".WidgetLarge" android:label="@string/widget_large_label">
+        <receiver android:name=".WidgetLarge" android:label="@string/project_name">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
             </intent-filter>

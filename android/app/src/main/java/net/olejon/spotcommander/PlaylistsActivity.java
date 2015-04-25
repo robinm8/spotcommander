@@ -125,7 +125,7 @@ public class PlaylistsActivity extends Activity
                         mPlaylistUris.add(response.getString(playlistName));
                     }
 
-                    ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(getApplicationContext(), R.layout.activity_playlists_list_item, playlistNamesArrayList);
+                    ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(mContext, R.layout.activity_playlists_list_item, playlistNamesArrayList);
 
                     mProgressBar.setVisibility(View.GONE);
 

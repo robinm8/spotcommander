@@ -10,8 +10,8 @@ android
         applicationId "net.olejon.spotcommander"
         minSdkVersion 10
         targetSdkVersion 22
-        versionCode 50
-        versionName "5.0"
+        versionCode 51
+        versionName "5.1"
     }
 
     buildTypes
@@ -25,9 +25,9 @@ android
 
 dependencies
 {
-    compile 'com.android.support:appcompat-v7:22.0.0'
-    compile 'com.android.support:palette-v7:22.0.0'
+    compile 'com.android.support:appcompat-v7:22.1.1'
+    compile 'com.android.support:palette-v7:22.1.1'
     compile 'com.mcxiaoke.volley:library:1.0.15'
-    compile 'com.afollestad:material-dialogs:0.7.2.0'
+    compile 'com.afollestad:material-dialogs:0.7.2.7'
     compile 'com.rengwuxian.materialedittext:library:2.0.3'
 }

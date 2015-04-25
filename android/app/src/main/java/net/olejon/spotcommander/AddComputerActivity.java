@@ -31,7 +31,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.support.v4.app.NavUtils;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
@@ -55,7 +55,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class AddComputerActivity extends ActionBarActivity
+public class AddComputerActivity extends AppCompatActivity
 {
     private final Context mContext = this;
 
@@ -90,6 +90,8 @@ public class AddComputerActivity extends ActionBarActivity
         final Toolbar toolbar = (Toolbar) findViewById(R.id.add_computer_toolbar);
 
         setSupportActionBar(toolbar);
+
+        //noinspection ConstantConditions
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
 		// Progress bar

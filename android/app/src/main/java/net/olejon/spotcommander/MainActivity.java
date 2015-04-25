@@ -31,8 +31,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.widget.SimpleCursorAdapter;
-import android.support.v7.app.ActionBarActivity;
-import android.support.v7.view.ActionMode;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
@@ -60,7 +59,7 @@ import org.json.JSONObject;
 
 import java.net.URLEncoder;
 
-public class MainActivity extends ActionBarActivity
+public class MainActivity extends AppCompatActivity
 {
     private final Context mContext = this;
 
@@ -68,8 +67,6 @@ public class MainActivity extends ActionBarActivity
 
 	private SQLiteDatabase mDatabase;
 	private Cursor mCursor;
-
-    private ActionMode mActionMode;
 
     private ImageButton mFloatingActionButton;
 	private ListView mListView;
@@ -94,12 +91,7 @@ public class MainActivity extends ActionBarActivity
 		// Open last computer
         mCurrentNetwork = mTools.getCurrentNetwork();
 
-		boolean openAutomatically = mTools.getDefaultSharedPreferencesBoolean("OPEN_AUTOMATICALLY");
-		boolean networkHasChanged = (!mCurrentNetwork.equals(mTools.getSharedPreferencesString("LAST_NETWORK_ID")));
-
-		long lastComputerId = mTools.getSharedPreferencesLong("LAST_COMPUTER_ID");
-
-		if(openAutomatically && !networkHasChanged && savedInstanceState == null) openApp(lastComputerId, false);
+		if(mTools.getDefaultSharedPreferencesBoolean("OPEN_AUTOMATICALLY") && mCurrentNetwork.equals(mTools.getSharedPreferencesString("LAST_NETWORK_ID")) && savedInstanceState == null) openApp(mTools.getSharedPreferencesLong("LAST_COMPUTER_ID"), false);
 
 		// Layout
 		setContentView(R.layout.activity_main);
@@ -127,13 +119,6 @@ public class MainActivity extends ActionBarActivity
             @Override
             public void onItemClick(AdapterView< ?> parent, View view, int position, long id)
             {
-                if(mActionMode != null)
-                {
-                    startMyActionMode(id);
-
-                    return;
-                }
-
                 openApp(id, true);
             }
         });
@@ -141,11 +126,18 @@ public class MainActivity extends ActionBarActivity
         mListView.setOnItemLongClickListener(new OnItemLongClickListener()
         {
             @Override
-            public boolean onItemLongClick(AdapterView<?> parent, View v, int position, long id)
+            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, final long id)
             {
-                if(mActionMode != null) return false;
+                new MaterialDialog.Builder(mContext).title(getString(R.string.main_remove_computer_dialog_title)).content(getString(R.string.main_remove_computer_dialog_message)).positiveText(getString(R.string.main_remove_computer_dialog_positive_button)).negativeText(getString(R.string.main_remove_computer_dialog_negative_button)).callback(new MaterialDialog.ButtonCallback()
+                {
+                    @Override
+                    public void onPositive(MaterialDialog dialog)
+                    {
+                        removeComputer(id);
 
-                startMyActionMode(id);
+                        listComputers();
+                    }
+                }).contentColorRes(R.color.black).negativeColorRes(R.color.black).show();
 
                 return true;
             }
@@ -180,9 +172,7 @@ public class MainActivity extends ActionBarActivity
         // Dialog
         if(Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT)
         {
-            boolean skipInformationDialog = mTools.getSharedPreferencesBoolean("SKIP_INFORMATION_DIALOG");
-
-            if(!skipInformationDialog)
+            if(!mTools.getSharedPreferencesBoolean("SKIP_INFORMATION_DIALOG"))
             {
                 new MaterialDialog.Builder(mContext).title(getString(R.string.main_information_dialog_title)).content(getString(R.string.main_information_dialog_message)).positiveText(getString(R.string.main_information_dialog_positive_button)).callback(new MaterialDialog.ButtonCallback()
                 {
@@ -224,14 +214,21 @@ public class MainActivity extends ActionBarActivity
 
                     final long lastId = mTools.getSharedPreferencesLong("MESSAGE_LAST_ID");
 
-                    if(lastId != 0 && id != lastId) new MaterialDialog.Builder(mContext).title(title).content(message).positiveText(getString(R.string.main_message_dialog_positive_button)).callback(new MaterialDialog.ButtonCallback()
+                    if(lastId == 0)
                     {
-                        @Override
-                        public void onPositive(MaterialDialog dialog)
+                        mTools.setSharedPreferencesLong("MESSAGE_LAST_ID", id);
+                    }
+                    else if(id != lastId)
+                    {
+                        new MaterialDialog.Builder(mContext).title(title).content(message).positiveText(getString(R.string.main_message_dialog_positive_button)).callback(new MaterialDialog.ButtonCallback()
                         {
-                            mTools.setSharedPreferencesLong("MESSAGE_LAST_ID", id);
-                        }
-                    }).contentColorRes(R.color.black).show();
+                            @Override
+                            public void onPositive(MaterialDialog dialog)
+                            {
+                                mTools.setSharedPreferencesLong("MESSAGE_LAST_ID", id);
+                            }
+                        }).contentColorRes(R.color.black).show();
+                    }
                 }
                 catch(Exception e)
                 {
@@ -313,66 +310,6 @@ public class MainActivity extends ActionBarActivity
                 return super.onOptionsItemSelected(item);
             }
         }
-	}
-
-	// Action mode
-	private void startMyActionMode(long id)
-	{	
-		String[] queryColumns = {MySQLiteHelper.COLUMN_ID, MySQLiteHelper.COLUMN_NAME};
-		mCursor = mDatabase.query(MySQLiteHelper.TABLE_COMPUTERS, queryColumns, MySQLiteHelper.COLUMN_ID+" = "+id, null, null, null, null);
-
-		if(mCursor.moveToFirst())
-		{
-			String name = mCursor.getString(mCursor.getColumnIndexOrThrow(MySQLiteHelper.COLUMN_NAME));
-
-            mActionMode = startSupportActionMode(new MyActionMode(id, name));
-		}
-	}
-
-	private final class MyActionMode implements ActionMode.Callback
-	{
-		final long itemId;
-
-		final String itemName;
-
-		public MyActionMode(long id, String name)
-		{
-			itemId = id;
-
-			itemName = name;
-		}
-
-		@Override
-		public boolean onCreateActionMode(ActionMode mode, Menu menu)
-		{
-			getMenuInflater().inflate(R.menu.menu_main_actionmode, menu);
-			return true;
-		}
-
-		@Override
-		public boolean onPrepareActionMode(ActionMode mode, Menu menu)
-		{
-			mode.setTitle(itemName);
-			return true;
-		}
-
-		@Override
-		public boolean onActionItemClicked(ActionMode mode, MenuItem item)
-		{
-			removeComputer(itemId);
-
-			mode.finish();
-
-			listComputers();
-
-			return true;
-		}
-
-		@Override
-		public void onDestroyActionMode(ActionMode mode)
-		{
-            mActionMode = null;
-		}
 	}
 
     // Open app
