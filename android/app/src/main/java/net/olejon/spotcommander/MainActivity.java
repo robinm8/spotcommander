@@ -327,7 +327,7 @@ public class MainActivity extends AppCompatActivity
     private void listComputers()
     {
         String[] queryColumns = {MySQLiteHelper.COLUMN_ID, MySQLiteHelper.COLUMN_NAME};
-        mCursor = mDatabase.query(MySQLiteHelper.TABLE_COMPUTERS, queryColumns, null, null, null, null, null);
+        mCursor = mDatabase.query(MySQLiteHelper.TABLE_COMPUTERS, queryColumns, null, null, null, null, MySQLiteHelper.COLUMN_NAME);
 
         String[] fromColumns = {MySQLiteHelper.COLUMN_NAME};
         int[] toViews = {R.id.main_list_item};

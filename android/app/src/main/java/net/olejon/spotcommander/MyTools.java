@@ -197,7 +197,7 @@ final class MyTools
 
             RequestQueue requestQueue = Volley.newRequestQueue(mContext);
 
-            StringRequest stringRequest = new StringRequest(Request.Method.POST, uri, new Response.Listener<String>()
+            StringRequest stringRequest = new StringRequest(Request.Method.POST, uri+"/", new Response.Listener<String>()
             {
                 @Override
                 public void onResponse(String response) { }

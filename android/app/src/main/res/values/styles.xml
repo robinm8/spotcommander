@@ -11,11 +11,17 @@
         <item name="colorControlActivated">@color/light_green</item>
         <item name="colorControlHighlight">@color/green</item>
         <item name="android:windowBackground">@color/background</item>
+        <item name="windowActionModeOverlay">true</item>
+        <item name="actionModeBackground">@color/dark_green</item>
         <item name="android:listViewStyle">@style/listview</item>
         <item name="android:textColor">@color/black</item>
     </style>
 
-    <style name="toolbar_theme" parent="ThemeOverlay.AppCompat.Dark">
+    <style name="toolbar_theme" parent="ThemeOverlay.AppCompat.Dark.ActionBar">
+        <item name="colorControlActivated">@color/white</item>
+    </style>
+
+    <style name="add_computer_extended_toolbar_theme">
         <item name="colorControlActivated">@color/white</item>
     </style>
 
@@ -136,6 +142,7 @@
     </style>
 
     <style name="add_computer_extended_toolbar_layout">
+        <item name="android:theme">@style/add_computer_extended_toolbar_theme</item>
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:orientation">vertical</item>
@@ -152,7 +159,7 @@
         <item name="android:textSize">24sp</item>
         <item name="met_baseColor">@color/white</item>
         <item name="met_primaryColor">@color/white</item>
-        <item name="met_errorColor">@color/red</item>
+        <item name="met_errorColor">@color/white</item>
         <item name="met_floatingLabel">highlight</item>
         <item name="met_singleLineEllipsis">true</item>
     </style>

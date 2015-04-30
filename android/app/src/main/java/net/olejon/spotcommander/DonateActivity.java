@@ -30,7 +30,6 @@ import android.content.pm.ActivityInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -132,7 +131,7 @@ public class DonateActivity extends AppCompatActivity
         {
             case android.R.id.home:
             {
-                NavUtils.navigateUpFromSameTask(this);
+                finish();
                 return true;
             }
             case R.id.donate_menu_reset:
