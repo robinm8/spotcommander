@@ -58,6 +58,7 @@ public class SettingsActivity extends PreferenceActivity
 
         toolbar.setTitle(getString(R.string.settings_title));
         toolbar.setNavigationIcon(R.drawable.ic_arrow_back_white_24dp);
+        toolbar.setTitleTextColor(getResources().getColor(R.color.white));
 
         toolbar.setNavigationOnClickListener(new View.OnClickListener()
         {

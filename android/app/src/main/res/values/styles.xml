@@ -39,7 +39,7 @@
     </style>
 
     <style name="main_inner_layout">
-        <item name="android:layout_width">@dimen/main_layout_width</item>
+        <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">match_parent</item>
         <item name="android:layout_gravity">center_horizontal</item>
         <item name="android:orientation">vertical</item>
@@ -86,7 +86,7 @@
     </style>
 
     <style name="settings_inner_layout">
-        <item name="android:layout_width">@dimen/settings_inner_layout_width</item>
+        <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">match_parent</item>
         <item name="android:layout_gravity">center_horizontal</item>
         <item name="android:orientation">vertical</item>
@@ -165,7 +165,7 @@
     </style>
 
     <style name="add_computer_inner_layout">
-        <item name="android:layout_width">@dimen/add_computer_body_layout_width</item>
+        <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_gravity">center_horizontal</item>
         <item name="android:orientation">vertical</item>
@@ -314,7 +314,7 @@
         <item name="android:minHeight">?attr/actionBarSize</item>
         <item name="android:background">?attr/colorPrimary</item>
         <item name="android:textColor">@color/white</item>
-        <item name="theme">@style/toolbar_theme</item>
+        <item name="android:theme">@style/toolbar_theme</item>
         <item name="popupTheme">@style/ThemeOverlay.AppCompat.Light</item>
     </style>
 

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" style="@style/settings_layout">
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" style="@style/settings_layout">
 
-    <android.support.v7.widget.Toolbar android:id="@+id/toolbar" app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar" style="@style/toolbar"/>
+    <android.support.v7.widget.Toolbar android:id="@+id/toolbar" style="@style/toolbar"/>
 
     <View style="@style/toolbar_shadow"/>
 
