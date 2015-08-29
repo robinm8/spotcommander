@@ -25,6 +25,7 @@ import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentSender;
 import android.content.ServiceConnection;
 import android.content.pm.ActivityInfo;
 import android.os.AsyncTask;
@@ -154,7 +155,9 @@ public class DonateActivity extends AppCompatActivity
             Bundle buyIntentBundle = mIInAppBillingService.getBuyIntent(3, getPackageName(), product, "inapp", "");
             PendingIntent pendingIntent = buyIntentBundle.getParcelable("BUY_INTENT");
 
-            startIntentSenderForResult(pendingIntent.getIntentSender(), 1, new Intent(), 0, 0, 0);
+            IntentSender intentSender = (pendingIntent != null) ? pendingIntent.getIntentSender() : null;
+
+            startIntentSenderForResult(intentSender, 1, new Intent(), 0, 0, 0);
         }
         catch(Exception e)
         {
@@ -190,13 +193,16 @@ public class DonateActivity extends AppCompatActivity
             {
                 ArrayList<String> purchaseDataList = ownedItems.getStringArrayList("INAPP_PURCHASE_DATA_LIST");
 
-                for(String purchaseData : purchaseDataList)
+                if(purchaseDataList != null)
                 {
-                    JSONObject jsonObject = new JSONObject(purchaseData);
+                    for(String purchaseData : purchaseDataList)
+                    {
+                        JSONObject jsonObject = new JSONObject(purchaseData);
 
-                    String purchaseToken = jsonObject.getString("purchaseToken");
+                        String purchaseToken = jsonObject.getString("purchaseToken");
 
-                    consumeDonation(purchaseToken);
+                        consumeDonation(purchaseToken);
+                    }
                 }
 
                 mTools.showToast(getString(R.string.donate_reset_success), 0);
@@ -238,59 +244,62 @@ public class DonateActivity extends AppCompatActivity
 
                         ArrayList<String> responseArrayList = skuDetails.getStringArrayList("DETAILS_LIST");
 
-                        for(String details : responseArrayList)
+                        if(responseArrayList != null)
                         {
-                            JSONObject detailsJsonObject = new JSONObject(details);
-
-                            String sku = detailsJsonObject.getString("productId");
-                            String price = detailsJsonObject.getString("price");
-
-                            switch(sku)
+                            for(String details : responseArrayList)
                             {
-                                case "small_donation":
+                                JSONObject detailsJsonObject = new JSONObject(details);
+
+                                String sku = detailsJsonObject.getString("productId");
+                                String price = detailsJsonObject.getString("price");
+
+                                switch(sku)
                                 {
-                                    makeSmallDonationButton.setText(getString(R.string.donate_donate)+" "+price);
-
-                                    makeSmallDonationButton.setOnClickListener(new View.OnClickListener()
+                                    case "small_donation":
                                     {
-                                        @Override
-                                        public void onClick(View view)
+                                        makeSmallDonationButton.setText(getString(R.string.donate_donate)+" "+price);
+
+                                        makeSmallDonationButton.setOnClickListener(new View.OnClickListener()
                                         {
-                                            makeDonation("small_donation");
-                                        }
-                                    });
+                                            @Override
+                                            public void onClick(View view)
+                                            {
+                                                makeDonation("small_donation");
+                                            }
+                                        });
 
-                                    break;
-                                }
-                                case "medium_donation":
-                                {
-                                    makeMediumDonationButton.setText(getString(R.string.donate_donate)+" "+price);
-
-                                    makeMediumDonationButton.setOnClickListener(new View.OnClickListener()
+                                        break;
+                                    }
+                                    case "medium_donation":
                                     {
-                                        @Override
-                                        public void onClick(View view)
+                                        makeMediumDonationButton.setText(getString(R.string.donate_donate)+" "+price);
+
+                                        makeMediumDonationButton.setOnClickListener(new View.OnClickListener()
                                         {
-                                            makeDonation("medium_donation");
-                                        }
-                                    });
+                                            @Override
+                                            public void onClick(View view)
+                                            {
+                                                makeDonation("medium_donation");
+                                            }
+                                        });
 
-                                    break;
-                                }
-                                case "big_donation":
-                                {
-                                    makeBigDonationButton.setText(getString(R.string.donate_donate)+" "+price);
-
-                                    makeBigDonationButton.setOnClickListener(new View.OnClickListener()
+                                        break;
+                                    }
+                                    case "big_donation":
                                     {
-                                        @Override
-                                        public void onClick(View view)
-                                        {
-                                            makeDonation("big_donation");
-                                        }
-                                    });
+                                        makeBigDonationButton.setText(getString(R.string.donate_donate)+" "+price);
 
-                                    break;
+                                        makeBigDonationButton.setOnClickListener(new View.OnClickListener()
+                                        {
+                                            @Override
+                                            public void onClick(View view)
+                                            {
+                                                makeDonation("big_donation");
+                                            }
+                                        });
+
+                                        break;
+                                    }
                                 }
                             }
                         }

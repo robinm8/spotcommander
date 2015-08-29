@@ -41,6 +41,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.NavUtils;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.graphics.Palette;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -183,9 +184,10 @@ public class WebViewActivity extends Activity
 		// Web view
         mWebView = (WebView) findViewById(R.id.webview_webview);
 
-        mWebView.setBackgroundColor(getResources().getColor(R.color.background));
+        mWebView.setBackgroundColor(ContextCompat.getColor(mContext, R.color.background));
         mWebView.setScrollBarStyle(WebView.SCROLLBARS_INSIDE_OVERLAY);
 
+        //noinspection deprecation
         mWebView.setWebViewClient(new WebViewClient()
 		{
 			@Override
@@ -617,7 +619,7 @@ public class WebViewActivity extends Activity
             {
                 if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
                 {
-                    getWindow().setStatusBarColor(getResources().getColor(R.color.green));
+                    getWindow().setStatusBarColor(ContextCompat.getColor(mContext, R.color.green));
 
                     mStatusBarCoverArtColor = R.color.black;
                 }
@@ -630,7 +632,7 @@ public class WebViewActivity extends Activity
                 {
                     public void onGenerated(Palette palette)
                     {
-                        final int vibrantColor = palette.getVibrantColor(R.color.black);
+                        final int vibrantColor = palette.getVibrantColor(ContextCompat.getColor(mContext, R.color.black));
 
                         final String vibrantColorHex = String.format("#%06X", (0xFFFFFF & vibrantColor));
 

@@ -27,6 +27,7 @@ import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
 import android.support.v4.app.NavUtils;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 
@@ -58,7 +59,7 @@ public class SettingsActivity extends PreferenceActivity
 
         toolbar.setTitle(getString(R.string.settings_title));
         toolbar.setNavigationIcon(R.drawable.ic_arrow_back_white_24dp);
-        toolbar.setTitleTextColor(getResources().getColor(R.color.white));
+        toolbar.setTitleTextColor(ContextCompat.getColor(mContext, R.color.white));
 
         toolbar.setNavigationOnClickListener(new View.OnClickListener()
         {
