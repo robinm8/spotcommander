@@ -30,6 +30,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.v4.widget.SimpleCursorAdapter;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -46,6 +47,7 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ListView;
 
+import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
@@ -128,10 +130,10 @@ public class MainActivity extends AppCompatActivity
             @Override
             public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, final long id)
             {
-                new MaterialDialog.Builder(mContext).title(getString(R.string.main_remove_computer_dialog_title)).content(getString(R.string.main_remove_computer_dialog_message)).positiveText(getString(R.string.main_remove_computer_dialog_positive_button)).negativeText(getString(R.string.main_remove_computer_dialog_negative_button)).callback(new MaterialDialog.ButtonCallback()
+                new MaterialDialog.Builder(mContext).title(getString(R.string.main_remove_computer_dialog_title)).content(getString(R.string.main_remove_computer_dialog_message)).positiveText(getString(R.string.main_remove_computer_dialog_positive_button)).negativeText(getString(R.string.main_remove_computer_dialog_negative_button)).onPositive(new MaterialDialog.SingleButtonCallback()
                 {
                     @Override
-                    public void onPositive(MaterialDialog dialog)
+                    public void onClick(@NonNull MaterialDialog materialDialog, @NonNull DialogAction dialogAction)
                     {
                         removeComputer(id);
 
@@ -174,10 +176,10 @@ public class MainActivity extends AppCompatActivity
         {
             if(!mTools.getSharedPreferencesBoolean("SKIP_INFORMATION_DIALOG"))
             {
-                new MaterialDialog.Builder(mContext).title(getString(R.string.main_information_dialog_title)).content(getString(R.string.main_information_dialog_message)).positiveText(getString(R.string.main_information_dialog_positive_button)).callback(new MaterialDialog.ButtonCallback()
+                new MaterialDialog.Builder(mContext).title(getString(R.string.main_information_dialog_title)).content(getString(R.string.main_information_dialog_message)).positiveText(getString(R.string.main_information_dialog_positive_button)).onPositive(new MaterialDialog.SingleButtonCallback()
                 {
                     @Override
-                    public void onPositive(MaterialDialog dialog)
+                    public void onClick(@NonNull MaterialDialog materialDialog, @NonNull DialogAction dialogAction)
                     {
                         mTools.setSharedPreferencesBoolean("SKIP_INFORMATION_DIALOG", true);
                     }
@@ -220,10 +222,10 @@ public class MainActivity extends AppCompatActivity
                     }
                     else if(id != lastId)
                     {
-                        new MaterialDialog.Builder(mContext).title(title).content(message).positiveText(getString(R.string.main_message_dialog_positive_button)).callback(new MaterialDialog.ButtonCallback()
+                        new MaterialDialog.Builder(mContext).title(title).content(message).positiveText(getString(R.string.main_message_dialog_positive_button)).onPositive(new MaterialDialog.SingleButtonCallback()
                         {
                             @Override
-                            public void onPositive(MaterialDialog dialog)
+                            public void onClick(@NonNull MaterialDialog materialDialog, @NonNull DialogAction dialogAction)
                             {
                                 mTools.setSharedPreferencesLong("MESSAGE_LAST_ID", id);
                             }

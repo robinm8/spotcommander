@@ -3,15 +3,15 @@ apply plugin: 'com.android.application'
 android
 {
     compileSdkVersion 23
-    buildToolsVersion "23"
+    buildToolsVersion "23.0.1"
 
     defaultConfig
     {
         applicationId "net.olejon.spotcommander"
         minSdkVersion 10
         targetSdkVersion 23
-        versionCode 56
-        versionName "5.6"
+        versionCode 58
+        versionName "5.8"
     }
 
     buildTypes
@@ -25,10 +25,10 @@ android
 
 dependencies
 {
-    compile 'com.android.support:appcompat-v7:23.0.1'
-    compile 'com.android.support:palette-v7:23.0.1'
+    compile 'com.android.support:appcompat-v7:23.1.0'
+    compile 'com.android.support:palette-v7:23.1.0'
     compile 'com.mcxiaoke.volley:library:1.0.19'
     compile 'com.rengwuxian.materialedittext:library:2.1.4'
-    compile('com.afollestad.material-dialogs:core:0.8.1.0@aar') { transitive = true }
-    compile('com.afollestad.material-dialogs:commons:0.8.0.1@aar') { transitive = true }
+    compile('com.afollestad.material-dialogs:core:0.8.3.0@aar') { transitive = true }
+    compile('com.afollestad.material-dialogs:commons:0.8.3.0@aar') { transitive = true }
 }

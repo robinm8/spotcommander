@@ -30,6 +30,7 @@ import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.PowerManager;
+import android.support.annotation.NonNull;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -43,6 +44,7 @@ import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 
 import java.io.BufferedInputStream;
@@ -102,10 +104,10 @@ public class AddComputerActivity extends AppCompatActivity
         textView.setMovementMethod(LinkMovementMethod.getInstance());
 
         // Dialog
-        new MaterialDialog.Builder(mContext).title(getString(R.string.add_computer_scan_dialog_title)).content(getString(R.string.add_computer_scan_dialog_message)).positiveText(getString(R.string.add_computer_scan_dialog_positive_button)).negativeText(getString(R.string.add_computer_scan_dialog_negative_button)).callback(new MaterialDialog.ButtonCallback()
+        new MaterialDialog.Builder(mContext).title(getString(R.string.add_computer_scan_dialog_title)).content(getString(R.string.add_computer_scan_dialog_message)).positiveText(getString(R.string.add_computer_scan_dialog_positive_button)).negativeText(getString(R.string.add_computer_scan_dialog_negative_button)).onPositive(new MaterialDialog.SingleButtonCallback()
         {
             @Override
-            public void onPositive(MaterialDialog dialog)
+            public void onClick(@NonNull MaterialDialog materialDialog, @NonNull DialogAction dialogAction)
             {
                 scanNetwork();
             }

@@ -21,6 +21,7 @@ along with SpotCommander.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
+import android.annotation.SuppressLint;
 import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Context;
@@ -223,6 +224,7 @@ public class DonateActivity extends AppCompatActivity
     // Get products
     private class GetProductsTask extends AsyncTask<Void, Void, Bundle>
     {
+        @SuppressLint("SetTextI18n")
         @Override
         protected void onPostExecute(Bundle skuDetails)
         {
