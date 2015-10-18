@@ -21,7 +21,6 @@ along with SpotCommander.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Notification;
 import android.app.PendingIntent;
@@ -89,7 +88,6 @@ public class WebViewActivity extends Activity
     private int mStatusBarCoverArtColor = 0;
 
 	// Create activity
-    @SuppressLint({"AddJavascriptInterface", "SetJavaScriptEnabled"})
     protected void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);

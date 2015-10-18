@@ -154,7 +154,6 @@ final class MyTools
     }
 
     // Allow landscape?
-    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean allowLandscape()
     {
         int size = mContext.getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK;
