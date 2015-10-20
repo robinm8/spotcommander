@@ -10,3 +10,5 @@ SpotCommander is the most elegant, intuitive, feature-rich and universal remote 
 * [Wiki](http://www.olejon.net/code/spotcommander/?wiki)
 
 [![Image](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](http://www.olejon.net/code/spotcommander/?donate)
+
+[![Image](http://button.flattr.com/flattr-badge-large.png)](https://flattr.com/submit/auto?user_id=olejon&url=http%3A%2F%2Folejon.github.io%2Fspotcommander%2F)
