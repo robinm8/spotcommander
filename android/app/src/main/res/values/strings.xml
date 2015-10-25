@@ -5,7 +5,7 @@
     <!-- Project -->
     <string name="project_name">SpotCommander</string>
     <string name="project_website">http://www.olejon.net/code/spotcommander/</string>
-    <string name="project_minimum_version">12.2</string>
+    <string name="project_minimum_version">12.5</string>
 
     <!-- Main -->
     <string name="main_title">Computers</string>

@@ -91,7 +91,7 @@ public class PlaylistsActivity extends Activity
         // Get playlists
         RequestQueue requestQueue = Volley.newRequestQueue(mContext);
 
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, computer[0]+"/playlists.php?get_playlists_including_starred_as_json", new Response.Listener<JSONObject>()
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, computer[0]+"/playlists.php?get_playlists_as_json", new Response.Listener<JSONObject>()
         {
             @Override
             public void onResponse(JSONObject response)
@@ -117,8 +117,6 @@ public class PlaylistsActivity extends Activity
                             return string1.compareToIgnoreCase(string2);
                         }
                     });
-
-                    Collections.swap(playlistNamesArrayList, playlistNamesArrayList.indexOf("Starred"), 0);
 
                     for(String playlistName : playlistNamesArrayList)
                     {

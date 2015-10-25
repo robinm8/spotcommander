@@ -22,8 +22,6 @@
 
     </LinearLayout>
 
-    <ImageView style="@style/widget_horizontal_line" android:contentDescription="@string/image_content_description"/>
-
     <LinearLayout style="@style/widget_large_body_layout">
 
         <LinearLayout style="@style/widget_button">
