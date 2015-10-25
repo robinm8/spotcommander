@@ -9,68 +9,37 @@ http://www.olejon.net/code/spotcommander/?upgrade
 BEFORE UPGRADING:
 
 * Close SpotCommander completely on all your devices before upgrading
-* Android users: Make sure you are running v 4.6 or newer of the Android app. For some reason Google suspended the donate version of the Android app. If you have it installed, uninstall it and install the free version instead. Sorry for the inconvenience!
-* You must reauthorize with Spotify for some of the new features to work. Go to Profile in the menu and tap the top right icon to deauthorize. When it is done, tap the top right icon to authorize again
+* You may have to reauthorize with Spotify for some of the features to work if you are upgrading from an old version. Go to Profile in the menu and tap the top right icon to deauthorize. When it is done, tap the top right icon to authorize again
+* Android users must update to the latest version of the Android app
+* iOS users should re-add SpotCommander to the home screen
 
-CHANGELOG v 12.4:
+CHANGELOG v 12.5:
 
-* New playlist behavior. When you manually play a track in a playlist, the playlist will continue to play afterwards, just like in Spotify. If you want the old behavior, queue the track and choose to play the next track, just like in Spotify
-* Fixed a bug where several features does not if the authorized user's username contains special characters
-
-CHANGELOG v 12.3:
-
-* New features in Spotify's web API (you must reauthorize with Spotify first)
-* Search results now include playlists, at the bottom
-* When you add a playlist to your playlists, you will follow it and it will appear in Spotify as well as SpotCommander (you must reauthorize with Spotify first)
-* You can now delete playlists. This means that when you choose to delete a playlist in SpotCommander, it will also be deleted in Spotify. This way, your list of playlists in Spotify and SpotCommander will stay the same. If the playlist is not yours, you will simply unfollow it (you must reauthorize with Spotify first)
-* Follow and unfollow artists and users. No more than this is available in the API as of now (you must reauthorize with Spotify first)
-* To add an artist to your library, you must now follow the artist, which will add the artist to your saved artists in Spotify as well (you must reauthorize with Spotify first)
+* Remove Starred category from Playlists as it has been deprecated by Spotify and converted to a regular playlist
+* Removed News from Browse as it has been deprecated by Spotify
+* Library now syncs the artists you follow, just like tracks you have saved (new feature in Spotify's web API)
+* Only show playlists you actually have write access to when choosing Add to Playlist
+* Floating Action Button in Library now allows you to quickly scroll down to the next category
+* Added Default as an option when sorting playlists
+* Added error message if you are running the beta version of Spotify, which is not supported yet
 * Minor changes and bug fixes
-
-CHANGELOG v 12.2:
-
-* When using the Android app, the action bar now changes color as well depending on the colors of the cover art
-* Fixed suspending and shutting down after queued tracks not working on some systems
-* When in widescreen mode, show more controls on the bottom action bar
-
-CHANGELOG v 12.1:
-
-* Fixed a bug where SpotCommander would not work on some older distributions (https://github.com/olejon/spotcommander/issues/69)
-
-CHANGELOG v 12.0:
-
-* New design inspired by Material Design
-* Icons for extra high resolution displays
-* View other users' profile and playlists
-* Search for users by username
-* Save users to Library
-* View number of followers in Profile
-* View how many followers an artist has
-* Queue in main menu
-* Links to Last.fm and Wikipedia in artist biographies
-* Colored status bar on iOS
-* Fixed bug where no more than 50 playlists would be imported
-* Fixed bug where library import would fail with more than 500 tracks
-* Fixed time zone bug in Browse
-* Suspend and shut down computer should now work on all systems
-* Various changes and bug fixes
 
 LICENSE:
 
 Copyright 2015 Ole Jon Bjørkum
 
-SpotCommander is free software: you can redistribute it and/or modify
+This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-SpotCommander is distributed in the hope that it will be useful,
+This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with SpotCommander.  If not, see <http://www.gnu.org/licenses/>.
+along with this program. If not, see http://www.gnu.org/licenses/.
 
 SPOTIFY DISCLAIMER:
 

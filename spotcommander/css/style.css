@@ -2,20 +2,18 @@
 
 Copyright 2015 Ole Jon Bjørkum
 
-This file is part of SpotCommander.
-
-SpotCommander is free software: you can redistribute it and/or modify
+This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-SpotCommander is distributed in the hope that it will be useful,
+This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with SpotCommander.  If not, see <http://www.gnu.org/licenses/>.
+along with this program. If not, see http://www.gnu.org/licenses/.
 
 */
 
@@ -166,11 +164,6 @@ div.top_actionbar_inner_opacity_div
 	background-color: rgba(104, 159, 56, 0) !important;
 }
 
-div.top_actionbar_inner_ios_div
-{
-	padding: 20px 0 0 0 !important;
-}
-
 div#top_actionbar_overflow_actions_div
 {
 	display: none;
@@ -212,11 +205,6 @@ div#top_actionbar_overflow_actions_inner_div > div:last-child
 {
 	border-bottom-left-radius: 2px;
 	border-bottom-right-radius: 2px;
-}
-
-div.top_actionbar_overflow_actions_ios_div
-{
-	top: 28px !important;
 }
 
 div#top_actionbar_shadow_div
@@ -330,11 +318,6 @@ div#menu_div
 	}
 }
 
-div.menu_ios_div
-{
-	top: 76px !important;
-}
-
 div.menu_big_item_div
 {
 	display: table;
@@ -416,19 +399,6 @@ div#activity_div
 	div#activity_div
 	{
 		padding: 56px 0 52px 240px;
-	}
-}
-
-div.activity_ios_div
-{
-	padding: 76px 0 52px !important;
-}
-
-@media screen and (min-width: 1024px)
-{
-	div.activity_ios_div
-	{
-		padding: 76px 0 52px 240px !important;
 	}
 }
 
@@ -1160,11 +1130,6 @@ div#nowplaying_actionbar_right_div > div
 	padding: 16px 0;
 }
 
-div.nowplaying_actionbar_ios_div
-{
-	top: 20px !important;
-}
-
 div#nowplaying_actionbar_overflow_actions_div
 {
 	display: none;
@@ -1206,11 +1171,6 @@ div#nowplaying_actionbar_overflow_actions_inner_div > div:last-child
 {
 	border-bottom-left-radius: 2px;
 	border-bottom-right-radius: 2px;
-}
-
-div.nowplaying_actionbar_overflow_actions_ios_div
-{
-	top: 28px !important;
 }
 
 div#nowplaying_upper_div
@@ -1532,60 +1492,6 @@ div#browse_featured_playlists_div > div > div
 	vertical-align: middle;
 	text-align: center;
 	color: #fff;
-}
-
-div#browse_news_article_div
-{
-	padding: 0 16px;
-}
-
-@media screen and (min-width: 1024px)
-{
-	div#browse_news_article_div
-	{
-		display: table;
-		margin: 0 auto;
-		width: 560px;
-	}
-}
-
-div#browse_news_article_date_div
-{
-	font-family: "roboto condensed", "roboto", "helvetica neue", "helvetica", "arial", "liberation sans", "sans-serif";
-	font-size: 14px;
-	font-weight: 200;
-}
-
-div#browse_news_article_headline_div
-{
-	padding: 4px 0 0 0;
-	font-family: "roboto condensed", "roboto", "helvetica neue", "helvetica", "arial", "liberation sans", "sans-serif";
-	font-size: 24px;
-}
-
-div#browse_news_article_leadin_div
-{
-	padding: 12px 0;
-	font-weight: 200;
-	line-height: 1.5;
-}
-
-img#browse_news_article_cover_art_img
-{
-	width: 100%;
-}
-
-div#browse_news_article_body_div
-{
-	padding: 12px 0 0 0;
-	font-size: 15px;
-	font-weight: 200;
-	line-height: 1.5;
-}
-
-div.browse_news_article_quote_div
-{
-	padding: 8px 8px 8px 24px;
 }
 
 div#search_form_div

@@ -4,20 +4,18 @@
 
 Copyright 2015 Ole Jon Bjørkum
 
-This file is part of SpotCommander.
-
-SpotCommander is free software: you can redistribute it and/or modify
+This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-SpotCommander is distributed in the hope that it will be useful,
+This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with SpotCommander.  If not, see <http://www.gnu.org/licenses/>.
+along with this program. If not, see http://www.gnu.org/licenses/.
 
 */
 
@@ -31,9 +29,9 @@ elseif(isset($_GET['remove']))
 {
 	echo remove($_POST['uri']);
 }
-elseif(isset($_GET['import_saved_spotify_tracks']))
+elseif(isset($_GET['refresh_library']))
 {
-	echo import_saved_spotify_tracks();
+	echo refresh_library();
 }
 else
 {
@@ -93,8 +91,9 @@ else
 
 		$queue_uris = base64_encode(json_encode($queue_uris));
 
-		$activity['actions'][] = array('action' => array('Import from Spotify', 'download_white_24_img_div'), 'keys' => array('actions', 'isauthorizedwithspotify'), 'values' => array('confirm_import_saved_spotify_tracks', is_authorized_with_spotify));
-		$activity['fab'] = array('label' => 'Queue Tracks Randomly', 'icon' => 'queue_white_24_img_div', 'keys' => array('actions', 'uris', 'randomly'), 'values' => array('queue_uris', $queue_uris, 'true'));
+		$activity['actions'][] = array('action' => array('Refresh Library', ''), 'keys' => array('actions', 'isauthorizedwithspotify'), 'values' => array('confirm_refresh_library', is_authorized_with_spotify));
+		$activity['actions'][] = array('action' => array('Queue Tracks Randomly', ''), 'keys' => array('actions', 'uris', 'randomly'), 'values' => array('queue_uris', $queue_uris, 'true'));
+		$activity['fab'] = array('label' => 'Go to Next Category', 'icon' => 'down_white_24_img_div', 'keys' => array('actions'), 'values' => array('scroll_to_next_list_header'));
 
 		$actions_dialog = array();
 		$actions_dialog['title'] = 'Sort By';
@@ -105,7 +104,7 @@ else
 		echo '
 			<div id="activity_inner_div" data-activitydata="' . base64_encode(json_encode($activity)) . '">
 
-			<div class="list_header_div"><div>Tracks</div><div title="Sort" class="actions_div" data-actions="show_actions_dialog" data-dialogactions="' . base64_encode(json_encode($actions_dialog)) . '" data-highlightclass="light_grey_highlight" onclick="void(0)"><div class="img_div img_18_div sort_grey_18_img_div"></div></div></div>
+			<div id="list_header_0_div" class="list_header_div"><div>Tracks</div><div title="Sort" class="actions_div" data-actions="show_actions_dialog" data-dialogactions="' . base64_encode(json_encode($actions_dialog)) . '" data-highlightclass="light_grey_highlight" onclick="void(0)"><div class="img_div img_18_div sort_grey_18_img_div"></div></div></div>
 
 			<div class="list_div">
 		';
@@ -163,7 +162,7 @@ else
 		echo '
 			</div>
 
-			<div class="list_header_div"><div>Albums</div><div title="Sort" class="actions_div" data-actions="show_actions_dialog" data-dialogactions="' . base64_encode(json_encode($actions_dialog)) . '" data-highlightclass="light_grey_highlight" onclick="void(0)"><div class="img_div img_18_div sort_grey_18_img_div"></div></div></div>
+			<div id="list_header_1_div" class="list_header_div"><div>Albums</div><div title="Sort" class="actions_div" data-actions="show_actions_dialog" data-dialogactions="' . base64_encode(json_encode($actions_dialog)) . '" data-highlightclass="light_grey_highlight" onclick="void(0)"><div class="img_div img_18_div sort_grey_18_img_div"></div></div></div>
 
 			<div class="list_div">
 		';
@@ -242,7 +241,7 @@ else
 		echo '
 			</div>
 
-			<div class="list_header_div"><div>Artists</div><div title="Sort" class="actions_div" data-actions="show_actions_dialog" data-dialogactions="' . base64_encode(json_encode($actions_dialog)) . '" data-highlightclass="light_grey_highlight" onclick="void(0)"><div class="img_div img_18_div sort_grey_18_img_div"></div></div></div>
+			<div id="list_header_2_div" class="list_header_div"><div>Artists</div><div title="Sort" class="actions_div" data-actions="show_actions_dialog" data-dialogactions="' . base64_encode(json_encode($actions_dialog)) . '" data-highlightclass="light_grey_highlight" onclick="void(0)"><div class="img_div img_18_div sort_grey_18_img_div"></div></div></div>
 
 			<div class="list_div">
 		';
@@ -307,7 +306,7 @@ else
 		echo '
 			</div>
 
-			<div class="list_header_div"><div>Users</div><div title="Sort" class="actions_div" data-actions="show_actions_dialog" data-dialogactions="' . base64_encode(json_encode($actions_dialog)) . '" data-highlightclass="light_grey_highlight" onclick="void(0)"><div class="img_div img_18_div sort_grey_18_img_div"></div></div></div>
+			<div id="list_header_3_div" class="list_header_div"><div>Users</div><div title="Sort" class="actions_div" data-actions="show_actions_dialog" data-dialogactions="' . base64_encode(json_encode($actions_dialog)) . '" data-highlightclass="light_grey_highlight" onclick="void(0)"><div class="img_div img_18_div sort_grey_18_img_div"></div></div></div>
 
 			<div class="list_div">
 		';

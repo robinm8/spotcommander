@@ -4,20 +4,18 @@
 
 Copyright 2015 Ole Jon Bjørkum
 
-This file is part of SpotCommander.
-
-SpotCommander is free software: you can redistribute it and/or modify
+This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-SpotCommander is distributed in the hope that it will be useful,
+This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with SpotCommander.  If not, see <http://www.gnu.org/licenses/>.
+along with this program. If not, see http://www.gnu.org/licenses/.
 
 */
 
@@ -42,7 +40,6 @@ require_once('main.php');
 <meta name="viewport" content="user-scalable=no, initial-scale=1.0">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="msapplication-tap-highlight" content="no">
 <meta name="msapplication-TileImage" content="img/favicon-144.png?<?php echo project_serial; ?>">
 <meta name="msapplication-TileColor" content="#212121">
@@ -51,7 +48,6 @@ require_once('main.php');
 <script src="js/jquery-cookie.js?<?php echo project_serial; ?>"></script>
 <script src="js/jquery-base64.js?<?php echo project_serial; ?>"></script>
 <script src="js/jquery-easing.js?<?php echo project_serial; ?>"></script>
-<script src="js/jquery-dotdotdot.js?<?php echo project_serial; ?>"></script>
 <script src="js/modernizr.js?<?php echo project_serial; ?>"></script>
 <script src="js/functions.js?<?php echo project_serial; ?>"></script>
 <script src="js/main.js?<?php echo project_serial; ?>"></script>

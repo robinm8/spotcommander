@@ -4,20 +4,18 @@
 
 Copyright 2015 Ole Jon Bjørkum
 
-This file is part of SpotCommander.
-
-SpotCommander is free software: you can redistribute it and/or modify
+This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-SpotCommander is distributed in the hope that it will be useful,
+This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with SpotCommander.  If not, see <http://www.gnu.org/licenses/>.
+along with this program. If not, see http://www.gnu.org/licenses/.
 
 */
 
@@ -114,47 +112,6 @@ elseif(isset($_GET['top-lists']))
 		echo '<div class="clear_float_div"></div></div></div>';
 	}
 }
-elseif(isset($_GET['popular-playlists']))
-{
-	$activity['title'] = 'Popular Playlists';
-
-	$files = get_external_files(array(project_website . 'api/2/browse/popular-playlists/'), null, null);
-	$playlists = json_decode($files[0], true);
-
-	if(!is_array($playlists))
-	{
-		$activity['actions'][] = array('action' => array('Retry', 'refresh_white_24_img_div'), 'keys' => array('actions'), 'values' => array('reload_activity'));
-
-		echo '
-			<div id="activity_inner_div" data-activitydata="' . base64_encode(json_encode($activity)) . '">
-
-			<div id="activity_message_div"><div><div class="img_div img_48_div information_grey_48_img_div"></div></div><div>Could not get playlists. Try again.</div></div>
-
-			</div>
-		';
-	}
-	else
-	{
-		echo '
-			<div id="activity_inner_div" data-activitydata="' . base64_encode(json_encode($activity)) . '">
-
-			<div class="cards_vertical_div">
-		';
-
-		foreach($playlists as $playlist)
-		{
-			$name = $playlist['name'];
-			$description = $playlist['description'];
-			$genre = $playlist['genre'];
-			$uri = $playlist['uri'];
-			$cover_art = $playlist['cover_art'];
-
-			echo '<div class="card_vertical_div"><div title="' . hsc($description) . '" class="card_vertical_inner_div actions_div" data-actions="browse_playlist" data-uri="' . $uri . '" data-description="' . rawurlencode($description) . '" data-isauthorizedwithspotify="' . is_authorized_with_spotify . '" data-highlightclass="card_highlight" onclick="void(0)"><div class="card_vertical_cover_art_div" style="background-image: url(\'' . $cover_art . '\')"></div><div class="card_vertical_upper_div">' . hsc($name) . '</div><div class="card_vertical_lower_div">' . hsc($genre) . '</div></div></div>';
-		}
-
-		echo '<div class="clear_float_div"></div></div></div>';
-	}
-}
 elseif(isset($_GET['genres']))
 {
 	$country = get_spotify_country();
@@ -238,6 +195,47 @@ elseif(isset($_GET['genres']))
 
 			echo '<div class="clear_float_div"></div></div></div>';
 		}
+	}
+}
+elseif(isset($_GET['popular-playlists']))
+{
+	$activity['title'] = 'Popular Playlists';
+
+	$files = get_external_files(array(project_website . 'api/2/browse/popular-playlists/'), null, null);
+	$playlists = json_decode($files[0], true);
+
+	if(!is_array($playlists))
+	{
+		$activity['actions'][] = array('action' => array('Retry', 'refresh_white_24_img_div'), 'keys' => array('actions'), 'values' => array('reload_activity'));
+
+		echo '
+			<div id="activity_inner_div" data-activitydata="' . base64_encode(json_encode($activity)) . '">
+
+			<div id="activity_message_div"><div><div class="img_div img_48_div information_grey_48_img_div"></div></div><div>Could not get playlists. Try again.</div></div>
+
+			</div>
+		';
+	}
+	else
+	{
+		echo '
+			<div id="activity_inner_div" data-activitydata="' . base64_encode(json_encode($activity)) . '">
+
+			<div class="cards_vertical_div">
+		';
+
+		foreach($playlists as $playlist)
+		{
+			$name = $playlist['name'];
+			$description = $playlist['description'];
+			$genre = $playlist['genre'];
+			$uri = $playlist['uri'];
+			$cover_art = $playlist['cover_art'];
+
+			echo '<div class="card_vertical_div"><div title="' . hsc($description) . '" class="card_vertical_inner_div actions_div" data-actions="browse_playlist" data-uri="' . $uri . '" data-description="' . rawurlencode($description) . '" data-isauthorizedwithspotify="' . is_authorized_with_spotify . '" data-highlightclass="card_highlight" onclick="void(0)"><div class="card_vertical_cover_art_div" style="background-image: url(\'' . $cover_art . '\')"></div><div class="card_vertical_upper_div">' . hsc($name) . '</div><div class="card_vertical_lower_div">' . hsc($genre) . '</div></div></div>';
+		}
+
+		echo '<div class="clear_float_div"></div></div></div>';
 	}
 }
 elseif(isset($_GET['new-releases']))
@@ -388,74 +386,6 @@ elseif(isset($_GET['charts']))
 		echo '</div></div>';
 	}
 }
-elseif(isset($_GET['news']))
-{
-	$country = get_spotify_country();
-
-	$append = (isset($_GET['id'])) ? '&id=' . $_GET['id'] : '';
-
-	$files = get_external_files(array(project_website . 'api/1/browse/news/?country=' . $country . $append), null, null);
-	$metadata = json_decode($files[0], true);
-
-	$activity['title'] = 'News in ' . get_country_name($country);
-
-	if(empty($metadata['news']))
-	{
-		$activity['actions'][] = array('action' => array('Retry', 'refresh_white_24_img_div'), 'keys' => array('actions'), 'values' => array('reload_activity'));
-
-		echo '
-			<div id="activity_inner_div" data-activitydata="' . base64_encode(json_encode($activity)) . '">
-
-			<div id="activity_message_div"><div><div class="img_div img_48_div information_grey_48_img_div"></div></div><div>Could not get news. Try again.</div></div>
-
-			</div>
-		';
-	}
-	else
-	{
-		$articles = $metadata['news']['articles'];
-
-		if(isset($_GET['id']))
-		{
-			$article = $articles[$_GET['id']];
-
-			$date = $article['date'];
-			$headline = $article['headline'];
-			$leadin = $article['leadin'];
-			$body = preg_replace(array('/<a.*?href="(.*?)".*?>(.*?)<\/a>/s', '/<blockquote.*?>(.*?)<\/blockquote>/s'), array('<span class="actions_span" data-actions="browse_uri" data-uri="$1" data-isauthorizedwithspotify="' . is_authorized_with_spotify . '" data-highlightclass="actions_span_highlight" onclick="void(0)">$2</span>', '<div class="browse_news_article_quote_div">$1</div>'), $article['body']);
-			$cover_art = $article['cover_art_large'];
-
-			$activity['title'] = hsc($headline);
-
-			echo '<div id="activity_inner_div" data-activitydata="' . base64_encode(json_encode($activity)) . '">';
-
-			echo '
-				<div id="browse_news_article_div"><div id="browse_news_article_date_div">' . $date . '</div><div id="browse_news_article_headline_div">' . $headline . '</div><div id="browse_news_article_leadin_div">' . $leadin . '</div><img id="browse_news_article_cover_art_img" src="' . $cover_art . '" alt=""><div id="browse_news_article_body_div">' . $body . '</div></div>
-			';
-
-			echo '</div>';
-		}
-		else
-		{
-			echo '
-				<div id="activity_inner_div" data-activitydata="' . base64_encode(json_encode($activity)) . '">
-
-				<div class="cards_vertical_div">
-			';
-
-			foreach($articles as $id => $article)
-			{
-				$date = $article['date'];
-				$headline = $article['headline'];
-				$cover_art = $article['cover_art_small'];
-
-				echo '<div class="card_vertical_div"><div title="' . hsc($headline) . '" class="card_vertical_inner_div actions_div" data-actions="change_activity" data-activity="browse" data-subactivity="news" data-args="id=' . $id . '" data-highlightclass="card_highlight" onclick="void(0)"><div class="card_vertical_cover_art_div" style="background-image: url(\'' . $cover_art . '\')"></div><div class="card_vertical_upper_tall_div">' . hsc($headline) . '</div><div class="card_vertical_lower_div">' . hsc($date) . '</div></div></div>';
-			}
-
-			echo '<div class="clear_float_div"></div></div></div>';
-		}
-	}
-}
 else
 {
 	$country = get_spotify_country();
@@ -475,14 +405,13 @@ else
 		<div>
 		<div>
 		<div class="card_div actions_div" data-actions="change_activity" data-activity="browse" data-subactivity="top-lists" data-args="" data-highlightclass="card_highlight" onclick="void(0)"><div class="card_icon_div"><div class="img_div img_24_div star_grey_24_img_div"></div></div><div class="card_text_div"><div>Top Lists</div><div>In ' . $country . '.</div></div></div>
-		<div class="card_div actions_div" data-actions="change_activity" data-activity="browse" data-subactivity="popular-playlists" data-args="" data-highlightclass="card_highlight" onclick="void(0)"><div class="card_icon_div"><div class="img_div img_24_div heart_grey_24_img_div"></div></div><div class="card_text_div"><div>Popular Playlists</div><div>Updated weekly.</div></div></div>
 		<div class="card_div actions_div" data-actions="change_activity" data-activity="browse" data-subactivity="genres" data-args="" data-highlightclass="card_highlight" onclick="void(0)"><div class="card_icon_div"><div class="img_div img_24_div label_grey_24_img_div"></div></div><div class="card_text_div"><div>Genres &amp; Moods</div><div>Playlists based on genres and moods.</div></div></div>
-		<div class="card_div actions_div" data-actions="change_activity" data-activity="browse" data-subactivity="new-releases" data-args="" data-highlightclass="card_highlight" onclick="void(0)"><div class="card_icon_div"><div class="img_div img_24_div album_grey_24_img_div"></div></div><div class="card_text_div"><div>New Releases</div><div>In ' . $country . '.</div></div></div>
+		<div class="card_div actions_div" data-actions="change_activity" data-activity="browse" data-subactivity="popular-playlists" data-args="" data-highlightclass="card_highlight" onclick="void(0)"><div class="card_icon_div"><div class="img_div img_24_div heart_grey_24_img_div"></div></div><div class="card_text_div"><div>Popular Playlists</div><div>Updated weekly.</div></div></div>
 		</div>
 		<div>
+		<div class="card_div actions_div" data-actions="change_activity" data-activity="browse" data-subactivity="new-releases" data-args="" data-highlightclass="card_highlight" onclick="void(0)"><div class="card_icon_div"><div class="img_div img_24_div album_grey_24_img_div"></div></div><div class="card_text_div"><div>New Releases</div><div>In ' . $country . '.</div></div></div>
 		<div class="card_div actions_div" data-actions="change_activity" data-activity="browse" data-subactivity="charts" data-args="chart=streamed" data-highlightclass="card_highlight" onclick="void(0)"><div class="card_icon_div"><div class="img_div img_24_div headphones_grey_24_img_div"></div></div><div class="card_text_div"><div>Most Streamed</div><div>Last week in ' . $country . '.</div></div></div>
 		<div class="card_div actions_div" data-actions="change_activity" data-activity="browse" data-subactivity="charts" data-args="chart=viral" data-highlightclass="card_highlight" onclick="void(0)"><div class="card_icon_div"><div class="img_div img_24_div share_grey_24_img_div"></div></div><div class="card_text_div"><div>Most Viral</div><div>Last week in ' . $country . '.</div></div></div>
-		<div class="card_div actions_div" data-actions="change_activity" data-activity="browse" data-subactivity="news" data-args="" data-highlightclass="card_highlight" onclick="void(0)"><div class="card_icon_div"><div class="img_div img_24_div hot_grey_24_img_div"></div></div><div class="card_text_div"><div>News</div><div>Latest music news in ' . $country . '.</div></div></div>
 		</div>
 		</div>
 		</div>

@@ -2,20 +2,18 @@
 
 Copyright 2015 Ole Jon Bjørkum
 
-This file is part of SpotCommander.
-
-SpotCommander is free software: you can redistribute it and/or modify
+This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-SpotCommander is distributed in the hope that it will be useful,
+This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with SpotCommander.  If not, see <http://www.gnu.org/licenses/>.
+along with this program. If not, see http://www.gnu.org/licenses/.
 
 */
 
@@ -38,7 +36,6 @@ function showActivity()
 
 		setCoverArtSize();
 		setCardVerticalCoverArtSize();
-		setEllipsis();
 
 		restoreScrollPosition();
 
@@ -177,19 +174,19 @@ function activityLoaded()
 	{
 		if(data.is_authorized_with_spotify)
 		{
-			var cookie = { id: 'last_playlists_import' };
+			var cookie = { id: 'last_refresh_playlists' };
 
 			if(isCookie(cookie.id))
 			{
-				var last_playlists_import = parseInt($.cookie(cookie.id));
+				var last_refresh_playlists = parseInt($.cookie(cookie.id));
 
-				if(getCurrentTime() - last_playlists_import > 1000 * 300) importSpotifyPlaylists(true);
+				if(getCurrentTime() - last_refresh_playlists > 1000 * 300) refreshSpotifyPlaylists(true);
 			}
 			else
 			{
 				showToast('Getting your playlists&hellip;', 2);
 
-				importSpotifyPlaylists(true);
+				refreshSpotifyPlaylists(true);
 			}
 		}
 	}
@@ -197,19 +194,19 @@ function activityLoaded()
 	{
 		if(data.is_authorized_with_spotify)
 		{
-			var cookie = { id: 'last_saved_tracks_import' };
+			var cookie = { id: 'last_refresh_library' };
 
 			if(isCookie(cookie.id))
 			{
-				var last_saved_tracks_import = parseInt($.cookie(cookie.id));
+				var last_refresh_library = parseInt($.cookie(cookie.id));
 
-				if(getCurrentTime() - last_saved_tracks_import > 1000 * 300) importSavedSpotifyTracks(true);
+				if(getCurrentTime() - last_refresh_library > 1000 * 300) refreshLibrary(false);
 			}
 			else
 			{
-				showToast('Getting your saved tracks&hellip;', 2);
+				showToast('Getting your library&hellip;', 2);
 
-				importSavedSpotifyTracks(true);
+				refreshLibrary(true);
 			}
 		}
 	}
@@ -289,7 +286,7 @@ function activityLoaded()
 function changeActivity(activity, subactivity, args)
 {
 	var args = args.replace(/%26/g, '%2526').replace(/&amp;/g, '&').replace(/%2F/g, '%252F').replace(/%5C/g, '%255C');
-	var hash  = '#'+activity+'/'+subactivity+'/'+args+'/'+getCurrentTime();
+	var hash = '#'+activity+'/'+subactivity+'/'+args+'/'+getCurrentTime();
 
 	window.location.href=hash;
 }
@@ -297,7 +294,7 @@ function changeActivity(activity, subactivity, args)
 function replaceActivity(activity, subactivity, args)
 {
 	var args = args.replace(/%26/g, '%2526').replace(/&amp;/g, '&').replace(/%2F/g, '%252F').replace(/%5C/g, '%255C');
-	var hash  = '#'+activity+'/'+subactivity+'/'+args+'/'+getCurrentTime();
+	var hash = '#'+activity+'/'+subactivity+'/'+args+'/'+getCurrentTime();
 
 	window.location.replace(hash);
 }
@@ -322,7 +319,6 @@ function refreshActivity()
 			setCoverArtSize();
 			setCoverArtOpacity();
 			setCardVerticalCoverArtSize();
-			setEllipsis();
 		}
 	});
 }
@@ -443,6 +439,10 @@ function openExternalActivity(uri)
 			var query = Android.JSsearchApp('com.google.android.youtube', query);
 
 			if(query == 0) showToast('App not installed', 4);
+		}
+		else if(shc(uri, 'market://'))
+		{
+			Android.JSopenUri(uri);
 		}
 		else
 		{
@@ -809,7 +809,7 @@ function playUri(uri)
 
 	var type = getUriType(uri);
 
-	if(type == 'playlist' || type == 'starred') saveRecentPlaylist(uri);
+	if(type == 'playlist') saveRecentPlaylist(uri);
 }
 
 function playUriFromPlaylist(playlist_uri, uri)
@@ -845,7 +845,7 @@ function shufflePlayUri(uri)
 
 		var type = getUriType(uri);
 
-		if(type == 'playlist' || type == 'starred') saveRecentPlaylist(uri);
+		if(type == 'playlist') saveRecentPlaylist(uri);
 	}
 }
 
@@ -1614,7 +1614,7 @@ function addToPlaylist(title, uri, is_authorized_with_spotify)
 		}
 		else
 		{
-			$.get('playlists.php?get_playlists_as_json', function(xhr_data)
+			$.get('playlists.php?get_playlists_with_access_as_json', function(xhr_data)
 			{
 				var playlists = $.parseJSON(xhr_data);
 
@@ -1624,7 +1624,7 @@ function addToPlaylist(title, uri, is_authorized_with_spotify)
 
 				for(var playlist in playlists)
 				{
-					actions[i] = { text: hsc(playlist), keys: ['actions', 'uri', 'uris'], values: ['hide_dialog add_uris_to_playlist', playlists[playlist], uri] }
+					actions[i] = { text: hsc(playlist), keys: ['actions', 'uri', 'uris'], values: ['hide_dialog add_uris_to_playlist', playlists[playlist], uri] };
 
 					i++;
 				}
@@ -1694,18 +1694,16 @@ function deleteUrisFromPlaylist(uri, uris, positions, snapshot_id, div)
 	}
 }
 
-function confirmImportSpotifyPlaylists()
+function confirmRefreshSpotifyPlaylists()
 {
-	var append = (ua_is_android_app) ? '<br><br>On Android you can share any collaborative playlists to '+project_name+' from the Spotify app, and add from there.' : '';
-
-	showDialog({ title: 'Import from Spotify', body_class: 'dialog_message_div', body_content: 'Your playlists are refreshed every five minutes. This action does it manually. Collaborative playlists will not be imported because of a limitation in Spotify\'s web API. You can temporarily mark any collaborative playlists as not collaborative, or import manually.'+append, button1: { text: 'CANCEL', keys : ['actions'], values: ['hide_dialog'] }, button2: { text: 'CONTINUE', keys : ['actions'], values: ['hide_dialog import_spotify_playlists'] }, cookie: null });
+	showDialog({ title: 'Refresh from Spotify', body_class: 'dialog_message_div', body_content: 'Your playlists are refreshed every five minutes. This action does it manually.', button1: { text: 'CANCEL', keys : ['actions'], values: ['hide_dialog'] }, button2: { text: 'CONTINUE', keys : ['actions'], values: ['hide_dialog refresh_spotify_playlists'] }, cookie: null });
 }
 
-function importSpotifyPlaylists(refresh)
+function refreshSpotifyPlaylists(refresh)
 {
 	if(!refresh) activityLoading();
 
-	xhr_activity = $.get('playlists.php?import_spotify_playlists', function(xhr_data)
+	xhr_activity = $.get('playlists.php?refresh_spotify_playlists', function(xhr_data)
 	{
 		var number = parseInt(xhr_data);
 		var toast = (number == 1) ? 'playlist' : 'playlists';
@@ -1737,7 +1735,7 @@ function importSpotifyPlaylists(refresh)
 			}
 			else if(xhr_data == 'error')
 			{
-				showToast('Could not import playlists', 4);
+				showToast('Could not refresh playlists', 4);
 			}
 			else
 			{
@@ -1746,7 +1744,7 @@ function importSpotifyPlaylists(refresh)
 		}
 	});
 
-	$.cookie('last_playlists_import', getCurrentTime(), { expires: 3650 });
+	$.cookie('last_refresh_playlists', getCurrentTime(), { expires: 3650 });
 }
 
 function importPlaylists(uris)
@@ -1940,7 +1938,7 @@ function refreshPlaylistsActivity()
 
 function refreshBrowsePlaylistActivity(uri)
 {
-	var a  = getActivity();
+	var a = getActivity();
 
 	if(isActivity('playlists', 'browse') && shc(a.args, uri))
 	{
@@ -2014,7 +2012,7 @@ function remove(uri, is_authorized_with_spotify)
 		{
 			refreshLibraryActivity();
 
-			if(xhr_data == 'error') showToast('Could not remove track from library', 4);
+			if(xhr_data == 'error') showToast('Could not remove item from library', 4);
 		});
 	}
 	else
@@ -2023,11 +2021,11 @@ function remove(uri, is_authorized_with_spotify)
 	}
 }
 
-function confirmImportSavedSpotifyTracks(is_authorized_with_spotify)
+function confirmRefreshLibrary(is_authorized_with_spotify)
 {
 	if(is_authorized_with_spotify)
 	{
-		showDialog({ title: 'Import from Spotify', body_class: 'dialog_message_div', body_content: 'Your saved tracks are refreshed every five minutes. This action does it manually. Importing saved albums and artists is not currently supported.', button1: { text: 'CANCEL', keys : ['actions'], values: ['hide_dialog'] }, button2: { text: 'CONTINUE', keys : ['actions'], values: ['hide_dialog import_saved_spotify_tracks'] }, cookie: null });
+		showDialog({ title: 'Refresh Library', body_class: 'dialog_message_div', body_content: 'Your library is refreshed every five minutes. This action does it manually. Saved albums is not currently supported.', button1: { text: 'CANCEL', keys : ['actions'], values: ['hide_dialog'] }, button2: { text: 'CONTINUE', keys : ['actions'], values: ['hide_dialog refresh_library'] }, cookie: null });
 	}
 	else
 	{
@@ -2035,51 +2033,27 @@ function confirmImportSavedSpotifyTracks(is_authorized_with_spotify)
 	}
 }
 
-function importSavedSpotifyTracks(refresh)
+function refreshLibrary(reload)
 {
-	xhr_activity = $.get('library.php?import_saved_spotify_tracks', function(xhr_data)
+	xhr_activity = $.get('library.php?refresh_library', function(xhr_data)
 	{
-		var number = parseInt(xhr_data);
-		var word = (Math.abs(number) == 1) ? 'track' : 'tracks';
-		var toast = (number < 0) ? Math.abs(number)+' '+word+' removed' : number+' '+word+' imported';
-
-		if(refresh)
+		if(xhr_data == 'new_items')
 		{
-			if(xhr_data == 'no_tracks')
-			{
-				showToast('No saved tracks found', 4);
-			}
-			else if(xhr_data == 'error')
-			{
-				showToast('Could not refresh saved tracks', 4);
-			}
-			else if(number != 0)
-			{
-				showToast(toast, 2);
+			showToast('Library refreshed', 2);
 
-				reloadActivity();
-			}
+			reloadActivity();
 		}
-		else
+		else if(xhr_data == 'no_items')
 		{
-			if(xhr_data == 'no_tracks')
-			{
-				showToast('No saved tracks found', 4);
-			}
-			else if(xhr_data == 'error')
-			{
-				showToast('Could not import saved tracks', 4);
-			}
-			else
-			{
-				reloadActivity();
-
-				showToast(toast, 2);
-			}
+			showToast('No saved items found', 4);
+		}
+		else if(xhr_data == 'error')
+		{
+			showToast('Could not refresh saved items', 4);
 		}
 	});
 
-	$.cookie('last_saved_tracks_import', getCurrentTime(), { expires: 3650 });
+	$.cookie('last_refresh_library', getCurrentTime(), { expires: 3650 });
 }
 
 function refreshLibraryActivity()
@@ -2337,7 +2311,7 @@ function removeAllPlaylists()
 	{
 		showToast('All playlists removed', 2);
 
-		$.removeCookie('last_playlists_import');
+		$.removeCookie('last_refresh_playlists');
 	});
 }
 
@@ -2424,22 +2398,11 @@ function setCss()
 	if(ua_supports_csstransitions && ua_supports_csstransforms3d)
 	{
 		css += '.show_nowplaying_animation { transform: translate3d(0, -'+window_height+'px, 0); -webkit-transform: translate3d(0, -'+window_height+'px, 0); -moz-transform: translate3d(0, -'+window_height+'px, 0); -ms-transform: translate3d(0, -'+window_height+'px, 0); } ';
-		
+
 		if(!ua_is_ios) css += '.card_highlight { transform: scale3d(0.975, 0.975, 1); -webkit-transform: scale3d(0.975, 0.975, 1); -moz-transform: scale3d(0.975, 0.975, 1); -ms-transform: scale3d(0.975, 0.975, 1); } ';
 	}
 
 	style.html(css);
-
-	if(ua_is_ios && ua_is_standalone)
-	{
-		$('div#top_actionbar_inner_div').addClass('top_actionbar_inner_ios_div');
-		$('div#menu_div').addClass('menu_ios_div');
-		$('div#top_actionbar_overflow_actions_div').addClass('top_actionbar_overflow_actions_ios_div');
-		$('div#nowplaying_actionbar_left_div').addClass('nowplaying_actionbar_ios_div');
-		$('div#nowplaying_actionbar_right_div').addClass('nowplaying_actionbar_ios_div');
-		$('div#nowplaying_actionbar_overflow_actions_div').addClass('nowplaying_actionbar_overflow_actions_ios_div');
-		$('div#activity_div').addClass('activity_ios_div');
-	}
 }
 
 function setWidescreenCss()
@@ -2502,11 +2465,6 @@ function setCardVerticalCoverArtSize()
 
 	cover_art_divs.height(cover_art_divs_width);
 	cards_div.css('visibility', 'visible');
-}
-
-function setEllipsis()
-{
-	$('div.card_vertical_upper_tall_div').dotdotdot();
 }
 
 function focusTextInput(id)
@@ -2619,7 +2577,7 @@ function hideActivityFab()
 {
 	var div = $('div#activity_fab_div');
 
-	if(div.is(':hidden')) return;
+	if(div.is(':hidden') || isActivity('library', '')) return;
 
 	if(ua_supports_csstransitions && ua_supports_csstransforms3d)
 	{
@@ -3002,7 +2960,7 @@ function checkForDialogs()
 		if(ua_is_standalone)
 		{
 			var cookie = { id: 'hide_ios_back_gesture_dialog', value: 'true', expires: 3650 };
-			if(!isCookie(cookie.id)) showDialog({ title: 'iOS Tip', body_class: 'dialog_message_div', body_content: 'Since you are running fullscreen and your device has no back button, you can swipe in from the right to go back.', button1: null, button2: null, cookie: cookie });
+			if(!isCookie(cookie.id)) showDialog({ title: 'iOS Tip', body_class: 'dialog_message_div', body_content: 'Since you are running fullscreen and your device has no back button, you can swipe in from the right to go back.<br><br>Avoid the multitasking button at the center right of the screen on devices that run iOS 9 or newer that support it.', button1: null, button2: null, cookie: cookie });
 		}
 		else
 		{
@@ -3157,6 +3115,35 @@ function restoreScrollPosition()
 	setScrollPosition(position);
 }
 
+function scrollToNextListHeader()
+{
+	var length = $('div.list_header_div').length - 1;
+
+	if(scrolling_last_list_header == null)
+	{
+		var i = 1;
+	}
+	else
+	{
+		if(scrolling_last_list_header == length)
+		{
+			scrolling_last_list_header = null;
+
+			scrollToTop();
+
+			return;
+		}
+
+		var i = scrolling_last_list_header + 1;
+	}
+
+	scrolling_last_list_header = i;
+
+	var offset = $('div#list_header_'+scrolling_last_list_header+'_div').offset();
+
+	setScrollPosition(offset.top - 64);
+}
+
 // Native apps
 
 function nativeAppLoad(is_paused)
@@ -3224,7 +3211,7 @@ function nativeAppLoad(is_paused)
 		{
 			var type = getUriType(shareUri);
 
-			if(type == 'playlist' || type == 'starred')
+			if(type == 'playlist')
 			{
 				$.get('profile.php?is_authorized_with_spotify', function(xhr_data)
 				{
@@ -3568,9 +3555,9 @@ function ucfirst(string)
 
 function hexToRgb(hex)
 {
-    var rgb = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+	var rgb = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
 
-    return parseInt(rgb[1], 16)+', '+parseInt(rgb[2], 16)+', '+ parseInt(rgb[3], 16);
+	return parseInt(rgb[1], 16)+', '+parseInt(rgb[2], 16)+', '+ parseInt(rgb[3], 16);
 }
 
 // URIs
@@ -3616,37 +3603,29 @@ function getUriType(uri)
 {
 	var type = 'unknown';
 
-	if(uri.match(/^spotify:user:[^:]+:playlist:\w{22}$/) || uri.match(/^https?:\/\/open\.spotify\.com\/user\/[^\/]+\/playlist\/\w{22}$/))
+	if(uri.match(/^spotify:user:[^:]+:playlist:\w{22}$/) || uri.match(/^https?:\/\/[^\.]+\.spotify\.com\/user\/[^\/]+\/playlist\/\w{22}$/))
 	{
 		type = 'playlist';
 	}
-	else if(uri.match(/^spotify:user:[^:]+:starred$/) || uri.match(/^https?:\/\/open\.spotify\.com\/user\/[^\/]+\/starred$/))
-	{
-		type = 'starred';
-	}
-	else if(uri.match(/^spotify:artist:\w{22}$/) || uri.match(/^https?:\/\/open\.spotify\.com\/artist\/\w{22}$/))
+	else if(uri.match(/^spotify:artist:\w{22}$/) || uri.match(/^https?:\/\/[^\.]+\.spotify\.com\/artist\/\w{22}$/))
 	{
 		type = 'artist';
 	}
-	else if(uri.match(/^spotify:album:\w{22}$/) || uri.match(/^https?:\/\/open\.spotify\.com\/album\/\w{22}$/))
+	else if(uri.match(/^spotify:album:\w{22}$/) || uri.match(/^https?:\/\/[^\.]+\.spotify\.com\/album\/\w{22}$/))
 	{
 		type = 'album';
 	}
-	else if(uri.match(/^spotify:track:\w{22}$/) || uri.match(/^https?:\/\/open\.spotify\.com\/track\/\w{22}$/))
+	else if(uri.match(/^spotify:track:\w{22}$/) || uri.match(/^https?:\/\/[^\.]+\.spotify\.com\/track\/\w{22}$/))
 	{
 		type = 'track';
 	}
-	else if(uri.match(/^spotify:local:[^:]+:[^:]*:[^:]+:\d*$/) || uri.match(/^https?:\/\/open\.spotify\.com\/local\/[^\/]+\/[^\/]*\/[^\/]+\/\d*$/))
+	else if(uri.match(/^spotify:local:[^:]+:[^:]*:[^:]+:\d*$/) || uri.match(/^https?:\/\/[^\.]+\.spotify\.com\/local\/[^\/]+\/[^\/]*\/[^\/]+\/\d*$/))
 	{
 		type = 'local';
 	}
 	else if(uri.match(/^spotify:app:genre:\w+$/) || uri.match(/^https?:\/\/spotify:app:genre:\w+$/))
 	{
 		type = 'genre';
-	}
-	else if(uri.match(/^spotify:user:[^:]+$/) || uri.match(/^https?:\/\/open\.spotify\.com\/user\/[^\/]+$/))
-	{
-		type = 'starred';
 	}
 	else if(uri.match(/^https?:\/\/\w+\.scdn\.co\/\w+\/\w+$/) || uri.match(/^https?:\/\/\w+\.cloudfront\.net\/\w+\/\w+$/) || uri.match(/^https?:\/\/fbcdn-profile/) || uri.match(/^https?:\/\/profile-images/))
 	{
@@ -3663,10 +3642,6 @@ function uriToUrl(uri)
 	if(type == 'playlist')
 	{
 		uri = uri.replace(/^spotify:user:(.*?):playlist:(.*?)$/, 'http://open.spotify.com/user/$1/playlist/$2');
-	}
-	else if(type == 'starred')
-	{
-		uri = uri.replace(/^spotify:user:(.*?):starred$/, 'http://open.spotify.com/user/$1/starred');
 	}
 	else if(type == 'artist')
 	{
@@ -3694,27 +3669,23 @@ function urlToUri(uri)
 
 	if(type == 'playlist')
 	{
-		uri = uri.replace(/^https?:\/\/open\.spotify\.com\/user\/(.*?)\/playlist\/(.*?)$/, 'spotify:user:$1:playlist:$2');
-	}
-	else if(type == 'starred')
-	{
-		uri = uri.replace(/^https?:\/\/open\.spotify\.com\/user\/(.*?)\/starred$/, 'spotify:user:$1:starred');
+		uri = uri.replace(/^https?:\/\/[^\.]+\.spotify\.com\/user\/(.*?)\/playlist\/(.*?)$/, 'spotify:user:$1:playlist:$2');
 	}
 	else if(type == 'artist')
 	{
-		uri = uri.replace(/^https?:\/\/open\.spotify\.com\/artist\/(.*?)$/, 'spotify:artist:$1');
+		uri = uri.replace(/^https?:\/\/[^\.]+\.spotify\.com\/artist\/(.*?)$/, 'spotify:artist:$1');
 	}
 	else if(type == 'album')
 	{
-		uri = uri.replace(/^https?:\/\/open\.spotify\.com\/album\/(.*?)$/, 'spotify:album:$1');
+		uri = uri.replace(/^https?:\/\/[^\.]+\.spotify\.com\/album\/(.*?)$/, 'spotify:album:$1');
 	}
 	else if(type == 'track')
 	{
-		uri = uri.replace(/^https?:\/\/open\.spotify\.com\/track\/(.*?)$/, 'spotify:track:$1');
+		uri = uri.replace(/^https?:\/\/[^\.]+\.spotify\.com\/track\/(.*?)$/, 'spotify:track:$1');
 	}
 	else if(type == 'local')
 	{
-		uri = uri.replace(/^https?:\/\/open\.spotify\.com\/local\/(.*?)$/, 'spotify:local:$1').replace(/\//g, ':');
+		uri = uri.replace(/^https?:\/\/[^\.]+\.spotify\.com\/local\/(.*?)$/, 'spotify:local:$1').replace(/\//g, ':');
 	}
 
 	return uri;

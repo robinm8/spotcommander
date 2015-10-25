@@ -3,7 +3,7 @@
 jQuery cookie plugin 1.4.1
 Source: http://github.com/carhartl/jquery-cookie
 
-Copyright 2013 Klaus Hartl
+Copyright 2015 Klaus Hartl
 License: http://opensource.org/licenses/MIT
 
 */

@@ -4,20 +4,18 @@
 
 Copyright 2015 Ole Jon Bjørkum
 
-This file is part of SpotCommander.
-
-SpotCommander is free software: you can redistribute it and/or modify
+This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-SpotCommander is distributed in the hope that it will be useful,
+This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with SpotCommander.  If not, see <http://www.gnu.org/licenses/>.
+along with this program. If not, see http://www.gnu.org/licenses/.
 
 */
 
@@ -35,6 +33,11 @@ function spotify_is_running()
 	return false;
 }
 
+function spotify_is_testing()
+{
+	return (trim(file_get_contents(__DIR__ . '/run/spotify.version')) == 'testing');
+}
+
 // Daemon
 
 function daemon_start($user)
@@ -43,12 +46,15 @@ function daemon_start($user)
 
 	sleep(2);
 
+	$spotify_is_testing = daemon_spotify_is_testing();
 	$qdbus = daemon_qdbus_select();
 
 	$log_file = __DIR__ . '/run/daemon.log';
 	$user_file = __DIR__ . '/run/daemon.user';
 
-	file_write($log_file, '');
+	$file_write = ($spotify_is_testing) ? "\nSpotify is testing version.\n\n" : "\nSpotify is stable version.\n\n";
+
+	file_write($log_file, $file_write);
 	file_write($user_file, $user);
 
 	exec(__DIR__ . '/bin/spotcommander-remote 1>>' . $log_file . ' 2>>' . $log_file . ' &');
@@ -79,6 +85,48 @@ function daemon_is_running()
 	return $socket_connect;
 }
 
+function daemon_inotifywait($action)
+{
+	file_write(__DIR__ . '/run/daemon.inotify', $action);
+}
+
+function daemon_spotify_is_testing()
+{
+	$version_file = __DIR__ . '/run/spotify.version';
+	$version = (trim(shell_exec('grep -c autologin\.saved_credentials /home/' . daemon_user() . '/.config/spotify/prefs')) == 1) ? 'testing' : 'stable';
+
+	file_write($version_file, $version);
+
+	return ($version == 'testing');
+}
+
+function daemon_user()
+{
+	return trim(file_get_contents(__DIR__ . '/run/daemon.user'));
+}
+
+function daemon_qdbus_select()
+{
+	$commands = array('/usr/lib/i386-linux-gnu/qt4/bin/qdbus', '/usr/lib/x86_64-linux-gnu/qt4/bin/qdbus', 'qdbus-qt4', 'qdbus');
+
+	foreach($commands as $command)
+	{
+		if(trim(shell_exec('command -v ' . $command . ' 1>/dev/null 2>&1 && echo 1')) == 1) return $command;
+	}
+
+	return '';
+}
+
+function daemon_pulseaudio_check()
+{
+	return (trim(shell_exec('command -v pacmd 1>/dev/null 2>&1 && echo 1')) == 1);
+}
+
+function daemon_logind_check($qdbus)
+{
+	return (trim(shell_exec($qdbus . ' --system org.freedesktop.login1 1>/dev/null 2>&1 && echo 1')) == 1);
+}
+
 function daemon_get_nowplaying()
 {
 	global $qdbus;
@@ -107,38 +155,6 @@ function daemon_get_nowplaying()
 	}
 
 	return $return;
-}
-
-function daemon_inotifywait($action)
-{
-	file_write(__DIR__ . '/run/daemon.inotify', $action);
-}
-
-function daemon_user()
-{
-	return trim(file_get_contents(__DIR__ . '/run/daemon.user'));
-}
-
-function daemon_qdbus_select()
-{
-	$commands = array('/usr/lib/i386-linux-gnu/qt4/bin/qdbus', '/usr/lib/x86_64-linux-gnu/qt4/bin/qdbus', 'qdbus-qt4', 'qdbus');
-
-	foreach($commands as $command)
-	{
-		if(trim(shell_exec('command -v ' . $command . ' 1>/dev/null 2>&1 && echo 1')) == 1) return $command;
-	}
-
-	return '';
-}
-
-function daemon_pulseaudio_check()
-{
-	return (trim(shell_exec('command -v pacmd 1>/dev/null 2>&1 && echo 1')) == 1);
-}
-
-function daemon_logind_check($qdbus)
-{
-	return (trim(shell_exec($qdbus . ' --system org.freedesktop.login1 1>/dev/null 2>&1 && echo 1')) == 1);
 }
 
 // Remote control
@@ -284,7 +300,7 @@ function queue_uris($uris, $randomly)
 	$last_id = get_db_rows('queue', "SELECT id FROM queue ORDER BY id DESC LIMIT 1", array('id'));
 	$last_id = (empty($last_id[1]['id'])) ? 0 : intval($last_id[1]['id']);
 
-	if($type == 'playlist' || $type == 'starred')
+	if($type == 'playlist')
 	{
 		$playlist = get_playlist($uris);
 
@@ -482,20 +498,26 @@ function get_playlists($order1, $order2)
 	return get_db_rows('playlists', "SELECT id, name, uri FROM playlists ORDER BY " . sqlite_escape($order1) . " COLLATE NOCASE, " . sqlite_escape($order2) . " COLLATE NOCASE", array('id', 'name', 'uri'));
 }
 
-function get_playlists_as_json($include_starred)
+function get_playlists_as_json($with_access)
 {
-	$return = array();
-
-	if($include_starred) $return['Starred'] = 'spotify:user:' . rawurlencode(get_spotify_username()) . ':starred';
-
 	$playlists = get_playlists('name', 'uri');
+	$username = get_spotify_username();
+
+	$return = array();
 
 	foreach($playlists as $playlist)
 	{
 		$name = $playlist['name'];
 		$uri = $playlist['uri'];
 
-		$return[$name] = $uri;
+		if($with_access)
+		{
+			if(preg_match('/^spotify:user:' . $username . ':playlist:/', $uri)) $return[$name] = $uri;
+		}
+		else
+		{
+			$return[$name] = $uri;
+		}
 	}
 
 	return json_encode($return);
@@ -528,11 +550,9 @@ function get_playlist($playlist_uri)
 
 	if(empty($return))
 	{
-		$is_starred = (get_uri_type($playlist_uri) == 'starred');
-
 		$user = get_playlist_user($playlist_uri);
 
-		$api_uri = ($is_starred) ? 'https://api.spotify.com/v1/users/' . $user . '/starred?fields=images,name,owner(id),public,snapshot_id,tracks(items,total,limit)' : 'https://api.spotify.com/v1/users/' . $user . '/playlists/' . uri_to_id($playlist_uri) . '?fields=images,name,owner(id),public,snapshot_id,tracks(items,total,limit)';
+		$api_uri = 'https://api.spotify.com/v1/users/' . $user . '/playlists/' . uri_to_id($playlist_uri) . '?fields=images,name,owner(id),public,snapshot_id,tracks(items,total,limit)';
 		$api_headers = array('Authorization: Bearer ' . get_spotify_token());
 
 		$files = get_external_files(array($api_uri), $api_headers, null);
@@ -580,7 +600,7 @@ function get_playlist($playlist_uri)
 
 			if($tracks_count > $tracks_limit)
 			{
-				$api_uri = ($is_starred) ? 'https://api.spotify.com/v1/users/' . $user . '/starred/tracks?fields=items' : 'https://api.spotify.com/v1/users/' . $user . '/playlists/' . uri_to_id($playlist_uri) . '/tracks?fields=items';
+				$api_uri = 'https://api.spotify.com/v1/users/' . $user . '/playlists/' . uri_to_id($playlist_uri) . '/tracks?fields=items';
 
 				$pages = $tracks_count / $tracks_limit;
 				$pages = ceil($pages - 1);
@@ -640,7 +660,7 @@ function get_playlist($playlist_uri)
 	return $return;
 }
 
-function import_spotify_playlists()
+function refresh_spotify_playlists()
 {
 	$api_uri = 'https://api.spotify.com/v1/users/' . rawurlencode(get_spotify_username()) . '/playlists?limit=50';
 	$api_headers = array('Authorization: Bearer ' . get_spotify_token());
@@ -892,7 +912,7 @@ function add_uris_to_playlist($uri, $uris)
 
 	$uris = explode(' ', $uris);
 
-	$api_uri = (get_uri_type($uri) == 'starred') ? 'https://api.spotify.com/v1/users/' . $user . '/starred/tracks' : 'https://api.spotify.com/v1/users/' . $user . '/playlists/' . uri_to_id($uri) . '/tracks';
+	$api_uri = 'https://api.spotify.com/v1/users/' . $user . '/playlists/' . uri_to_id($uri) . '/tracks';
 
 	$files = get_external_files(array($api_uri), array('Authorization: Bearer ' . get_spotify_token(), 'Content-Type: application/json'), array('POST', json_encode($uris)));
 	$response = $files[0];
@@ -904,7 +924,6 @@ function add_uris_to_playlist($uri, $uris)
 	else
 	{
 		refresh_playlist($uri);
-
 		return count($uris);
 	}
 }
@@ -915,7 +934,7 @@ function delete_uris_from_playlists($uri, $uris, $positions, $snapshot_id)
 
 	$json = json_encode(array('tracks' => array(array('uri' => $uris, 'positions' => array($positions))), 'snapshot_id' => $snapshot_id));
 
-	$api_uri = (get_uri_type($uri) == 'starred') ? 'https://api.spotify.com/v1/users/' . $user . '/starred/tracks' : 'https://api.spotify.com/v1/users/' . $user . '/playlists/' . uri_to_id($uri) . '/tracks';
+	$api_uri = 'https://api.spotify.com/v1/users/' . $user . '/playlists/' . uri_to_id($uri) . '/tracks';
 
 	$files = get_external_files(array($api_uri), array('Authorization: Bearer ' . get_spotify_token(), 'Content-Type: application/json'), array('DELETE', $json));
 	$response = $files[0];
@@ -1019,7 +1038,6 @@ function save($artist, $title, $uri)
 	if(is_saved($uri))
 	{
 		remove($uri);
-
 		return ucfirst($type) . ' removed from library';
 	}
 
@@ -1031,45 +1049,59 @@ function save($artist, $title, $uri)
 	}
 
 	db_exec('library', "INSERT INTO library (type, artist, title, uri) VALUES ('" . sqlite_escape($type) . "', '" . sqlite_escape($artist) . "', '" . sqlite_escape($title) . "', '" . sqlite_escape($uri) . "')");
-
 	return ucfirst($type) . ' saved to library';
 }
 
 function remove($uri)
 {
-	if(get_uri_type($uri) == 'track')
+	$type = get_uri_type($uri);
+
+	if($type == 'track')
 	{
 		$files = get_external_files(array('https://api.spotify.com/v1/me/tracks'), array('Authorization: Bearer ' . get_spotify_token(), 'Content-Type: application/json'), array('DELETE', json_encode(array(uri_to_id($uri)))));
 
 		if(is_numeric($files[0])) return 'error';
 	}
+	elseif($type == 'artist')
+	{
+		$files = get_external_files(array('https://api.spotify.com/v1/me/following?type=artist&ids=' . uri_to_id($uri)), array('Authorization: Bearer ' . get_spotify_token()), array('DELETE', null));
+
+		if($files[0] != 204) return 'error';
+	}
+	elseif($type == 'user')
+	{
+		$files = get_external_files(array('https://api.spotify.com/v1/me/following?type=user&ids=' . rawurlencode(uri_to_id($uri))), array('Authorization: Bearer ' . get_spotify_token()), array('DELETE', null));
+
+		if($files[0] != 204) return 'error';
+	}
 
 	db_exec('library', "DELETE FROM library WHERE uri = '" . sqlite_escape($uri) . "'");
 }
 
-function import_saved_spotify_tracks()
+function refresh_library()
 {
-	$api_uri = 'https://api.spotify.com/v1/me/tracks?limit=50';
+	$api_uris = array('https://api.spotify.com/v1/me/tracks?limit=50', 'https://api.spotify.com/v1/me/following?type=artist&limit=50');
 	$api_headers = array('Authorization: Bearer ' . get_spotify_token());
 
-	$files = get_external_files(array($api_uri), $api_headers, null);
-	$metadata = json_decode($files[0], true);
+	$files = get_external_files($api_uris, $api_headers, null);
+	$metadata_tracks = json_decode($files[0], true);
+	$metadata_artists = json_decode($files[1], true);
 
-	if(!empty($metadata['items']))
+	if(!empty($metadata_tracks['items']))
 	{
-		$count = get_db_count('library', "SELECT COUNT(id) as count FROM library WHERE type = 'track'");
+		$count_tracks = get_db_count('library', "SELECT COUNT(id) as count FROM library WHERE type = 'track'");
 
 		$last_id = get_db_rows('library', "SELECT id FROM library ORDER BY id DESC LIMIT 1", array('id'));
 		$last_id = (empty($last_id[1]['id'])) ? 0 : intval($last_id[1]['id']);
 
-		remove_all_saved_tracks();
+		clean_library('track');
 
 		$insert = array();
 		$i = 0;
 
-		$tracks = array_reverse($metadata['items']);
-		$tracks_limit = $metadata['limit'];
-		$tracks_count = $metadata['total'];
+		$tracks = array_reverse($metadata_tracks['items']);
+		$tracks_limit = $metadata_tracks['limit'];
+		$tracks_count = $metadata_tracks['total'];
 
 		foreach($tracks as $track)
 		{
@@ -1093,7 +1125,7 @@ function import_saved_spotify_tracks()
 			for($n = 0; $n < $pages; $n++)
 			{
 				$offset = $offset + $tracks_limit;
-				$get_files[$n] = $api_uri . '&offset=' . $offset;
+				$get_files[$n] = $api_uris . '&offset=' . $offset;
 			}
 
 			$files = get_external_files($get_files, $api_headers, null);
@@ -1150,20 +1182,52 @@ function import_saved_spotify_tracks()
 				db_exec('library', rtrim($exec));
 			}
 		}
-
-		return $i - $count;
 	}
-	elseif(!empty($metadata['href']))
+
+	if(!empty($metadata_artists['artists']['items']))
 	{
-		return 'no_tracks';
+		$count_artists = get_db_count('library', "SELECT COUNT(id) as count FROM library WHERE type = 'artist'");
+
+		clean_library('artist');
+
+		$f = 0;
+
+		$artists = array_reverse($metadata_artists['artists']['items']);
+
+		foreach($artists as $artist)
+		{
+			$name = $artist['name'];
+			$uri = $artist['uri'];
+
+			db_exec('library', "INSERT INTO library (type, artist, uri) VALUES ('artist', '" . sqlite_escape($name) . "', '" . sqlite_escape($uri) . "')");
+
+			$f++;
+		}
+	}
+
+	if(!empty($metadata_tracks['href']) && !empty($metadata_artists['artists']['href']))
+	{
+		$new_tracks_count = $i - $count_tracks;
+		$new_artists_count = $f - $count_artists;
+
+		if($new_tracks_count == 0 && $new_artists_count == 0)
+		{
+			return 'success';
+		}
+		elseif($new_tracks_count != 0 || $new_artists_count != 0)
+		{
+			return 'new_items';
+		}
+
+		return 'no_items';
 	}
 
 	return 'error';
 }
 
-function remove_all_saved_tracks()
+function clean_library($type)
 {
-	db_exec('library', "DELETE FROM library WHERE type = 'track'");
+	db_exec('library', "DELETE FROM library WHERE type = '" . $type . "'");
 }
 
 function is_saved($uri)
@@ -1325,7 +1389,7 @@ function get_search_title($string)
 	{
 		$string = explode(':', $string, 2);
 		$type = ($string[0] == 'isrc' || $string[0] == 'upc') ? strtoupper($string[0]) : ucfirst($string[0]);
-		$query =  ucfirst(trim($string[1], '"'));
+		$query = ucfirst(trim($string[1], '"'));
 
 		$title = $type . ': ' . $query;
 	}
@@ -1909,13 +1973,15 @@ function deauthorize_from_spotify()
 	file_write(__DIR__ . '/run/spotify.username', '');
 	file_write(__DIR__ . '/run/spotify.country', '');
 
-	remove_all_saved_tracks();
+	clean_library('track');
+	clean_library('artist');
+
 	clear_cache();
 
 	$time = time();
 
-	if(!empty($_COOKIE['last_playlists_import'])) setcookie('last_playlists_import', '', $time - 3600);
-	if(!empty($_COOKIE['last_saved_tracks_import'])) setcookie('last_saved_tracks_import', '', $time - 3600);
+	if(!empty($_COOKIE['last_refresh_playlists'])) setcookie('last_refresh_playlists', '', $time - 3600);
+	if(!empty($_COOKIE['last_refresh_library'])) setcookie('last_refresh_library', '', $time - 3600);
 }
 
 function is_authorized_with_spotify()
@@ -2205,15 +2271,19 @@ function check_for_errors()
 	}
 	elseif(!daemon_is_running())
 	{
-		$code =  2;
+		$code = 2;
 	}
 	elseif(!is_writeable('db/playlists.db') || !is_writeable('run/daemon.inotify'))
 	{
-		$code =  3;
+		$code = 3;
 	}
 	elseif(daemon_qdbus_select() == '')
 	{
-		$code =  4;
+		$code = 4;
+	}
+	elseif(spotify_is_testing())
+	{
+		$code = 7;
 	}
 
 	return $code;
@@ -2274,7 +2344,7 @@ function convert_length($length, $from)
 	{
 		$hours = $minutes / 60;
 		$minutes = ($hours - floor($hours)) * 60;
-		$length =  floor($hours) . ' h ' . round($minutes) . ' m';
+		$length = floor($hours) . ' h ' . round($minutes) . ' m';
 	}
 	else
 	{
@@ -2321,27 +2391,23 @@ function get_uri_type($uri)
 {
 	$type = 'unknown';
 
-	if(preg_match('/^spotify:user:[^:]+:playlist:\w{22}$/', $uri) || preg_match('/^https?:\/\/open\.spotify\.com\/user\/[^\/]+\/playlist\/\w{22}$/', $uri))
+	if(preg_match('/^spotify:user:[^:]+:playlist:\w{22}$/', $uri) || preg_match('/^https?:\/\/[^\.]+\.spotify\.com\/user\/[^\/]+\/playlist\/\w{22}$/', $uri))
 	{
 		$type = 'playlist';
 	}
-	elseif(preg_match('/^spotify:user:[^:]+:starred$/', $uri) || preg_match('/^https?:\/\/open\.spotify\.com\/user\/[^\/]+\/starred$/', $uri))
-	{
-		$type = 'starred';
-	}
-	elseif(preg_match('/^spotify:artist:\w{22}$/', $uri) || preg_match('/^https?:\/\/open\.spotify\.com\/artist\/\w{22}$/', $uri))
+	elseif(preg_match('/^spotify:artist:\w{22}$/', $uri) || preg_match('/^https?:\/\/[^\.]+\.spotify\.com\/artist\/\w{22}$/', $uri))
 	{
 		$type = 'artist';
 	}
-	elseif(preg_match('/^spotify:album:\w{22}$/', $uri) || preg_match('/^https?:\/\/open\.spotify\.com\/album\/\w{22}$/', $uri))
+	elseif(preg_match('/^spotify:album:\w{22}$/', $uri) || preg_match('/^https?:\/\/[^\.]+\.spotify\.com\/album\/\w{22}$/', $uri))
 	{
 		$type = 'album';
 	}
-	elseif(preg_match('/^spotify:track:\w{22}$/', $uri) || preg_match('/^https?:\/\/open\.spotify\.com\/track\/\w{22}$/', $uri))
+	elseif(preg_match('/^spotify:track:\w{22}$/', $uri) || preg_match('/^https?:\/\/[^\.]+\.spotify\.com\/track\/\w{22}$/', $uri))
 	{
 		$type = 'track';
 	}
-	elseif(preg_match('/^spotify:local:[^:]+:[^:]*:[^:]+:\d*$/', $uri) || preg_match('/^https?:\/\/open\.spotify\.com\/local\/[^\/]+\/[^\/]*\/[^\/]+\/\d*$/', $uri))
+	elseif(preg_match('/^spotify:local:[^:]+:[^:]*:[^:]+:\d*$/', $uri) || preg_match('/^https?:\/\/[^\.]+\.spotify\.com\/local\/[^\/]+\/[^\/]*\/[^\/]+\/\d*$/', $uri))
 	{
 		$type = 'local';
 	}
@@ -2349,11 +2415,11 @@ function get_uri_type($uri)
 	{
 		$type = 'genre';
 	}
-	elseif(preg_match('/^spotify:user:[^:]+$/', $uri) || preg_match('/^https?:\/\/open\.spotify\.com\/user\/[^\/]+$/', $uri))
+	elseif(preg_match('/^spotify:user:[^:]+$/', $uri) || preg_match('/^https?:\/\/[^\.]+\.spotify\.com\/user\/[^\/]+$/', $uri))
 	{
 		$type = 'user';
 	}
-	elseif(preg_match('/^https?:\/\/\w+\.scdn\.co\/\w+\/\w+$/', $uri) || preg_match('/^https?:\/\/\w+\.cloudfront\.net\/\w+\/\w+$/', $uri) || preg_match('/^https?:\/\/fbcdn-profile/', $uri) || preg_match('/^https?:\/\/profile-images/', $uri))
+	elseif(preg_match('/^https?:\/\/\w+\.scdn\.co\/\w+\/\w+$/', $uri) || preg_match('/^https?:\/\/\w+\.cloudfront\.net\/\w+\/\w+$/', $uri) || preg_match('/^https?:\/\/[^\/]+\/hprofile/', $uri) || preg_match('/^https?:\/\/profile-images/', $uri))
 	{
 		$type = 'cover_art';
 	}
@@ -2368,10 +2434,6 @@ function uri_to_url($uri)
 	if($type == 'playlist')
 	{
 		$uri = preg_replace('/^spotify:user:(.*?):playlist:(.*?)$/', 'http://open.spotify.com/user/$1/playlist/$2', $uri);
-	}
-	elseif($type == 'starred')
-	{
-		$uri = preg_replace('/^spotify:user:(.*?):starred$/', 'http://open.spotify.com/user/$1/starred', $uri);
 	}
 	elseif($type == 'artist')
 	{
@@ -2399,27 +2461,23 @@ function url_to_uri($uri)
 
 	if($type == 'playlist')
 	{
-		$uri = preg_replace('/^https?:\/\/open\.spotify\.com\/user\/(.*?)\/playlist\/(.*?)$/', 'spotify:user:$1:playlist:$2', $uri);
-	}
-	elseif($type == 'starred')
-	{
-		$uri = preg_replace('/^https?:\/\/open\.spotify\.com\/user\/(.*?)\/starred$/', 'spotify:user:$1:starred', $uri);
+		$uri = preg_replace('/^https?:\/\/[^\.]+\.spotify\.com\/user\/(.*?)\/playlist\/(.*?)$/', 'spotify:user:$1:playlist:$2', $uri);
 	}
 	elseif($type == 'artist')
 	{
-		$uri = preg_replace('/^https?:\/\/open\.spotify\.com\/artist\/(.*?)$/', 'spotify:artist:$1', $uri);
+		$uri = preg_replace('/^https?:\/\/[^\.]+\.spotify\.com\/artist\/(.*?)$/', 'spotify:artist:$1', $uri);
 	}
 	elseif($type == 'album')
 	{
-		$uri = preg_replace('/^https?:\/\/open\.spotify\.com\/album\/(.*?)$/', 'spotify:album:$1', $uri);
+		$uri = preg_replace('/^https?:\/\/[^\.]+\.spotify\.com\/album\/(.*?)$/', 'spotify:album:$1', $uri);
 	}
 	elseif($type == 'track')
 	{
-		$uri = preg_replace('/^https?:\/\/open\.spotify\.com\/track\/(.*?)$/', 'spotify:track:$1', $uri);
+		$uri = preg_replace('/^https?:\/\/[^\.]+\.spotify\.com\/track\/(.*?)$/', 'spotify:track:$1', $uri);
 	}
 	elseif($type == 'local')
 	{
-		$uri = preg_replace(array('/^https?:\/\/open\.spotify\.com\/local\/(.*?)$/', '/\//'), array('spotify:local:$1', ':'), $uri);
+		$uri = preg_replace(array('/^https?:\/\/[^\.]+\.spotify\.com\/local\/(.*?)$/', '/\//'), array('spotify:local:$1', ':'), $uri);
 	}
 
 	return $uri;

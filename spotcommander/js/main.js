@@ -2,20 +2,18 @@
 
 Copyright 2015 Ole Jon Bjørkum
 
-This file is part of SpotCommander.
-
-SpotCommander is free software: you can redistribute it and/or modify
+This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-SpotCommander is distributed in the hope that it will be useful,
+This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with SpotCommander.  If not, see <http://www.gnu.org/licenses/>.
+along with this program. If not, see http://www.gnu.org/licenses/.
 
 */
 
@@ -44,7 +42,7 @@ function setGlobalVariables(global_variables)
 	ua_supports_csstransforms3d = (Modernizr.csstransforms3d && !shc(ua, 'DISABLE_CSSTRANSFORMS3D'));
 	ua_supports_inputtype_range = (Modernizr.inputtypes.range);
 	ua_supports_notifications = (Modernizr.notification);
-	ua_supports_touch = (Modernizr.touch && !shc(ua, 'CrOS'));
+	ua_supports_touch = (Modernizr.touchevents && !shc(ua, 'CrOS'));
 
 	if(ua_supports_touch)
 	{
@@ -80,6 +78,7 @@ function setGlobalVariables(global_variables)
 	scroll_position = {};
 	scroll_position_save_disable = false;
 	scrolling_last_position = 0;
+	scrolling_last_list_header = null;
 
 	// Pointer
 	pointer_is_down = false;
@@ -236,7 +235,6 @@ $(window).load(function()
 				setCss();
 				setCoverArtSize();
 				setCardVerticalCoverArtSize();
-				setEllipsis();
 			}, 500);
 		});
 
@@ -373,7 +371,7 @@ $(window).load(function()
 
 			$(document).on(pointer_move_event, 'div#nowplaying_div', function(event)
 			{
-				if($(event.target).attr('id') != 'nowplaying_volume_slider')  event.preventDefault();
+				if($(event.target).attr('id') != 'nowplaying_volume_slider') event.preventDefault();
 			});
 
 			$(document).on(pointer_down_event, 'div#bottom_actionbar_div', function(event)
@@ -599,6 +597,10 @@ $(window).load(function()
 				{
 					scrollToTop(true);
 				}
+				else if(action == 'scroll_to_next_list_header')
+				{
+					scrollToNextListHeader();
+				}
 				else if(action == 'toggle_menu')
 				{
 					toggleMenu();
@@ -821,13 +823,13 @@ $(window).load(function()
 				{
 					refreshPlaylist(data.uri);
 				}
-				else if(action == 'confirm_import_spotify_playlists')
+				else if(action == 'confirm_refresh_spotify_playlists')
 				{
-					confirmImportSpotifyPlaylists();
+					confirmRefreshSpotifyPlaylists();
 				}
-				else if(action == 'import_spotify_playlists')
+				else if(action == 'refresh_spotify_playlists')
 				{
-					importSpotifyPlaylists(false);
+					refreshSpotifyPlaylists(false);
 				}
 				else if(action == 'import_playlist')
 				{
@@ -857,13 +859,13 @@ $(window).load(function()
 				{
 					remove(data.uri, data.isauthorizedwithspotify);
 				}
-				else if(action == 'confirm_import_saved_spotify_tracks')
+				else if(action == 'confirm_refresh_library')
 				{
-					confirmImportSavedSpotifyTracks(data.isauthorizedwithspotify);
+					confirmRefreshLibrary(data.isauthorizedwithspotify);
 				}
-				else if(action == 'import_saved_spotify_tracks')
+				else if(action == 'refresh_library')
 				{
-					importSavedSpotifyTracks(false);
+					refreshLibrary(true);
 				}
 				else if(action == 'get_search')
 				{
