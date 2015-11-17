@@ -49,6 +49,8 @@ import android.webkit.CookieSyncManager;
 import android.webkit.HttpAuthHandler;
 import android.webkit.JavascriptInterface;
 import android.webkit.SslErrorHandler;
+import android.webkit.WebResourceError;
+import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -185,7 +187,6 @@ public class WebViewActivity extends Activity
         mWebView.setBackgroundColor(ContextCompat.getColor(mContext, R.color.background));
         mWebView.setScrollBarStyle(WebView.SCROLLBARS_INSIDE_OVERLAY);
 
-        //noinspection deprecation
         mWebView.setWebViewClient(new WebViewClient()
 		{
 			@Override
@@ -225,7 +226,7 @@ public class WebViewActivity extends Activity
 			}
 
 			@Override
-			public void onReceivedError(WebView view, int errorCode, String description, String failingUrl)
+			public void onReceivedError(WebView view, WebResourceRequest webResourceRequest, WebResourceError webResourceError)
 			{
                 mTools.showToast(getString(R.string.webview_error), 1);
 
