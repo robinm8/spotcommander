@@ -53,7 +53,7 @@
     <string name="add_computer_invalid_name">Name can not be empty</string>
     <string name="add_computer_invalid_uri">Not a valid URL</string>
     <string name="add_computer_wifi_not_connected">You must be connected to Wi-Fi</string>
-    <string name="add_computer_scanning_network">Scanning network</string>
+    <string name="add_computer_scanning_network">Scanning… This may take a while depending on the IP address</string>
     <string name="add_computer_scanning">Scanning</string>
     <string name="add_computer_trying">Trying</string>
     <string name="add_computer_installation_found">SpotCommander installation found on</string>

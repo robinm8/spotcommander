@@ -10,8 +10,8 @@ android
         applicationId "net.olejon.spotcommander"
         minSdkVersion 10
         targetSdkVersion 23
-        versionCode 62
-        versionName "6.2"
+        versionCode 63
+        versionName "6.3"
     }
 
     buildTypes
@@ -29,6 +29,6 @@ dependencies
     compile 'com.android.support:palette-v7:23.1.1'
     compile 'com.mcxiaoke.volley:library:1.0.19'
     compile 'com.rengwuxian.materialedittext:library:2.1.4'
-    compile('com.afollestad.material-dialogs:core:0.8.5.0@aar') { transitive = true }
-    compile('com.afollestad.material-dialogs:commons:0.8.5.0@aar') { transitive = true }
+    compile('com.github.afollestad.material-dialogs:core:0.8.5.2@aar') { transitive = true }
+    compile('com.github.afollestad.material-dialogs:commons:0.8.5.2@aar') { transitive = true }
 }
