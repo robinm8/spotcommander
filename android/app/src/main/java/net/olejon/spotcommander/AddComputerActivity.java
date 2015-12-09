@@ -4,20 +4,18 @@ package net.olejon.spotcommander;
 
 Copyright 2015 Ole Jon Bjørkum
 
-This file is part of SpotCommander.
-
-SpotCommander is free software: you can redistribute it and/or modify
+This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-SpotCommander is distributed in the hope that it will be useful,
+This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with SpotCommander.  If not, see <http://www.gnu.org/licenses/>.
+along with this program. If not, see http://www.gnu.org/licenses/.
 
 */
 
@@ -28,12 +26,17 @@ import android.database.sqlite.SQLiteDatabase;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.support.annotation.NonNull;
+import android.support.design.widget.TextInputLayout;
 import android.support.v4.app.NavUtils;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.view.Menu;
@@ -67,6 +70,8 @@ public class AddComputerActivity extends AppCompatActivity
 
 	private MenuItem mMenuItem;
 	private ProgressBar mProgressBar;
+    private TextInputLayout mAddComputerNameInputLayout;
+    private TextInputLayout mAddComputerUriInputLayout;
 
     private NetworkScanTask mNetworkScanTask;
 
@@ -90,10 +95,15 @@ public class AddComputerActivity extends AppCompatActivity
 
         // Toolbar
         final Toolbar toolbar = (Toolbar) findViewById(R.id.add_computer_toolbar);
+        toolbar.setTitleTextColor(ContextCompat.getColor(mContext, R.color.white));
 
         setSupportActionBar(toolbar);
-
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        mAddComputerNameInputLayout = (TextInputLayout) findViewById(R.id.add_computer_extended_toolbar_name);
+        mAddComputerUriInputLayout = (TextInputLayout) findViewById(R.id.add_computer_extended_toolbar_uri);
+        mAddComputerNameInputLayout.setHintAnimationEnabled(true);
+        mAddComputerUriInputLayout.setHintAnimationEnabled(true);
 
 		// Progress bar
         mProgressBar = (ProgressBar) findViewById(R.id.add_computer_progressbar);
@@ -131,6 +141,8 @@ public class AddComputerActivity extends AppCompatActivity
 		getMenuInflater().inflate(R.menu.menu_add_computer, menu);
 
         mMenuItem = menu.findItem(R.id.add_computer_menu_scan_network);
+
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.ICE_CREAM_SANDWICH) mMenuItem.setIcon(R.drawable.ic_speaker_phone_white_24dp);
 
 		return true;
 	}
@@ -170,6 +182,40 @@ public class AddComputerActivity extends AppCompatActivity
     	EditText usernameEditText = (EditText) findViewById(R.id.add_computer_username);
     	EditText passwordEditText = (EditText) findViewById(R.id.add_computer_password);
 
+        nameEditText.addTextChangedListener(new TextWatcher()
+        {
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2)
+            {
+                mAddComputerNameInputLayout.setError(null);
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) { }
+
+            @Override
+            public void afterTextChanged(Editable editable) { }
+        });
+
+        uriEditText.addTextChangedListener(new TextWatcher()
+        {
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2)
+            {
+                mAddComputerUriInputLayout.setError(null);
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2)
+            {
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable)
+            {
+            }
+        });
+
     	String name = nameEditText.getText().toString();
     	String uri = uriEditText.getText().toString();
     	String username = usernameEditText.getText().toString();
@@ -184,11 +230,11 @@ public class AddComputerActivity extends AppCompatActivity
     	}
     	else if(name.equals(""))
     	{
-            nameEditText.setError(getString(R.string.add_computer_invalid_name));
+            mAddComputerNameInputLayout.setError(getString(R.string.add_computer_invalid_name));
     	}
         else if(!uri.startsWith("http://") && !uri.startsWith("https://"))
         {
-            uriEditText.setError(getString(R.string.add_computer_invalid_uri));
+            mAddComputerUriInputLayout.setError(getString(R.string.add_computer_invalid_uri));
         }
     	else
     	{

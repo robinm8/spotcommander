@@ -13,8 +13,8 @@
 
     <View android:layout_below="@+id/main_toolbar" style="@style/toolbar_shadow"/>
 
-    <ImageButton android:id="@+id/main_fab" android:layout_alignParentEnd="true" android:layout_alignParentRight="true" android:layout_alignParentBottom="true" android:src="@drawable/ic_add_white_24dp" android:contentDescription="@string/image_content_description" style="@style/fab"/>
-
     <Button android:id="@+id/main_make_donation_button" android:layout_alignParentBottom="true" android:text="@string/main_make_donation" style="@style/main_make_donation_button"/>
+
+    <android.support.design.widget.FloatingActionButton android:id="@+id/main_fab" android:layout_alignParentBottom="true" android:layout_alignParentEnd="true" android:layout_alignParentRight="true" android:src="@drawable/ic_add_white_24dp" style="@style/fab_layout"/>
 
 </RelativeLayout>

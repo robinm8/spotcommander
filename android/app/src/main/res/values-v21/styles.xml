@@ -2,12 +2,6 @@
 
 <resources>
 
-    <!-- Main -->
-    <style name="main_make_donation_button_base">
-        <item name="android:background">@drawable/main_make_donation_button</item>
-        <item name="android:fontFamily">sans-serif-medium</item>
-    </style>
-
     <!-- Donate -->
     <style name="donate_button_base"/>
 
@@ -19,6 +13,11 @@
     <!-- Subheaders -->
     <style name="subheader_base">
         <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
+    <!-- Collapsing toolbar -->
+    <style name="collapsing_toolbar_base">
+        <item name="android:elevation">2dp</item>
     </style>
 
     <!-- List view -->

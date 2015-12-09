@@ -4,20 +4,18 @@ package net.olejon.spotcommander;
 
 Copyright 2015 Ole Jon Bjørkum
 
-This file is part of SpotCommander.
-
-SpotCommander is free software: you can redistribute it and/or modify
+This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-SpotCommander is distributed in the hope that it will be useful,
+This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with SpotCommander.  If not, see <http://www.gnu.org/licenses/>.
+along with this program. If not, see http://www.gnu.org/licenses/.
 
 */
 
@@ -31,6 +29,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.widget.SimpleCursorAdapter;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -44,7 +43,6 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.ListView;
 
 import com.afollestad.materialdialogs.DialogAction;
@@ -70,7 +68,7 @@ public class MainActivity extends AppCompatActivity
 	private SQLiteDatabase mDatabase;
 	private Cursor mCursor;
 
-    private ImageButton mFloatingActionButton;
+    private FloatingActionButton mFloatingActionButton;
 	private ListView mListView;
 
 	private String mCurrentNetwork;
@@ -100,7 +98,6 @@ public class MainActivity extends AppCompatActivity
 
         // Toolbar
         final Toolbar toolbar = (Toolbar) findViewById(R.id.main_toolbar);
-
         toolbar.setTitle(getString(R.string.main_title));
 
         setSupportActionBar(toolbar);
@@ -146,7 +143,7 @@ public class MainActivity extends AppCompatActivity
         });
 
         // Floating action button
-        mFloatingActionButton = (ImageButton) findViewById(R.id.main_fab);
+        mFloatingActionButton = (FloatingActionButton) findViewById(R.id.main_fab);
 
         mFloatingActionButton.setOnClickListener(new View.OnClickListener()
         {
