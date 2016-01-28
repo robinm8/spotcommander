@@ -2,7 +2,7 @@ package net.olejon.spotcommander;
 
 /*
 
-Copyright 2015 Ole Jon Bjørkum
+Copyright 2016 Ole Jon Bjørkum
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -100,8 +100,8 @@ public class AddComputerActivity extends AppCompatActivity
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        mAddComputerNameInputLayout = (TextInputLayout) findViewById(R.id.add_computer_extended_toolbar_name);
-        mAddComputerUriInputLayout = (TextInputLayout) findViewById(R.id.add_computer_extended_toolbar_uri);
+        mAddComputerNameInputLayout = (TextInputLayout) findViewById(R.id.add_computer_text_input_name_layout);
+        mAddComputerUriInputLayout = (TextInputLayout) findViewById(R.id.add_computer_text_input_uri_layout);
         mAddComputerNameInputLayout.setHintAnimationEnabled(true);
         mAddComputerUriInputLayout.setHintAnimationEnabled(true);
 

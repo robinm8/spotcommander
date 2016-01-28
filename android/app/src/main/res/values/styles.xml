@@ -137,7 +137,7 @@
         <item name="android:fitsSystemWindows">true</item>
     </style>
 
-    <style name="add_computer_extended_toolbar_layout">
+    <style name="add_computer_collapsing_toolbar_layout">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_marginTop">4dp</item>
@@ -147,16 +147,16 @@
         <item name="android:paddingBottom">48dp</item>
         <item name="android:paddingLeft">24dp</item>
         <item name="layout_collapseMode">parallax</item>
-        <item name="layout_collapseParallaxMultiplier">0.8</item>
+        <item name="layout_collapseParallaxMultiplier">0.94</item>
     </style>
 
-    <style name="add_computer_extended_toolbar_text_input_layout">
+    <style name="add_computer_text_input_layout">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:theme">@style/appbar_theme</item>
     </style>
 
-    <style name="add_computer_extended_toolbar_edittext">
+    <style name="add_computer_text_input_layout_edittext">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:textSize">24sp</item>
@@ -406,11 +406,15 @@
     </style>
 
     <!-- Nested scroll view -->
-    <style name="nested_scrollview">
+    <style name="nested_scrollview" parent="nested_scrollview_base">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">match_parent</item>
+        <item name="android:overScrollMode">never</item>
+        <item name="android:scrollbars">vertical</item>
         <item name="layout_behavior">@string/appbar_scrolling_view_behavior</item>
     </style>
+
+    <style name="nested_scrollview_base"/>
 
     <!-- Floating action button -->
     <style name="fab_layout" parent="fab_layout_base">
