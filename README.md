@@ -15,4 +15,5 @@ This product uses a Spotify API but is not endorsed, certified or otherwise appr
 
 [![Image](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](http://www.olejon.net/code/spotcommander/?donate)
 
+
 [![Image](http://button.flattr.com/flattr-badge-large.png)](https://flattr.com/submit/auto?user_id=olejon&url=https%3A%2F%2Fgithub.com%2Folejon%2Fspotcommander)
