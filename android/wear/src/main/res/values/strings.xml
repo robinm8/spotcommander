@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+
+    <!-- Project -->
+    <string name="project_name">SpotCommander</string>
+
+    <!-- Various -->
+    <string name="image_content_description">Image</string>
+
+</resources>

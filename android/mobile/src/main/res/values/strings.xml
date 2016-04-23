@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+
+    <!-- Project -->
+    <string name="project_name">SpotCommander</string>
+    <string name="project_website">http://www.olejon.net/code/spotcommander/</string>
+    <string name="project_minimum_version">12.5</string>
+
+    <!-- Main -->
+    <string name="main_title">Computers</string>
+    <string name="main_list_header">All</string>
+    <string name="main_list_empty">No computers. Tap the round green button to add a computer.</string>
+    <string name="main_make_donation">MAKE A DONATION</string>
+    <string name="main_information_dialog_title">Information</string>
+    <string name="main_information_dialog_message">If you experience that the app becomes unresponsive, disable accelerated animations in Settings, which can be opened from the top toolbar.\n\nThis is a known issue on some devices running Android versions older than Android 4.4.</string>
+    <string name="main_information_dialog_positive_button">GOT IT</string>
+    <string name="main_message_dialog_positive_button">CLOSE</string>
+    <string name="main_remove_computer_dialog_title">Remove Computer</string>
+    <string name="main_remove_computer_dialog_message">Do you want to remove this computer?</string>
+    <string name="main_remove_computer_dialog_positive_button">YES</string>
+    <string name="main_remove_computer_dialog_negative_button">NO</string>
+    <string name="main_menu_settings">Settings</string>
+    <string name="main_menu_troubleshooting">Troubleshooting</string>
+    <string name="main_menu_report_issue">Report Issue</string>
+    <string name="main_menu_make_donation">Make a Donation</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_category_appearance">Appearance</string>
+    <string name="settings_category_advanced">Advanced</string>
+    <string name="settings_hide_status_bar_title">Hide status bar</string>
+    <string name="settings_hide_status_bar_summary">Check this to hide the status bar in the app</string>
+    <string name="settings_open_automatically_title">Open automatically</string>
+    <string name="settings_open_automatically_summary">Check this to open the most recently used computer automatically</string>
+    <string name="settings_accelerated_animations_title">Accelerated animations</string>
+    <string name="settings_accelerated_animations_summary">Uncheck this if you experience that the app becomes unresponsive. This is a known issue on some devices running Android versions older than Android 4.4. Unchecking this will not have any effect on Android 4.4 and newer</string>
+
+    <!-- Add computer -->
+    <string name="add_computer_title">Add Computer</string>
+    <string name="add_computer_scan_dialog_title">Scan</string>
+    <string name="add_computer_scan_dialog_message">Do you want to scan your network for the computer running SpotCommander?</string>
+    <string name="add_computer_scan_dialog_positive_button">YES</string>
+    <string name="add_computer_scan_dialog_negative_button">NO</string>
+    <string name="add_computer_name_text">Computer</string>
+    <string name="add_computer_name_hint">Name</string>
+    <string name="add_computer_uri_text">http://</string>
+    <string name="add_computer_uri_hint">URL</string>
+    <string name="add_computer_authentication">Authentication</string>
+    <string name="add_computer_username_hint">Username</string>
+    <string name="add_computer_password_hint">Password</string>
+    <string name="add_computer_information">Leave username and password blank unless you have enabled <a href="http://www.olejon.net/code/spotcommander/?authentication">authentication</a>\n\nSpotCommander must already be <a href="http://www.olejon.net/code/spotcommander/?install">installed</a> on the computer running Spotify</string>
+    <string name="add_computer_invalid_name">Name can not be empty</string>
+    <string name="add_computer_invalid_uri">Not a valid URL</string>
+    <string name="add_computer_wifi_not_connected">You must be connected to Wi-Fi</string>
+    <string name="add_computer_scanning_network">Scanning… This may take a while depending on the IP address</string>
+    <string name="add_computer_scanning">Scanning</string>
+    <string name="add_computer_trying">Trying</string>
+    <string name="add_computer_installation_found">SpotCommander installation found on</string>
+    <string name="add_computer_installation_not_found">SpotCommander installation not found</string>
+    <string name="add_computer_computer_with_authentication_enabled">computer with authentication enabled</string>
+    <string name="add_computer_menu_add_computer">Add computer</string>
+    <string name="add_computer_menu_scan_network">Scan</string>
+    <string name="add_computer_menu_scan">Scan</string>
+    <string name="add_computer_menu_stop">Stop</string>
+
+    <!-- Webview -->
+    <string name="webview_back">Long-press the back button to go back to the list of computers</string>
+    <string name="webview_error">SpotCommander: Something went wrong. Make sure that you are connected and that the URL is correct.</string>
+    <string name="webview_authentication_failed">SpotCommander: Authentication failed. Make sure you are using the correct username and password.</string>
+    <string name="webview_network_changed">Network has changed</string>
+    <string name="webview_dialog_ssl_error_title">Error</string>
+    <string name="webview_dialog_ssl_error_message">You are using an insecure HTTPS connection with a nonissued certificate. This is not allowed according to Google\'s guidelines.</string>
+    <string name="webview_dialog_ssl_error_positive_button">CLOSE</string>
+
+    <!-- Donate -->
+    <string name="donate_title">Donate</string>
+    <string name="donate_getting_product">GETTING PRODUCT…</string>
+    <string name="donate_donate">DONATE</string>
+    <string name="donate_information">Tapping one of the buttons will open a dialog where you can confirm or cancel the donation.\n\nThank you very much!</string>
+    <string name="donate_thank_you">Thank you for your donation!</string>
+    <string name="donate_something_went_wrong">Something went wrong. Please try again.</string>
+    <string name="donate_reset_success">Success</string>
+    <string name="donate_menu_reset">Reset</string>
+
+    <!-- Playlists -->
+    <string name="playlists_title">Shuffle Play</string>
+    <string name="playlists_error">Could not get playlists</string>
+
+    <!-- Widget -->
+    <string name="widget_title">Choose computer</string>
+    <string name="widget_list_empty">No computers</string>
+
+    <!-- Notification -->
+    <string name="notification_mobile_text">Tap to open.</string>
+    <string name="notification_wear_text">Swipe on watch for actions.</string>
+    <string name="notification_action_hide">Hide</string>
+    <string name="notification_action_previous">Previous</string>
+    <string name="notification_action_play_pause">Play</string>
+    <string name="notification_action_next">Next</string>
+    <string name="notification_action_volume_mute">Mute</string>
+    <string name="notification_action_volume_down">Volume down</string>
+    <string name="notification_action_volume_up">Volume up</string>
+    <string name="notification_action_launch_quit">Launch or Quit</string>
+    <string name="notification_no_music_is_playing_artist">Unknown</string>
+
+    <!-- Remote control -->
+    <string name="remote_control_computer_not_found">SpotCommander: Computer not found. You should re-add this widget.</string>
+    <string name="remote_control_error">SpotCommander: HTTP status code</string>
+    <string name="remote_control_authentication_failed">SpotCommander: Authentication failed. Make sure you are using the correct username and password.</string>
+
+    <!-- Various -->
+    <string name="ellipsis">…</string>
+    <string name="image_content_description">Image</string>
+
+</resources>

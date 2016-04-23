@@ -1,0 +1,31 @@
+apply plugin: 'com.android.application'
+
+android
+{
+    compileSdkVersion 23
+    buildToolsVersion "23.0.3"
+
+    defaultConfig
+    {
+        applicationId "net.olejon.spotcommander"
+        minSdkVersion 10
+        targetSdkVersion 23
+        versionCode 70
+        versionName "7.0"
+    }
+
+    buildTypes
+    {
+        release
+        {
+            minifyEnabled false
+        }
+    }
+}
+
+dependencies
+{
+    compile 'com.google.android.support:wearable:1.4.0'
+    compile 'com.google.android.gms:play-services-wearable:8.4.0'
+    provided 'com.google.android.wearable:wearable:1.0.0'
+}
