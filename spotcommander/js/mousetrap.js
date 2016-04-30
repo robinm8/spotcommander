@@ -3,7 +3,7 @@
 Mousetrap 1.5.3
 Source: http://github.com/ccampbell/mousetrap
 
-Copyright 2015 Craig Campbell
+Copyright 2016 Craig Campbell
 License: http://www.apache.org/licenses/LICENSE-2.0
 
 */

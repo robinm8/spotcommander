@@ -2,7 +2,7 @@
 
 /*
 
-Copyright 2015 Ole Jon Bjørkum
+Copyright 2016 Ole Jon Bjørkum
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -67,12 +67,14 @@ else
 	$details_dialog['details'][] = array('detail' => 'Popularity', 'value' => $popularity);
 	$details_dialog['details'][] = array('detail' => 'Total Length', 'value' => $total_length);
 
-	$library_action = (is_saved($album_uri)) ? 'Remove from Library' : 'Save to Library';
+	if(is_authorized_with_spotify) $library_action = (is_saved($album_uri)) ? 'Remove from Library' : 'Save to Library';
 
 	$activity['title'] = hsc($title);
 	$activity['cover_art_uri'] = '';
 	$activity['actions'][] = array('action' => array('Play', ''), 'keys' => array('actions', 'uri'), 'values' => array('play_uri', $album_uri));
-	$activity['actions'][] = array('action' => array($library_action, ''), 'keys' => array('actions', 'artist', 'title', 'uri', 'isauthorizedwithspotify'), 'values' => array('save', rawurlencode($artist), rawurlencode($title), $album_uri, is_authorized_with_spotify));
+
+	if(is_authorized_with_spotify) $activity['actions'][] = array('action' => array($library_action, ''), 'keys' => array('actions', 'artist', 'title', 'uri', 'isauthorizedwithspotify'), 'values' => array('save', rawurlencode($artist), rawurlencode($title), $album_uri, is_authorized_with_spotify));
+
 	$activity['actions'][] = array('action' => array('Add to Playlist', ''), 'keys' => array('actions', 'title', 'uri', 'isauthorizedwithspotify'), 'values' => array('add_to_playlist', $title, $album_uri, is_authorized_with_spotify));
 	$activity['actions'][] = array('action' => array('Go to Artist', ''), 'keys' => array('actions', 'uri'), 'values' => array('browse_artist', $artist_uri));
 	$activity['actions'][] = array('action' => array('Search Artist', ''), 'keys' => array('actions', 'string'), 'values' => array('get_search', rawurlencode('artist:"' . $artist . '"')));
@@ -127,6 +129,7 @@ else
 			$actions_dialog['title'] = hsc($title);
 			$actions_dialog['actions'][] = array('text' => 'Add to Playlist', 'keys' => array('actions', 'title', 'uri', 'isauthorizedwithspotify'), 'values' => array('hide_dialog add_to_playlist', $title, $uri, is_authorized_with_spotify));
 			$actions_dialog['actions'][] = array('text' => 'Search Artist', 'keys' => array('actions', 'string'), 'values' => array('hide_dialog get_search', rawurlencode('artist:"' . $artist . '"')));
+			$actions_dialog['actions'][] = array('text' => 'Recommendations', 'keys' => array('actions', 'uri', 'isauthorizedwithspotify'), 'values' => array('hide_dialog get_recommendations', $uri, is_authorized_with_spotify));
 			$actions_dialog['actions'][] = array('text' => 'Start Track Radio', 'keys' => array('actions', 'uri', 'playfirst'), 'values' => array('hide_dialog start_track_radio', $uri, 'true'));
 			$actions_dialog['actions'][] = array('text' => 'Lyrics', 'keys' => array('actions', 'artist', 'title'), 'values' => array('hide_dialog get_lyrics', rawurlencode($artist), rawurlencode($title)));
 			$actions_dialog['actions'][] = array('text' => 'Details', 'keys' => array('actions', 'dialogdetails'), 'values' => array('hide_dialog show_details_dialog', base64_encode(json_encode($details_dialog))));

@@ -2,7 +2,7 @@
 
 /*
 
-Copyright 2015 Ole Jon Bjørkum
+Copyright 2016 Ole Jon Bjørkum
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -51,11 +51,6 @@ elseif($code == 5)
 elseif($code == 6)
 {
 	$message = 'You must enable JavaScript in your browser.';
-}
-elseif($code == 7)
-{
-	$message = 'You are running the beta version of Spotify, which is not supported yet.';
-	$help_uri = project_website . '?install';
 }
 
 $system_information = get_system_information();

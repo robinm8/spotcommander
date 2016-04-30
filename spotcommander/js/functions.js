@@ -1,6 +1,6 @@
 /*
 
-Copyright 2015 Ole Jon Bjørkum
+Copyright 2016 Ole Jon Bjørkum
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -200,13 +200,13 @@ function activityLoaded()
 			{
 				var last_refresh_library = parseInt($.cookie(cookie.id));
 
-				if(getCurrentTime() - last_refresh_library > 1000 * 300) refreshLibrary(false);
+				if(getCurrentTime() - last_refresh_library > 1000 * 300) refreshLibrary();
 			}
 			else
 			{
 				showToast('Getting your library&hellip;', 2);
 
-				refreshLibrary(true);
+				refreshLibrary();
 			}
 		}
 	}
@@ -776,7 +776,7 @@ function toggleShuffleRepeat(action)
 
 	if(!isCookie(cookie.id))
 	{
-		showDialog({ title: 'Shuffle &amp; Repeat', body_class: 'dialog_message_div', body_content: 'Shuffle and repeat can be toggled, but it is not possible to get the current status. Spotify must not be minimized to tray. Advertisements may stop this from working.', button1: { text: 'CANCEL', keys : ['actions'], values: ['hide_dialog'] }, button2: { text: 'CONTINUE', keys : ['actions', 'remotecontrol'], values: ['hide_dialog toggle_shuffle_repeat', action] }, cookie: cookie });
+		showDialog({ title: 'Shuffle &amp; Repeat', body_class: 'dialog_message_div', body_content: 'Shuffle and repeat can be toggled, but it is not possible to get the current status.<br><br>Spotify must be the active window. Advertisements may stop this from working.', button1: { text: 'CANCEL', keys : ['actions'], values: ['hide_dialog'] }, button2: { text: 'CONTINUE', keys : ['actions', 'remotecontrol'], values: ['hide_dialog toggle_shuffle_repeat', action] }, cookie: cookie });
 	}
 	else
 	{
@@ -800,27 +800,57 @@ function toggleShuffleRepeat(action)
 
 function playUri(uri)
 {
+	var type = getUriType(uri);
+
+	if(project_spotify_is_testing)
+	{
+		if(type != 'track')
+		{
+			showDialog({ title: 'Spotify Warning', body_class: 'dialog_message_div', body_content: 'You are using an unsupported Spotify version. You can not play playlists, artists, albums or local files.<br><br>A workaround is to queue all tracks from the overflow menu.<br><br>Click the button below to download the recommended version.', button1: { text: 'CLOSE', keys : ['actions'], values: ['hide_dialog'] }, button2: { text: 'DOWNLOAD', keys : ['actions', 'uri'], values: ['open_external_activity', project_website+'?downgrade_spotify'] }, cookie: null });
+			return;
+		}
+	}
+
 	startRefreshNowplaying();
 
 	$.post('main.php?'+getCurrentTime(), { action: 'play_uri', data: uri }, function()
 	{
-		refreshNowplaying('manual');
-	});
+		var timeout = (project_spotify_is_testing) ? 500 : 0;
 
-	var type = getUriType(uri);
+		setTimeout(function()
+		{
+			refreshNowplaying('manual');
+		}, timeout);
+	});
 
 	if(type == 'playlist') saveRecentPlaylist(uri);
 }
 
 function playUriFromPlaylist(playlist_uri, uri)
 {
+	var type = getUriType(uri);
+
+	if(project_spotify_is_testing)
+	{
+		if(type != 'track')
+		{
+			showDialog({ title: 'Spotify Warning', body_class: 'dialog_message_div', body_content: 'You are using an unsupported Spotify version. You can not play playlists, artists, albums or local files.<br><br>A workaround is to queue all tracks from the overflow menu.<br><br>Click the button below to download the recommended version.', button1: { text: 'CLOSE', keys : ['actions'], values: ['hide_dialog'] }, button2: { text: 'DOWNLOAD', keys : ['actions', 'uri'], values: ['open_external_activity', project_website+'?downgrade_spotify'] }, cookie: null });
+			return;
+		}
+	}
+
 	startRefreshNowplaying();
 
 	var data = JSON.stringify([playlist_uri, uri]);
 
 	$.post('main.php?'+getCurrentTime(), { action: 'play_uri_from_playlist', data: data }, function()
 	{
-		refreshNowplaying('manual');
+		var timeout = (project_spotify_is_testing) ? 500 : 0;
+
+		setTimeout(function()
+		{
+			refreshNowplaying('manual');
+		}, timeout);
 	});
 
 	saveRecentPlaylist(playlist_uri);
@@ -828,11 +858,17 @@ function playUriFromPlaylist(playlist_uri, uri)
 
 function shufflePlayUri(uri)
 {
+	if(project_spotify_is_testing)
+	{
+		showDialog({ title: 'Spotify Warning', body_class: 'dialog_message_div', body_content: 'You are using an unsupported Spotify version. You can not play playlists, artists or albums.<br><br>A workaround is to queue all tracks from the overflow menu.<br><br>Click the button below to download the recommended version.', button1: { text: 'CLOSE', keys : ['actions'], values: ['hide_dialog'] }, button2: { text: 'DOWNLOAD', keys : ['actions', 'uri'], values: ['open_external_activity', project_website+'?downgrade_spotify'] }, cookie: null });
+		return;
+	}
+
 	var cookie = { id: 'hide_shuffle_play_uri_dialog', value: 'true', expires: 3650 };
 
 	if(!isCookie(cookie.id))
 	{
-		showDialog({ title: 'Shuffle Play', body_class: 'dialog_message_div', body_content: 'This action plays the media, toggles shuffle off/on and skips one track to ensure random playback. Shuffle must already be enabled. Spotify must not be minimized to tray. Advertisements may stop this from working.', button1: { text: 'CANCEL', keys : ['actions'], values: ['hide_dialog'] }, button2: { text: 'CONTINUE', keys : ['actions', 'uri'], values: ['hide_dialog shuffle_play_uri', uri] }, cookie: cookie });
+		showDialog({ title: 'Shuffle Play', body_class: 'dialog_message_div', body_content: 'This action plays the media, toggles shuffle off/on and skips one track to ensure random playback.<br><br>Shuffle must already be enabled. Spotify must be the active window. Advertisements may stop this from working.', button1: { text: 'CANCEL', keys : ['actions'], values: ['hide_dialog'] }, button2: { text: 'CONTINUE', keys : ['actions', 'uri'], values: ['hide_dialog shuffle_play_uri', uri] }, cookie: cookie });
 	}
 	else
 	{
@@ -840,7 +876,12 @@ function shufflePlayUri(uri)
 
 		$.post('main.php?'+getCurrentTime(), { action: 'shuffle_play_uri', data: uri }, function()
 		{
-			refreshNowplaying('manual');
+			var timeout = (project_spotify_is_testing) ? 500 : 0;
+
+			setTimeout(function()
+			{
+				refreshNowplaying('manual');
+			}, timeout);
 		});
 
 		var type = getUriType(uri);
@@ -857,15 +898,19 @@ function startTrackRadio(uri, play_first)
 	{
 		showToast('Not possible for local files', 4);
 	}
+	else if(project_spotify_is_testing)
+	{
+		showDialog({ title: 'Spotify Warning', body_class: 'dialog_message_div', body_content: 'You are using an unsupported Spotify version. This feature will not work.<br><br>Click the button below to download the recommended version.', button1: { text: 'CLOSE', keys : ['actions'], values: ['hide_dialog'] }, button2: { text: 'DOWNLOAD', keys : ['actions', 'uri'], values: ['open_external_activity', project_website+'?downgrade_spotify'] }, cookie: null });
+	}
 	else if(!isCookie(cookie.id))
 	{
-		showDialog({ title: 'Start Track Radio', body_class: 'dialog_message_div', body_content: 'Spotify must not be minimized to tray. If the up keyboard key is simulated wrong number of times, change it in settings. It may not work on all tracks. Advertisements may stop this from working.', button1: { text: 'CANCEL', keys : ['actions'], values: ['hide_dialog'] }, button2: { text: 'CONTINUE', keys: ['actions', 'uri', 'playfirst'], values: ['hide_dialog start_track_radio', uri, play_first] }, cookie: cookie });
+		showDialog({ title: 'Start Track Radio', body_class: 'dialog_message_div', body_content: 'Spotify must be the active window. It may not work on all tracks. Advertisements may stop this from working.', button1: { text: 'CANCEL', keys : ['actions'], values: ['hide_dialog'] }, button2: { text: 'CONTINUE', keys: ['actions', 'uri', 'playfirst'], values: ['hide_dialog start_track_radio', uri, play_first] }, cookie: cookie });
 	}
 	else
 	{
 		showToast('Starting track radio', 2);
 
-		var data = JSON.stringify([uri, play_first, settings_start_track_radio_simulation]);
+		var data = JSON.stringify([uri, play_first]);
 
 		$.post('main.php?'+getCurrentTime(), { action: 'start_track_radio', data: data }, function()
 		{
@@ -1507,6 +1552,17 @@ function clearRecentlyPlayed()
 
 function queueUri(artist, title, uri)
 {
+	var type = getUriType(uri);
+
+	if(project_spotify_is_testing)
+	{
+		if(type != 'track')
+		{
+			showDialog({ title: 'Spotify Warning', body_class: 'dialog_message_div', body_content: 'You are using an unsupported Spotify version. You can not queue local files.<br><br>Click the button below to download the recommended version.', button1: { text: 'CLOSE', keys : ['actions'], values: ['hide_dialog'] }, button2: { text: 'DOWNLOAD', keys : ['actions', 'uri'], values: ['open_external_activity', project_website+'?downgrade_spotify'] }, cookie: null });
+			return;
+		}
+	}
+
 	$.post('queue.php?queue_uri&'+getCurrentTime(), { artist: artist, title: title, uri: uri }, function(xhr_data)
 	{
 		if(xhr_data == 'spotify_is_not_running')
@@ -1537,6 +1593,8 @@ function queueUris(uris, randomly)
 		{
 			var number = parseInt(xhr_data);
 			var toast = (number == 1) ? 'track' : 'tracks';
+
+			if(project_spotify_is_testing) showDialog({ title: 'Spotify Warning', body_class: 'dialog_message_div', body_content: 'You are using an unsupported Spotify version. Local files will not be queued.<br><br>Click the button below to download the recommended version.', button1: { text: 'CLOSE', keys : ['actions'], values: ['hide_dialog'] }, button2: { text: 'DOWNLOAD', keys : ['actions', 'uri'], values: ['open_external_activity', project_website+'?downgrade_spotify'] }, cookie: null });
 
 			showToast(number+' '+toast+' queued', 2);
 			refreshQueueActivity();
@@ -1964,7 +2022,7 @@ function save(artist, title, uri, is_authorized_with_spotify, element)
 		{
 			if(xhr_data == 'error')
 			{
-				showToast('Could not save track to library', 4);
+				showToast('Could not save item to library', 4);
 			}
 			else if(shc(xhr_data, 'removed'))
 			{
@@ -2025,7 +2083,7 @@ function confirmRefreshLibrary(is_authorized_with_spotify)
 {
 	if(is_authorized_with_spotify)
 	{
-		showDialog({ title: 'Refresh Library', body_class: 'dialog_message_div', body_content: 'Your library is refreshed every five minutes. This action does it manually. Saved albums is not currently supported.', button1: { text: 'CANCEL', keys : ['actions'], values: ['hide_dialog'] }, button2: { text: 'CONTINUE', keys : ['actions'], values: ['hide_dialog refresh_library'] }, cookie: null });
+		showDialog({ title: 'Refresh Library', body_class: 'dialog_message_div', body_content: 'Your library is refreshed every five minutes. This action does it manually.', button1: { text: 'CANCEL', keys : ['actions'], values: ['hide_dialog'] }, button2: { text: 'CONTINUE', keys : ['actions'], values: ['hide_dialog refresh_library'] }, cookie: null });
 	}
 	else
 	{
@@ -2033,7 +2091,7 @@ function confirmRefreshLibrary(is_authorized_with_spotify)
 	}
 }
 
-function refreshLibrary(reload)
+function refreshLibrary()
 {
 	xhr_activity = $.get('library.php?refresh_library', function(xhr_data)
 	{
@@ -2069,9 +2127,12 @@ function getFeaturedPlaylists(fade_in_div)
 	var offset = parseInt(date.getTimezoneOffset() * 60);
 	var time = parseInt(date.getTime() / 1000 - offset);
 
-	var country = $('div#browse_featured_playlists_div').data('country');
+	var div = $('div#browse_featured_playlists_div');
 
-	$.getJSON(project_website+'api/1/browse/featured-playlists/?time='+time+'&country='+country+'&fields='+encodeURIComponent('description,cover_art')+'&callback=?', function(data)
+	var country = div.data('country');
+	var spotify_token = div.data('spotifytoken');
+
+	$.getJSON(project_website+'api/1/browse/featured-playlists/?time='+time+'&country='+country+'&fields='+encodeURIComponent('description,cover_art')+'&token='+spotify_token+'&callback=?', function(data)
 	{
 		if(typeof data.metadata == 'undefined' || data.metadata == '')
 		{
@@ -2081,13 +2142,25 @@ function getFeaturedPlaylists(fade_in_div)
 		{
 			var metadata = data.metadata;
 
-			$('div#browse_featured_playlists_div').addClass('actions_div').data('actions', 'change_activity').data('activity', 'browse').data('subactivity', 'featured-playlists').data('args', 'time='+time+'&country='+country);
-			$('div#browse_featured_playlists_div > div').css('background-image', 'url("'+metadata.cover_art+'")');
-			$('div#browse_featured_playlists_div > div > div').html(metadata.description);
+			div.addClass('actions_div').data('actions', 'change_activity').data('activity', 'browse').data('subactivity', 'featured-playlists').data('args', 'time='+time+'&country='+country);
+			div.children().css('background-image', 'url("'+metadata.cover_art+'")');
+			div.children().children().html(metadata.description);
 
 			if(fade_in_div) fadeInDiv('div#browse_featured_playlists_div > div');
 		}
 	});
+}
+
+function getRecommendations(uri, is_authorized_with_spotify)
+{
+	if(is_authorized_with_spotify)
+	{
+		changeActivity('browse', 'recommendations', 'uri='+uri);
+	}
+	else
+	{
+		changeActivity('profile', '', '');
+	}
 }
 
 // Search
@@ -2153,33 +2226,6 @@ function getArtistBiography()
 	});
 }
 
-function followArtist(artist, title, uri, element)
-{
-	var html = element.html();
-	var following = (html == 'Unfollow');
-
-	$.post('artist.php?follow_artist&'+getCurrentTime(), { artist: artist, title: title, uri: uri, following: following }, function(xhr_data)
-	{
-		if(xhr_data == 'error')
-		{
-			showToast('Something went wrong. Try again.', 4);
-		}
-		else
-		{
-			if(following)
-			{
-				element.html('Follow');
-				showToast('Artist unfollowed', 2);
-			}
-			else
-			{
-				element.html('Unfollow');
-				showToast('Artist followed', 2);
-			}
-		}
-	});
-}
-
 // Albums
 
 function browseAlbum(uri)
@@ -2231,39 +2277,6 @@ function confirmDeauthorizeFromSpotify()
 function getUser(username)
 {
 	changeActivity('user', '', 'username='+username);
-}
-
-function followUser(artist, title, uri, username, element)
-{
-	var attr = element.attr('title');
-	var following = (attr == 'Unfollow');
-
-	$.post('user.php?follow_user&'+getCurrentTime(), { artist: artist, title: title, uri: uri, username: username, following: following }, function(xhr_data)
-	{
-		if(xhr_data == 'error')
-		{
-			showToast('Something went wrong. Try again.', 4);
-		}
-		else
-		{
-			var icon_div = $('div', element);
-
-			icon_div.removeClass('check_white_24_img_div plus_white_24_img_div');
-
-			if(following)
-			{
-				element.attr('title', 'Follow');
-				icon_div.addClass('plus_white_24_img_div');
-				showToast('User unfollowed', 2);
-			}
-			else
-			{
-				element.attr('title', 'Unfollow');
-				icon_div.addClass('check_white_24_img_div');
-				showToast('User followed', 2);
-			}
-		}
-	});
 }
 
 // Settings
@@ -2890,6 +2903,12 @@ function checkForDialogs()
 {
 	if(isDisplayed('div#dialog_div')) return;
 
+	if(project_spotify_is_testing)
+	{
+		var cookie = { id: 'hide_spotify_is_testing_dialog', value: 'true', expires: 3650 };
+		if(!isCookie(cookie.id)) showDialog({ title: 'Spotify Warning', body_class: 'dialog_message_div', body_content: 'You are using an unsupported Spotify version. The new MPRIS behaviour breaks some features, like playing playlists, artists and albums.<br><br>A workaround is to queue all tracks from the overflow menu.<br><br>Click the button below to download the recommended version.', button1: { text: 'CLOSE', keys : ['actions'], values: ['hide_dialog'] }, button2: { text: 'DOWNLOAD', keys : ['actions', 'uri'], values: ['open_external_activity', project_website+'?downgrade_spotify'] }, cookie: cookie });
+	}
+
 	if(!ua_is_supported)
 	{
 		var cookie = { id: 'hide_unsupported_browser_dialog_'+project_version, value: 'true', expires: 7 };
@@ -2904,7 +2923,7 @@ function checkForDialogs()
 
 	var latest_version = $.cookie('latest_version');
 
-	if(settings_check_for_updates && parseFloat(latest_version) > project_version)
+	if(parseFloat(latest_version) > project_version)
 	{
 		var cookie = { id: 'hide_update_available_dialog_'+project_version, value: 'true', expires: 7 };
 		if(!isCookie(cookie.id)) showDialog({ title: 'Update Available', body_class: 'dialog_message_div', body_content: project_name+' '+latest_version+' has been released!', button1: { text: 'CLOSE', keys : ['actions'], values: ['hide_dialog'] }, button2: { text: 'DOWNLOAD', keys : ['actions', 'uri'], values: ['open_external_activity', project_website+'?download'] }, cookie: cookie });
@@ -3464,7 +3483,7 @@ function checkForUpdates(type)
 
 		$.cookie(last_update_check_cookie.id, last_update_check_cookie.value, { expires: last_update_check_cookie.expires });
 	}
-	else if(type == 'auto' && settings_check_for_updates)
+	else if(type == 'auto')
 	{
 		if(!isCookie(last_update_check_cookie.id) || !isNaN(last_update_check) && getCurrentTime() - last_update_check > 1000 * 3600 * 24)
 		{
@@ -3623,13 +3642,13 @@ function getUriType(uri)
 	{
 		type = 'local';
 	}
+	else if(uri.match(/^spotify:user:[^:]+$/) || uri.match(/^https?:\/\/[^\.]+\.spotify\.com\/user\/[^\/]+$/))
+	{
+		type = 'user';
+	}
 	else if(uri.match(/^spotify:app:genre:\w+$/) || uri.match(/^https?:\/\/spotify:app:genre:\w+$/))
 	{
 		type = 'genre';
-	}
-	else if(uri.match(/^https?:\/\/\w+\.scdn\.co\/\w+\/\w+$/) || uri.match(/^https?:\/\/\w+\.cloudfront\.net\/\w+\/\w+$/) || uri.match(/^https?:\/\/fbcdn-profile/) || uri.match(/^https?:\/\/profile-images/))
-	{
-		type = 'cover_art';
 	}
 
 	return type;

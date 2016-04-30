@@ -2,7 +2,7 @@
 
 /*
 
-Copyright 2015 Ole Jon Bjørkum
+Copyright 2016 Ole Jon Bjørkum
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -22,8 +22,8 @@ along with this program. If not, see http://www.gnu.org/licenses/.
 // Project
 
 define('project_name', 'SpotCommander');
-define('project_version', 12.5);
-define('project_serial', 1712);
+define('project_version', 12.6);
+define('project_serial', 1860);
 define('project_website', 'http://www.olejon.net/code/spotcommander/');
 define('project_developer', 'Ole Jon Bjørkum');
 define('project_android_app_minimum_version', 6.0);
@@ -117,12 +117,7 @@ if(isset($_POST['action']))
 
 		echo $volume;
 	}
-	elseif($action == 'play_uri' || $action == 'shuffle_play_uri' || $action == 'start_track_radio')
-	{
-		clear_queue();
-		remote_control($action, $data);
-	}
-	elseif($action == 'play_uri_from_playlist')
+	elseif($action == 'play_uri' || $action == 'play_uri_from_playlist' || $action == 'shuffle_play_uri' || $action == 'start_track_radio')
 	{
 		clear_queue();
 		remote_control($action, $data);
@@ -153,7 +148,8 @@ elseif(isset($_GET['global_variables']))
 		'project_website' => project_website,
 		'project_developer' => project_developer,
 		'project_android_app_minimum_version' => project_android_app_minimum_version,
-		'project_error_code' => check_for_errors()
+		'project_error_code' => check_for_errors(),
+		'project_spotify_is_testing' => spotify_is_testing()
 	);
 
 	echo json_encode($global_variables);

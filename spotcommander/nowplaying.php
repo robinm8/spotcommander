@@ -2,7 +2,7 @@
 
 /*
 
-Copyright 2015 Ole Jon Bjørkum
+Copyright 2016 Ole Jon Bjørkum
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -29,13 +29,13 @@ $play_pause = 'play';
 $volume = 50;
 $artist = 'Unknown';
 $title = 'Spotify is Not Running';
-$album = 'Unknown';
+$album = '';
 $cover_art = 'img/no-cover-art-640.png?' . project_serial;
 $uri = '';
 $is_local = false;
-$length = 'Unknown';
-$released = 'Unknown';
-$popularity = 'Unknown';
+$length = '';
+$released = '';
+$popularity = '';
 
 $actions = array();
 $actions[] = array('action' => array('Recently Played', ''), 'keys' => array('actions', 'activity', 'subactivity', 'args'), 'values' => array('change_activity', 'recently-played', '', ''));
@@ -53,27 +53,11 @@ if(spotify_is_running())
 		$artist = (empty($nowplaying['artist'])) ? $artist : $nowplaying['artist'];
 		$title = (empty($nowplaying['title'])) ? $title : $nowplaying['title'];
 		$album = (empty($nowplaying['album'])) ? $album : $nowplaying['album'];
-		$uri = ($is_local) ? preg_replace('/:\d*$/', '', $nowplaying['url']) . ':' : $nowplaying['url'];
+		$uri = ($is_local) ? preg_replace('/:\d*$/', '', $nowplaying['url']) . ':' : url_to_uri($nowplaying['url']);
 		$length = convert_length($nowplaying['length'], 'mc');
-
-		if(!empty($nowplaying['artUrl']))
-		{
-			$cover_art = $nowplaying['artUrl'];
-			$cover_art = str_replace(array('open.spotify.com', '/thumb/'), array('o.scdn.co', '/640/'), $cover_art);
-			$cover_art = (get_uri_type($cover_art) == 'cover_art') ? $cover_art : 'img/no-cover-art-640.png?' . project_serial;
-		}
-
-		if(!empty($nowplaying['contentCreated']))
-		{
-			$released = $nowplaying['contentCreated'];
-			$released = substr($released, 0, 4);
-		}
-
-		if(!empty($nowplaying['autoRating']))
-		{
-			$popularity = $nowplaying['autoRating'];
-			$popularity = convert_popularity($popularity);
-		}
+		$cover_art = (empty($nowplaying['artUrl'])) ? 'img/no-cover-art-640.png?' . project_serial : str_replace(array('https', 'open.spotify.com', '/thumb/'), array('http', 'i.scdn.co', '/image/'), $nowplaying['artUrl']);
+		$released = (empty($nowplaying['contentCreated'])) ? 'Unknown' : substr($nowplaying['contentCreated'], 0, 4);
+		$popularity = (empty($nowplaying['autoRating'])) ? 'Unknown' : convert_popularity($nowplaying['autoRating']);
 
 		if($playbackstatus == 'Playing') save_recently_played($artist, $title, $uri);
 
@@ -89,6 +73,7 @@ if(spotify_is_running())
 		$actions_dialog['actions'][] = array('text' => 'Add to Playlist', 'keys' => array('actions', 'title', 'uri', 'isauthorizedwithspotify'), 'values' => array('hide_dialog add_to_playlist', $title, $uri, is_authorized_with_spotify));
 		$actions_dialog['actions'][] = array('text' => 'Go to Artist', 'keys' => array('actions', 'uri'), 'values' => array('hide_dialog browse_artist', $uri));
 		$actions_dialog['actions'][] = array('text' => 'Search Artist', 'keys' => array('actions', 'string'), 'values' => array('hide_dialog get_search', rawurlencode('artist:"' . $artist . '"')));
+		$actions_dialog['actions'][] = array('text' => 'Recommendations', 'keys' => array('actions', 'uri', 'isauthorizedwithspotify'), 'values' => array('hide_dialog get_recommendations', $uri, is_authorized_with_spotify));
 		$actions_dialog['actions'][] = array('text' => 'Start Track Radio', 'keys' => array('actions', 'uri', 'playfirst'), 'values' => array('hide_dialog start_track_radio', $uri, 'false'));
 		$actions_dialog['actions'][] = array('text' => 'Share', 'keys' => array('actions', 'title', 'uri'), 'values' => array('hide_dialog share_uri', hsc($title), rawurlencode(uri_to_url($uri))));
 		$actions_dialog['actions'][] = array('text' => 'YouTube', 'keys' => array('actions', 'uri'), 'values' => array('open_external_activity', 'https://www.youtube.com/results?search_query=' . rawurlencode($artist . ' ' . $title)));

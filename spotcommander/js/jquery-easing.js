@@ -3,7 +3,7 @@
 jQuery easing plugin 1.3
 Source: http://github.com/danro/jquery-easing
 
-Copyright 2015 George McGinley Smith
+Copyright 2016 George McGinley Smith
 License: http://opensource.org/licenses/BSD-3-Clause
 
 */

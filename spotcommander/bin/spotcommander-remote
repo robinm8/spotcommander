@@ -4,7 +4,7 @@
 
 /*
 
-Copyright 2015 Ole Jon Bjørkum
+Copyright 2016 Ole Jon Bjørkum
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -35,6 +35,7 @@ if(!$daemon_server)
 
 chmod(daemon_socket, 0666);
 
+$spotify_is_testing = spotify_is_testing();
 $qdbus = daemon_qdbus_select();
 $pulseaudio = daemon_pulseaudio_check();
 $logind = daemon_logind_check($qdbus);
@@ -71,7 +72,7 @@ while($daemon_connect = stream_socket_accept($daemon_server, -1))
 		{
 			if(spotify_is_running())
 			{
-				$metadata = trim(shell_exec($qdbus . ' org.mpris.MediaPlayer2.spotify / org.freedesktop.MediaPlayer2.GetMetadata'));
+				$metadata = trim(shell_exec($qdbus . ' org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.freedesktop.DBus.Properties.Get org.mpris.MediaPlayer2.Player Metadata'));
 				if(!empty($metadata)) break;
 			}
 
@@ -80,7 +81,14 @@ while($daemon_connect = stream_socket_accept($daemon_server, -1))
 	}
 	elseif($action == 'spotify_quit')
 	{
-		exec($qdbus . ' org.mpris.MediaPlayer2.spotify / org.freedesktop.MediaPlayer2.Quit');
+		if($spotify_is_testing)
+		{
+			exec('killall spotify');
+		}
+		else
+		{
+			exec($qdbus . ' org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Quit');
+		}
 
 		for($i = 0; $i < 20; $i++)
 		{
@@ -90,27 +98,41 @@ while($daemon_connect = stream_socket_accept($daemon_server, -1))
 	}
 	elseif($action == 'play_pause')
 	{
-		exec($qdbus . ' org.mpris.MediaPlayer2.spotify / org.freedesktop.MediaPlayer2.PlayPause');
+		exec($qdbus . ' org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.PlayPause');
 	}
 	elseif($action == 'pause')
 	{
-		exec($qdbus . ' org.mpris.MediaPlayer2.spotify / org.freedesktop.MediaPlayer2.Pause');
+		exec($qdbus . ' org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.Pause');
 	}
 	elseif($action == 'previous')
 	{
-		exec($qdbus . ' org.mpris.MediaPlayer2.spotify / org.freedesktop.MediaPlayer2.Previous');
+		exec($qdbus . ' org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.Previous');
 	}
 	elseif($action == 'next')
 	{
-		exec($qdbus . ' org.mpris.MediaPlayer2.spotify / org.freedesktop.MediaPlayer2.Next');
+		exec($qdbus . ' org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.Next');
 	}
 	elseif($action == 'toggle_shuffle')
 	{
-		exec('xdotool search "^Spotify.*Linux Preview$" windowmap key --window %1 --clearmodifiers ctrl+s');
+		if($spotify_is_testing)
+		{
+			exec('xte \'keydown Control_R\' \'key s\' \'keyup Control_R\'');
+		}
+		else
+		{
+			exec('xdotool search "^Spotify.*Linux Preview$" windowmap key --window %1 --clearmodifiers ctrl+s');
+		}
 	}
 	elseif($action == 'toggle_repeat')
 	{
-		exec('xdotool search "^Spotify.*Linux Preview$" windowmap key --window %1 --clearmodifiers ctrl+r');
+		if($spotify_is_testing)
+		{
+			exec('xte \'keydown Control_R\' \'key r\' \'keyup Control_R\'');
+		}
+		else
+		{
+			exec('xdotool search "^Spotify.*Linux Preview$" windowmap key --window %1 --clearmodifiers ctrl+r');
+		}
 	}
 	elseif($action == 'adjust_spotify_volume' || $action == 'adjust_system_volume')
 	{
@@ -163,7 +185,18 @@ while($daemon_connect = stream_socket_accept($daemon_server, -1))
 	}
 	elseif($action == 'play_uri')
 	{
-		exec($qdbus . ' org.mpris.MediaPlayer2.spotify / org.freedesktop.MediaPlayer2.OpenUri ' . $data);
+		if($spotify_is_testing)
+		{
+			$type = get_uri_type($data);
+
+			if($type == 'track' || $type == 'local')
+			{
+				exec($qdbus . ' org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.Pause');
+				usleep(250000);
+			}
+		}
+
+		exec($qdbus . ' org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.OpenUri ' . $data);
 	}
 	elseif($action == 'play_uri_from_playlist')
 	{
@@ -172,21 +205,33 @@ while($daemon_connect = stream_socket_accept($daemon_server, -1))
 		$playlist_uri = $data[0];
 		$uri = $data[1];
 
-		exec($qdbus . ' org.mpris.MediaPlayer2.spotify / org.freedesktop.MediaPlayer2.OpenUri ' . $playlist_uri);
+		if($spotify_is_testing)
+		{
+			exec($qdbus . ' org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.Pause');
+		}
+		else
+		{
+			exec($qdbus . ' org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.OpenUri ' . $playlist_uri);
+		}
+
 		usleep(250000);
-		exec($qdbus . ' org.mpris.MediaPlayer2.spotify / org.freedesktop.MediaPlayer2.OpenUri ' . $uri);
+		exec($qdbus . ' org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.OpenUri ' . $uri);
 	}
 	elseif($action == 'shuffle_play_uri')
 	{
-		exec($qdbus . ' org.mpris.MediaPlayer2.spotify / org.freedesktop.MediaPlayer2.OpenUri ' . $data);
+		exec($qdbus . ' org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.OpenUri ' . $data);
 		exec('xdotool search "^Spotify.*Linux Preview$" windowmap key --window %1 --clearmodifiers ctrl+s sleep 0.25 key --window %1 --clearmodifiers ctrl+s');
 		usleep(250000);
-		exec($qdbus . ' org.mpris.MediaPlayer2.spotify / org.freedesktop.MediaPlayer2.Next');
+		exec($qdbus . ' org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.Next');
 	}
 	elseif($action == 'start_track_radio')
 	{
-		$geometry = shell_exec('xdotool search "^Spotify.*Linux Preview$" windowmap windowraise windowfocus getwindowgeometry');
+		$data = json_decode($data, true);
 
+		$uri = $data[0];
+		$play_first = $data[1];
+
+		$geometry = shell_exec('xdotool search "^Spotify.*Linux Preview$" windowmap windowraise windowfocus getwindowgeometry');
 		preg_match('/Geometry: \d+x(\d+)/s', $geometry, $height);
 
 		if(!empty($height[1]))
@@ -195,21 +240,15 @@ while($daemon_connect = stream_socket_accept($daemon_server, -1))
 
 			exec('xdotool search "^Spotify.*Linux Preview$" mousemove --window %1 --clearmodifiers 10 ' . $height);
 
-			$data = json_decode($data, true);
-
-			$uri = $data[0];
-			$play_first = $data[1];
-			$ups = intval($data[2]);
-
 			if(string_to_boolean($play_first))
 			{
-				exec($qdbus . ' org.mpris.MediaPlayer2.spotify / org.freedesktop.MediaPlayer2.OpenUri ' . $uri);
+				exec($qdbus . ' org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.OpenUri ' . $uri);
 				sleep(2);
 			}
 
 			$exec = 'xdotool search "^Spotify.*Linux Preview$" click --window %1 --clearmodifiers 3 sleep 0.5 ';
 
-			for($i = 0; $i < $ups; $i++)
+			for($i = 0; $i < 5; $i++)
 			{
 				$exec .= 'key --window %1 --clearmodifiers Up sleep 0.25 ';
 			}
@@ -270,7 +309,14 @@ while($daemon_connect = stream_socket_accept($daemon_server, -1))
 	}
 	elseif($action == 'shut_down_computer')
 	{
-		exec($qdbus . ' org.mpris.MediaPlayer2.spotify / org.freedesktop.MediaPlayer2.Quit');
+		if($spotify_is_testing)
+		{
+			exec('killall spotify');
+		}
+		else
+		{
+			exec($qdbus . ' org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Quit');
+		}
 
 		if($logind)
 		{

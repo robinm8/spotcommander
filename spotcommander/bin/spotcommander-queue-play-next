@@ -4,7 +4,7 @@
 
 /*
 
-Copyright 2015 Ole Jon Bjørkum
+Copyright 2016 Ole Jon Bjørkum
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@ chdir(__DIR__);
 
 require_once('../main.php');
 
+$spotify_is_testing = spotify_is_testing();
 $qdbus = daemon_qdbus_select();
 
 $track = get_db_rows('queue', "SELECT id, uri, sortorder FROM queue ORDER BY sortorder, id LIMIT 1", array('id', 'uri', 'sortorder'));
@@ -39,12 +40,20 @@ if(!empty($track))
 
 	if($uri == 'pause')
 	{
-		exec($qdbus . ' org.mpris.MediaPlayer2.spotify / org.freedesktop.MediaPlayer2.Pause');
+		exec($qdbus . ' org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.Pause');
 	}
 	elseif($uri == 'stop')
 	{
 		clear_queue();
-		exec($qdbus . ' org.mpris.MediaPlayer2.spotify / org.freedesktop.MediaPlayer2.Quit');
+
+		if($spotify_is_testing)
+		{
+			exec('killall spotify');
+		}
+		else
+		{
+			exec($qdbus . ' org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Quit');
+		}
 	}
 	elseif($uri == 'suspend')
 	{
@@ -52,7 +61,14 @@ if(!empty($track))
 
 		clear_queue();
 
-		exec($qdbus . ' org.mpris.MediaPlayer2.spotify / org.freedesktop.MediaPlayer2.Quit');	
+		if($spotify_is_testing)
+		{
+			exec('killall spotify');
+		}
+		else
+		{
+			exec($qdbus . ' org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Quit');
+		}
 
 		if($logind)
 		{
@@ -69,7 +85,14 @@ if(!empty($track))
 		
 		clear_queue();
 
-		exec($qdbus . ' org.mpris.MediaPlayer2.spotify / org.freedesktop.MediaPlayer2.Quit');	
+		if($spotify_is_testing)
+		{
+			exec('killall spotify');
+		}
+		else
+		{
+			exec($qdbus . ' org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Quit');
+		}
 
 		if($logind)
 		{
@@ -82,7 +105,9 @@ if(!empty($track))
 	}
 	else
 	{
-		exec($qdbus . ' org.mpris.MediaPlayer2.spotify / org.freedesktop.MediaPlayer2.OpenUri ' . $uri);
+		if($spotify_is_testing) exec($qdbus . ' org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.Pause');
+
+		exec($qdbus . ' org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.OpenUri ' . $uri);
 	}
 }
 

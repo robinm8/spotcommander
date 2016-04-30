@@ -2,7 +2,7 @@
 
 /*
 
-Copyright 2015 Ole Jon Bjørkum
+Copyright 2016 Ole Jon Bjørkum
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -21,90 +21,87 @@ along with this program. If not, see http://www.gnu.org/licenses/.
 
 require_once('main.php');
 
+$user = get_user(rawurlencode($_GET['username']));
+
 $activity = array();
 $activity['project_version'] = project_version;
 
-if(isset($_GET['follow_user']))
+if(empty($user))
 {
-	echo follow_user($_POST['artist'], $_POST['title'], $_POST['uri'], $_POST['username'], string_to_boolean($_POST['following']));
+	$activity['title'] = 'Error';
+	$activity['actions'][] = array('action' => array('Retry', 'refresh_white_24_img_div'), 'keys' => array('actions'), 'values' => array('reload_activity'));
+
+	echo '
+		<div id="activity_inner_div" data-activitydata="' . base64_encode(json_encode($activity)) . '">
+
+		<div id="activity_message_div"><div><div class="img_div img_48_div information_grey_48_img_div"></div></div><div>Could not get user. Try again.</div></div>
+
+		</div>
+	';
 }
 else
 {
-	$user = get_user(rawurlencode($_GET['username']));
+	$profile = $user['profile'];
+	$playlists = $user['playlists'];
 
-	if(empty($user))
+	$activity['title'] = hsc($profile['name']);
+
+	if(is_authorized_with_spotify)
 	{
-		$activity['title'] = 'Error';
-		$activity['actions'][] = array('action' => array('Retry', 'refresh_white_24_img_div'), 'keys' => array('actions'), 'values' => array('reload_activity'));
+		$user_uri = 'spotify:user:' . rawurlencode($profile['username']);
 
-		echo '
-			<div id="activity_inner_div" data-activitydata="' . base64_encode(json_encode($activity)) . '">
+		$is_saved = is_saved($user_uri);
 
-			<div id="activity_message_div"><div><div class="img_div img_48_div information_grey_48_img_div"></div></div><div>Could not get user. Try again.</div></div>
+		$library_action = ($is_saved) ? 'Remove from Library' : 'Save to Library';
+		$library_icon = ($is_saved) ? 'check_white_24_img_div' : 'plus_white_24_img_div';
 
-			</div>
-		';
+		$activity['actions'][] = array('action' => array($library_action, $library_icon), 'keys' => array('actions', 'artist', 'title', 'uri', 'isauthorizedwithspotify'), 'values' => array('save', rawurlencode($profile['username']), rawurlencode($profile['name']), $user_uri, is_authorized_with_spotify));
+	}
+
+	$style = (empty($profile['image'])) ? '' : 'background-size: cover; background-image: url(\'' . $profile['image'] . '\')';
+	$text = ($profile['followers'] == 1) ? 'follower' : 'followers';
+
+	echo '
+		<div id="activity_inner_div" data-activitydata="' . base64_encode(json_encode($activity)) . '">
+
+		<div id="user_div">
+		<div>
+		<div class="person_grey_72_img_div" style="' . $style . '"></div>
+		</div>
+		<div>
+		<div>' . hsc($profile['name']) . '</div>
+		<div>' . is_facebook_user($profile['username']) . ' / ' . $profile['followers'] . ' ' . $text . '</div>
+		</div>
+		</div>
+
+		<div class="cards_vertical_title_div">Public Playlists</div>
+	';
+
+	if(empty($playlists))
+	{
+		echo '<div class="cards_vertical_empty_div">No public playlists.</div>';
 	}
 	else
 	{
-		$profile = $user['profile'];
-		$playlists = $user['playlists'];
+		echo '<div class="cards_vertical_div">';
 
-		$user_uri = 'spotify:user:' . rawurlencode($profile['username']);
+		$cover_art_cache = get_cover_art_cache('medium');
 
-		$following = $profile['following'];
-
-		$follow_action = ($following) ? 'Unfollow' : 'Follow';
-		$follow_icon = ($following) ? 'check_white_24_img_div' : 'plus_white_24_img_div';
-
-		$activity['title'] = hsc($profile['name']);
-		$activity['actions'][] = array('action' => array($follow_action, $follow_icon), 'keys' => array('actions', 'artist', 'title', 'uri', 'username'), 'values' => array('follow_user', $profile['username'], $profile['name'], $user_uri, $profile['username']));
-
-		$style = (empty($profile['image'])) ? '' : 'background-size: cover; background-image: url(\'' . $profile['image'] . '\')';
-		$text = ($profile['followers'] == 1) ? 'follower' : 'followers';
-
-		echo '
-			<div id="activity_inner_div" data-activitydata="' . base64_encode(json_encode($activity)) . '">
-
-			<div id="user_div">
-			<div>
-			<div class="person_grey_72_img_div" style="' . $style . '"></div>
-			</div>
-			<div>
-			<div>' . hsc($profile['name']) . '</div>
-			<div>' . is_facebook_user($profile['username']) . ' / ' . $profile['followers'] . ' ' . $text . '</div>
-			</div>
-			</div>
-
-			<div class="cards_vertical_title_div">Public Playlists</div>
-		';
-
-		if(empty($playlists))
+		foreach($playlists as $playlist)
 		{
-			echo '<div class="cards_vertical_empty_div">No public playlists.</div>';
-		}
-		else
-		{
-			echo '<div class="cards_vertical_div">';
+			$name = $playlist['name'];
+			$uri = $playlist['uri'];
+			$user = is_facebook_user(get_playlist_user($uri));
 
-			$cover_art_cache = get_cover_art_cache('medium');
+			$style = (empty($cover_art_cache[$uri])) ? 'color: initial' : 'background-image: url(\'' . $cover_art_cache[$uri] . '\')';
 
-			foreach($playlists as $playlist)
-			{
-				$name = $playlist['name'];
-				$uri = $playlist['uri'];
-				$user = is_facebook_user(get_playlist_user($uri));
-
-				$style = (empty($cover_art_cache[$uri])) ? 'color: initial' : 'background-image: url(\'' . $cover_art_cache[$uri] . '\')';
-
-				echo '<div class="card_vertical_div"><div title="' . hsc($name) . '" class="card_vertical_inner_div actions_div" data-actions="browse_playlist" data-uri="' . $uri . '" data-description="' . rawurlencode($name) . '" data-isauthorizedwithspotify="' . boolean_to_string(is_authorized_with_spotify) . '" data-highlightclass="card_highlight" onclick="void(0)"><div class="card_vertical_cover_art_div" data-coverarturi="' . $uri . '" style="' . $style . '"></div><div class="card_vertical_upper_div">' . hsc($name) . '</div><div class="card_vertical_lower_div">' . $user . '</div></div></div>';
-			}
-
-			echo '<div class="clear_float_div"></div></div>';
+			echo '<div class="card_vertical_div"><div title="' . hsc($name) . '" class="card_vertical_inner_div actions_div" data-actions="browse_playlist" data-uri="' . $uri . '" data-description="' . rawurlencode($name) . '" data-isauthorizedwithspotify="' . boolean_to_string(is_authorized_with_spotify) . '" data-highlightclass="card_highlight" onclick="void(0)"><div class="card_vertical_cover_art_div" data-coverarturi="' . $uri . '" style="' . $style . '"></div><div class="card_vertical_upper_div">' . hsc($name) . '</div><div class="card_vertical_lower_div">' . $user . '</div></div></div>';
 		}
 
-		echo '</div>';
+		echo '<div class="clear_float_div"></div></div>';
 	}
+
+	echo '</div>';
 }
 
 ?>

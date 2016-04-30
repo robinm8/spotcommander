@@ -9,24 +9,19 @@ http://www.olejon.net/code/spotcommander/?upgrade
 BEFORE UPGRADING:
 
 * Close SpotCommander completely on all your devices before upgrading
-* You may have to reauthorize with Spotify for some of the features to work if you are upgrading from an old version. Go to Profile in the menu and tap the top right icon to deauthorize. When it is done, tap the top right icon to authorize again
-* Android users must update to the latest version of the Android app
-* iOS users should re-add SpotCommander to the home screen
+* You have to reauthorize with Spotify for Profile in the side menu to work (Top Tracks)
 
-CHANGELOG v 12.5:
+CHANGELOG v 12.6:
 
-* Remove Starred category from Playlists as it has been deprecated by Spotify and converted to a regular playlist
-* Removed News from Browse as it has been deprecated by Spotify
-* Library now syncs the artists you follow, just like tracks you have saved (new feature in Spotify's web API)
-* Only show playlists you actually have write access to when choosing Add to Playlist
-* Floating Action Button in Library now allows you to quickly scroll down to the next category
-* Added Default as an option when sorting playlists
-* Added error message if you are running the beta version of Spotify, which is not supported yet
+* Discover new music with Recommendations! Tap on a track > Three dots > Recommendations and get a list of recommended tracks
+* In Library, albums are now synchronized with your saved albums in Spotify
+* Top Tracks in Profile
+* Partially support for Spotify v 1.0. The new MPRIS behaviour breaks some features, like playing playlists, artists, albums and local files. A workaround is to queue all tracks from the overflow menu. It is still recommended to use Spotify v 0.9.17.8
 * Minor changes and bug fixes
 
 LICENSE:
 
-Copyright 2015 Ole Jon Bjørkum
+Copyright 2016 Ole Jon Bjørkum
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

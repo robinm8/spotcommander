@@ -1,6 +1,6 @@
 /*
 
-Copyright 2015 Ole Jon Bjørkum
+Copyright 2016 Ole Jon Bjørkum
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -30,9 +30,8 @@ function setGlobalVariables(global_variables)
 	project_website = global_variables.project_website;
 	project_developer = global_variables.project_developer;
 	project_android_app_minimum_version = parseFloat(global_variables.project_android_app_minimum_version);
-
-	// Error code
 	project_error_code = parseInt(global_variables.project_error_code);
+	project_spotify_is_testing = global_variables.project_spotify_is_testing;
 
 	// User agent
 	ua = window.navigator.userAgent;
@@ -147,12 +146,10 @@ function setGlobalVariables(global_variables)
 
 	// Settings
 	var settings = [
-		{ setting: 'settings_check_for_updates' , value: 'true' },
 		{ setting: 'settings_nowplaying_refresh_interval' , value: '5' },
 		{ setting: 'settings_volume_control' , value: 'spotify' },
 		{ setting: 'settings_playlists_cache_time' , value: '3600' },
 		{ setting: 'settings_hide_local_files' , value: 'false' },
-		{ setting: 'settings_start_track_radio_simulation' , value: '5' },
 		{ setting: 'settings_keyboard_shortcuts' , value: (ua_supports_touch) ? 'false' : 'true' },
 		{ setting: 'settings_notifications' , value: 'false' },
 		{ setting: 'settings_update_lyrics' , value: 'false' },
@@ -178,12 +175,10 @@ function setGlobalVariables(global_variables)
 		if(!isCookie(cookie.id)) $.cookie(cookie.id, cookie.value, { expires: cookie.expires });
 	}
 
-	settings_check_for_updates = stringToBoolean($.cookie('settings_check_for_updates'));
 	settings_nowplaying_refresh_interval = parseInt($.cookie('settings_nowplaying_refresh_interval'));
 	settings_volume_control = $.cookie('settings_volume_control');
 	settings_playlists_cache_time = $.cookie('settings_playlists_cache_time');
 	settings_hide_local_files = stringToBoolean($.cookie('settings_hide_local_files'));
-	settings_start_track_radio_simulation = $.cookie('settings_start_track_radio_simulation');
 	settings_notifications = stringToBoolean($.cookie('settings_notifications'));
 	settings_update_lyrics = stringToBoolean($.cookie('settings_update_lyrics'));
 	settings_keyboard_shortcuts = stringToBoolean($.cookie('settings_keyboard_shortcuts'));
@@ -847,10 +842,6 @@ $(window).load(function()
 				{
 					getUser(data.username);
 				}
-				else if(action == 'follow_user')
-				{
-					followUser(data.artist, data.title, data.uri, data.username, element);
-				}
 				else if(action == 'save')
 				{
 					save(data.artist, data.title, data.uri, data.isauthorizedwithspotify, element);
@@ -865,7 +856,7 @@ $(window).load(function()
 				}
 				else if(action == 'refresh_library')
 				{
-					refreshLibrary(true);
+					refreshLibrary();
 				}
 				else if(action == 'get_search')
 				{
@@ -883,9 +874,25 @@ $(window).load(function()
 				{
 					browseArtist(data.uri);
 				}
-				else if(action == 'follow_artist')
+				else if(action == 'get_lyrics')
 				{
-					followArtist(data.artist, data.title, data.uri, element);
+					getLyrics(data.artist, data.title);
+				}
+				else if(action == 'get_recommendations')
+				{
+					getRecommendations(data.uri, data.isauthorizedwithspotify);
+				}
+				else if(action == 'browse_uri')
+				{
+					browseUri(data.uri, data.isauthorizedwithspotify);
+				}
+				else if(action == 'share_uri')
+				{
+					shareUri(data.title, data.uri);
+				}
+				else if(action == 'show_toast')
+				{
+					showToast(data.text, data.duration);
 				}
 				else if(action == 'resize_cover_art')
 				{
@@ -921,22 +928,6 @@ $(window).load(function()
 
 						element.data('resized', true);
 					}
-				}
-				else if(action == 'get_lyrics')
-				{
-					getLyrics(data.artist, data.title);
-				}
-				else if(action == 'browse_uri')
-				{
-					browseUri(data.uri, data.isauthorizedwithspotify);
-				}
-				else if(action == 'share_uri')
-				{
-					shareUri(data.title, data.uri);
-				}
-				else if(action == 'show_toast')
-				{
-					showToast(data.text, data.duration);
 				}
 				else if(action == 'set_cookie')
 				{

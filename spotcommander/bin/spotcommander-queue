@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright 2015 Ole Jon Bjørkum
+# Copyright 2016 Ole Jon Bjørkum
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@ dbus-monitor --profile "type='signal',path='/org/mpris/MediaPlayer2',interface='
 
 	if [[ ! "$LINE" =~ ^.+NameAcquired$ ]]; then
 
-		if [ "$NOWPLAYING" != "$("$QDBUS" org.mpris.MediaPlayer2.spotify / org.freedesktop.MediaPlayer2.GetMetadata)" ]; then
+		if [ "$NOWPLAYING" != "$("$QDBUS" org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.freedesktop.DBus.Properties.Get org.mpris.MediaPlayer2.Player Metadata)" ]; then
 
 			"$PROJECT_PATH"/bin/spotcommander-queue-play-next 1>/dev/null 2>&1
 
@@ -33,7 +33,7 @@ dbus-monitor --profile "type='signal',path='/org/mpris/MediaPlayer2',interface='
 
 		fi
 
-		NOWPLAYING="$("$QDBUS" org.mpris.MediaPlayer2.spotify / org.freedesktop.MediaPlayer2.GetMetadata)"
+		NOWPLAYING="$("$QDBUS" org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.freedesktop.DBus.Properties.Get org.mpris.MediaPlayer2.Player Metadata)"
 
 	fi
 
