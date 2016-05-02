@@ -804,9 +804,9 @@ function playUri(uri)
 
 	if(project_spotify_is_testing)
 	{
-		if(type != 'track')
+		if(type != 'track' && type != 'album')
 		{
-			showDialog({ title: 'Spotify Warning', body_class: 'dialog_message_div', body_content: 'You are using an unsupported Spotify version. You can not play playlists, artists, albums or local files.<br><br>A workaround is to queue all tracks from the overflow menu.<br><br>Click the button below to download the recommended version.', button1: { text: 'CLOSE', keys : ['actions'], values: ['hide_dialog'] }, button2: { text: 'DOWNLOAD', keys : ['actions', 'uri'], values: ['open_external_activity', project_website+'?downgrade_spotify'] }, cookie: null });
+			showDialog({ title: 'Spotify Warning', body_class: 'dialog_message_div', body_content: 'You are using an unsupported Spotify version. You can not play playlists, artists or local files.<br><br>A workaround is to queue all tracks from the overflow menu.<br><br>Click the button below to download the recommended version.', button1: { text: 'CLOSE', keys : ['actions'], values: ['hide_dialog'] }, button2: { text: 'DOWNLOAD', keys : ['actions', 'uri'], values: ['open_external_activity', project_website+'?downgrade_spotify'] }, cookie: null });
 			return;
 		}
 	}
@@ -828,13 +828,13 @@ function playUri(uri)
 
 function playUriFromPlaylist(playlist_uri, uri)
 {
-	var type = getUriType(uri);
-
 	if(project_spotify_is_testing)
 	{
+		var type = getUriType(uri);
+
 		if(type != 'track')
 		{
-			showDialog({ title: 'Spotify Warning', body_class: 'dialog_message_div', body_content: 'You are using an unsupported Spotify version. You can not play playlists, artists, albums or local files.<br><br>A workaround is to queue all tracks from the overflow menu.<br><br>Click the button below to download the recommended version.', button1: { text: 'CLOSE', keys : ['actions'], values: ['hide_dialog'] }, button2: { text: 'DOWNLOAD', keys : ['actions', 'uri'], values: ['open_external_activity', project_website+'?downgrade_spotify'] }, cookie: null });
+			showDialog({ title: 'Spotify Warning', body_class: 'dialog_message_div', body_content: 'You are using an unsupported Spotify version. You can not play local files.<br><br>Click the button below to download the recommended version.', button1: { text: 'CLOSE', keys : ['actions'], values: ['hide_dialog'] }, button2: { text: 'DOWNLOAD', keys : ['actions', 'uri'], values: ['open_external_activity', project_website+'?downgrade_spotify'] }, cookie: null });
 			return;
 		}
 	}
@@ -858,9 +858,11 @@ function playUriFromPlaylist(playlist_uri, uri)
 
 function shufflePlayUri(uri)
 {
-	if(project_spotify_is_testing)
+	var type = getUriType(uri);
+
+	if(project_spotify_is_testing && type != 'album')
 	{
-		showDialog({ title: 'Spotify Warning', body_class: 'dialog_message_div', body_content: 'You are using an unsupported Spotify version. You can not play playlists, artists or albums.<br><br>A workaround is to queue all tracks from the overflow menu.<br><br>Click the button below to download the recommended version.', button1: { text: 'CLOSE', keys : ['actions'], values: ['hide_dialog'] }, button2: { text: 'DOWNLOAD', keys : ['actions', 'uri'], values: ['open_external_activity', project_website+'?downgrade_spotify'] }, cookie: null });
+		showDialog({ title: 'Spotify Warning', body_class: 'dialog_message_div', body_content: 'You are using an unsupported Spotify version. You can not play playlists or artists.<br><br>A workaround is to queue all tracks from the overflow menu.<br><br>Click the button below to download the recommended version.', button1: { text: 'CLOSE', keys : ['actions'], values: ['hide_dialog'] }, button2: { text: 'DOWNLOAD', keys : ['actions', 'uri'], values: ['open_external_activity', project_website+'?downgrade_spotify'] }, cookie: null });
 		return;
 	}
 
@@ -883,8 +885,6 @@ function shufflePlayUri(uri)
 				refreshNowplaying('manual');
 			}, timeout);
 		});
-
-		var type = getUriType(uri);
 
 		if(type == 'playlist') saveRecentPlaylist(uri);
 	}
@@ -1594,9 +1594,10 @@ function queueUris(uris, randomly)
 			var number = parseInt(xhr_data);
 			var toast = (number == 1) ? 'track' : 'tracks';
 
-			if(project_spotify_is_testing) showDialog({ title: 'Spotify Warning', body_class: 'dialog_message_div', body_content: 'You are using an unsupported Spotify version. Local files will not be queued.<br><br>Click the button below to download the recommended version.', button1: { text: 'CLOSE', keys : ['actions'], values: ['hide_dialog'] }, button2: { text: 'DOWNLOAD', keys : ['actions', 'uri'], values: ['open_external_activity', project_website+'?downgrade_spotify'] }, cookie: null });
+			var toast_append = (project_spotify_is_testing) ? ' (not local files)' : '';
+			var toast_seconds = (project_spotify_is_testing) ? 6 : 2;
 
-			showToast(number+' '+toast+' queued', 2);
+			showToast(number+' '+toast+' queued'+toast_append, toast_seconds);
 			refreshQueueActivity();
 		}
 	});
@@ -2153,7 +2154,11 @@ function getFeaturedPlaylists(fade_in_div)
 
 function getRecommendations(uri, is_authorized_with_spotify)
 {
-	if(is_authorized_with_spotify)
+	if(getUriType(uri) == 'local')
+	{
+		showToast('Not possible for local files', 4);
+	}
+	else if(is_authorized_with_spotify)
 	{
 		changeActivity('browse', 'recommendations', 'uri='+uri);
 	}

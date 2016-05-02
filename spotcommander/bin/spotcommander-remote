@@ -114,25 +114,11 @@ while($daemon_connect = stream_socket_accept($daemon_server, -1))
 	}
 	elseif($action == 'toggle_shuffle')
 	{
-		if($spotify_is_testing)
-		{
-			exec('xte \'keydown Control_R\' \'key s\' \'keyup Control_R\'');
-		}
-		else
-		{
-			exec('xdotool search "^Spotify.*Linux Preview$" windowmap key --window %1 --clearmodifiers ctrl+s');
-		}
+		exec('xte \'keydown Control_R\' \'key s\' \'keyup Control_R\'');
 	}
 	elseif($action == 'toggle_repeat')
 	{
-		if($spotify_is_testing)
-		{
-			exec('xte \'keydown Control_R\' \'key r\' \'keyup Control_R\'');
-		}
-		else
-		{
-			exec('xdotool search "^Spotify.*Linux Preview$" windowmap key --window %1 --clearmodifiers ctrl+r');
-		}
+		exec('xte \'keydown Control_R\' \'key r\' \'keyup Control_R\'');
 	}
 	elseif($action == 'adjust_spotify_volume' || $action == 'adjust_system_volume')
 	{
@@ -189,8 +175,14 @@ while($daemon_connect = stream_socket_accept($daemon_server, -1))
 		{
 			$type = get_uri_type($data);
 
-			if($type == 'track' || $type == 'local')
+			if($type == 'track' || $type == 'album')
 			{
+				if($type == 'album')
+				{
+					$metadata = get_album($data);
+					$data = $metadata['discs'][1][0]['uri'];
+				}
+
 				exec($qdbus . ' org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.Pause');
 				usleep(250000);
 			}
@@ -219,8 +211,22 @@ while($daemon_connect = stream_socket_accept($daemon_server, -1))
 	}
 	elseif($action == 'shuffle_play_uri')
 	{
+		if($spotify_is_testing)
+		{
+			$type = get_uri_type($data);
+
+			if($type == 'album')
+			{
+				$metadata = get_album($data);
+				$data = $metadata['discs'][1][0]['uri'];
+
+				exec($qdbus . ' org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.Pause');
+				usleep(250000);
+			}
+		}
+
 		exec($qdbus . ' org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.OpenUri ' . $data);
-		exec('xdotool search "^Spotify.*Linux Preview$" windowmap key --window %1 --clearmodifiers ctrl+s sleep 0.25 key --window %1 --clearmodifiers ctrl+s');
+		exec('xte \'keydown Control_R\' \'key s\' \'keyup Control_R\' && sleep 0.25 && xte \'keydown Control_R\' \'key s\' \'keyup Control_R\'');
 		usleep(250000);
 		exec($qdbus . ' org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.Next');
 	}

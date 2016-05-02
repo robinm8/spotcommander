@@ -221,8 +221,6 @@ function track_is_playing($uri, $div)
 
 function get_cover_art($uri, $size)
 {
-	if($size != 'small') $uri = str_replace('%3F', '%253F', $uri);
-
 	$files = get_external_files(array('http://www.olejon.net/code/spotcommander/api/1/cover-art-spotify/?uri=' . $uri), null, null);
 	$metadata = json_decode($files[0], true);
 
@@ -2194,7 +2192,7 @@ function get_external_files($uris, $headers, $post)
 	for($i = 0; $i < $count; $i++)
 	{
 		$uri = $uris[$i];
-		$ua = (preg_match('/^https?:\/\/open\.spotify\.com\//', $uri)) ? 'Mozilla/5.0 (Android 6.0.1; Mobile; rv:45.0) Gecko/45.0 Firefox/45.0' : 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.11; rv:45.0) Gecko/20100101 Firefox/45.0';
+		$ua = (preg_match('/^https?:\/\/open\.spotify\.com\//', $uri)) ? 'Mozilla/5.0 (Android 6.0.1; Mobile; rv:46.0) Gecko/46.0 Firefox/46.0' : 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.11; rv:46.0) Gecko/20100101 Firefox/46.0';
 
 		$ch[$i] = curl_init();
 

@@ -22,8 +22,8 @@ along with this program. If not, see http://www.gnu.org/licenses/.
 // Project
 
 define('project_name', 'SpotCommander');
-define('project_version', 12.6);
-define('project_serial', 1860);
+define('project_version', 12.7);
+define('project_serial', 1862);
 define('project_website', 'http://www.olejon.net/code/spotcommander/');
 define('project_developer', 'Ole Jon Bjørkum');
 define('project_android_app_minimum_version', 6.0);
