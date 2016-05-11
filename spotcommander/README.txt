@@ -11,15 +11,15 @@ BEFORE UPGRADING:
 * Close SpotCommander completely on all your devices before upgrading
 * You have to reauthorize with Spotify for Profile in the side menu to work (Top Tracks)
 
-CHANGELOG v 12.7:
+CHANGELOG v 12.8:
 
+* Fixed bug that made it impossible to authorize with Spotify
 * Partially support for Spotify v 1.0. The new MPRIS behaviour breaks some features, like playing playlists, artists and local files. A workaround is to queue all tracks from the overflow menu. It is still recommended to use Spotify v 0.9.17.8 (http://www.olejon.net/code/spotcommander/?downgrade_spotify)
 * If running Spotify v 1.0, you can now Play and Shuffle Play albums
 * Discover new music with Recommendations! Tap on a track > Three dots > Recommendations and get a list of recommended tracks
 * In Library, albums are now synchronized with your saved albums in Spotify
 * Top Tracks in Profile
 * Fixed Toggle Shuffle and Repeat on newer distributions
-* Bug fixes and minor changes
 
 LICENSE:
 

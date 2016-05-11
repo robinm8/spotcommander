@@ -2064,7 +2064,7 @@ function get_profile()
 	$profile = json_decode($files[0], true);
 	$profile_top_tracks = json_decode($files[1], true);
 
-	if(!empty($profile['id']) && !empty($profile_top_tracks['items']))
+	if(!empty($profile['id']) && isset($profile_top_tracks['items']))
 	{
 		$return = array();
 		$return['username'] = $profile['id'];
