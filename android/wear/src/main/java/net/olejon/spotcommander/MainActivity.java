@@ -35,6 +35,8 @@ import com.google.android.gms.wearable.Wearable;
 
 public class MainActivity extends WearableActivity
 {
+    private static final String MESSAGE_PATH = "/remote_control";
+
     private final Context mContext = this;
 
     private GoogleApiClient mGoogleApiClient;
@@ -83,7 +85,7 @@ public class MainActivity extends WearableActivity
     {
         super.onExitAmbient();
 
-        mWatchViewStub.setBackgroundColor(ContextCompat.getColor(mContext, R.color.green));
+        mWatchViewStub.setBackgroundResource(R.drawable.background);
     }
 
     // Buttons
@@ -154,7 +156,7 @@ public class MainActivity extends WearableActivity
                         nodeId = node.getId();
                     }
 
-                    if(nodeId != null) Wearable.MessageApi.sendMessage(mGoogleApiClient, nodeId, message, null);
+                    if(nodeId != null) Wearable.MessageApi.sendMessage(mGoogleApiClient, nodeId, MESSAGE_PATH, message.getBytes());
                 }
             });
         }

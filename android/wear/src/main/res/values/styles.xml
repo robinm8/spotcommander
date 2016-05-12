@@ -11,7 +11,7 @@
         <item name="android:layout_height">match_parent</item>
         <item name="android:layout_gravity">center</item>
         <item name="android:orientation">vertical</item>
-        <item name="android:background">@color/green</item>
+        <item name="android:background">@drawable/background</item>
     </style>
 
     <style name="wear_main_inner_layout">

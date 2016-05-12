@@ -31,8 +31,6 @@
     <string name="settings_category_advanced">Advanced</string>
     <string name="settings_hide_status_bar_title">Hide status bar</string>
     <string name="settings_hide_status_bar_summary">Check this to hide the status bar in the app</string>
-    <string name="settings_open_automatically_title">Open automatically</string>
-    <string name="settings_open_automatically_summary">Check this to open the most recently used computer automatically</string>
     <string name="settings_accelerated_animations_title">Accelerated animations</string>
     <string name="settings_accelerated_animations_summary">Uncheck this if you experience that the app becomes unresponsive. This is a known issue on some devices running Android versions older than Android 4.4. Unchecking this will not have any effect on Android 4.4 and newer</string>
 

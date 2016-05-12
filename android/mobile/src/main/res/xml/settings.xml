@@ -7,7 +7,6 @@
 	</PreferenceCategory>
 
 	<PreferenceCategory android:title="@string/settings_category_advanced" android:layout="@layout/activity_settings_subheader">
-		<CheckBoxPreference android:key="OPEN_AUTOMATICALLY" android:defaultValue="false" android:title="@string/settings_open_automatically_title" android:summary="@string/settings_open_automatically_summary" android:layout="@layout/activity_settings_checkbox"/>
 		<CheckBoxPreference android:key="HARDWARE_ACCELERATED_ANIMATIONS" android:defaultValue="true" android:title="@string/settings_accelerated_animations_title" android:summary="@string/settings_accelerated_animations_summary" android:layout="@layout/activity_settings_checkbox"/>
 	</PreferenceCategory>
 

@@ -104,9 +104,10 @@
         <service android:name=".RemoteControlService"/>
         <service android:name=".RemoteControlIntentService"/>
 
-        <service android:name=".RemoteControlWearableListenerService">
+        <service android:name=".RemoteControlWearableListenerService" tools:ignore="ExportedService">
             <intent-filter>
-                <action android:name="com.google.android.gms.wearable.BIND_LISTENER"/>
+                <action android:name="com.google.android.gms.wearable.MESSAGE_RECEIVED"/>
+                <data android:scheme="wear" android:host="*" android:path="/remote_control"/>
             </intent-filter>
         </service>
 

@@ -24,38 +24,45 @@ import com.google.android.gms.wearable.WearableListenerService;
 
 public class RemoteControlWearableListenerService extends WearableListenerService
 {
+    private static final String MESSAGE_PATH = "/remote_control";
+
     private final MyTools mTools = new MyTools(this);
 
     @Override
     public void onMessageReceived(MessageEvent messageEvent)
     {
-        super.onMessageReceived(messageEvent);
-
-        String action = messageEvent.getPath();
-        String subAction = "";
-
-        switch(action)
+        if(messageEvent.getPath().equals(MESSAGE_PATH))
         {
-            case "adjust_spotify_volume_mute":
-            {
-                action = "adjust_spotify_volume";
-                subAction = "mute";
-                break;
-            }
-            case "adjust_spotify_volume_down":
-            {
-                action = "adjust_spotify_volume";
-                subAction = "down";
-                break;
-            }
-            case "adjust_spotify_volume_up":
-            {
-                action = "adjust_spotify_volume";
-                subAction = "up";
-                break;
-            }
-        }
+            String action = new String(messageEvent.getData());
+            String subAction = "";
 
-        mTools.remoteControl(mTools.getSharedPreferencesLong("LAST_COMPUTER_ID"), action, subAction);
+            switch(action)
+            {
+                case "adjust_spotify_volume_mute":
+                {
+                    action = "adjust_spotify_volume";
+                    subAction = "mute";
+                    break;
+                }
+                case "adjust_spotify_volume_down":
+                {
+                    action = "adjust_spotify_volume";
+                    subAction = "down";
+                    break;
+                }
+                case "adjust_spotify_volume_up":
+                {
+                    action = "adjust_spotify_volume";
+                    subAction = "up";
+                    break;
+                }
+            }
+
+            mTools.remoteControl(mTools.getSharedPreferencesLong("LAST_COMPUTER_ID"), action, subAction);
+        }
+        else
+        {
+            super.onMessageReceived(messageEvent);
+        }
     }
 }

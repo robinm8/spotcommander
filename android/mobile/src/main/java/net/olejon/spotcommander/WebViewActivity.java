@@ -109,6 +109,9 @@ public class WebViewActivity extends Activity
 	{
 		super.onCreate(savedInstanceState);
 
+        // Google API client
+        mGoogleApiClient = new GoogleApiClient.Builder(mContext).addApiIfAvailable(Wearable.API).build();
+
 		// Allow landscape?
 		if(!mTools.allowLandscape()) setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
@@ -272,26 +275,18 @@ public class WebViewActivity extends Activity
             }
 		});
 
-		// Prepare user agent
+		// User agent
         mProjectVersionName = mTools.getProjectVersionName();
 
-		boolean authenticationIsEnabled = (!username.equals("") && !password.equals(""));
-
-		String ua_append_1 = (authenticationIsEnabled) ? "AUTHENTICATION_ENABLED " : "";
-        String ua_append_2 = "";
-        String ua_append_3 = "";
-
-        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT)
-        {
-            ua_append_2 = (mTools.getDefaultSharedPreferencesBoolean("HARDWARE_ACCELERATED_ANIMATIONS")) ? "" : "DISABLE_CSSTRANSITIONS ";
-            ua_append_3 = (mTools.getDefaultSharedPreferencesBoolean("HARDWARE_ACCELERATED_ANIMATIONS")) ? "" : "DISABLE_CSSTRANSFORMS3D ";
-        }
+        String uaAppend1 = (!username.equals("") && !password.equals("")) ? "AUTHENTICATION_ENABLED " : "";
+        String uaAppend2 = (mTools.getSharedPreferencesBoolean("WEAR_CONNECTED")) ? "WEAR_CONNECTED " : "";
+        String uaAppend3 = (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT && mTools.getDefaultSharedPreferencesBoolean("HARDWARE_ACCELERATED_ANIMATIONS")) ? "DISABLE_CSSTRANSITIONS DISABLE_CSSTRANSFORMS3D " : "";
 
 		// Web settings
 		WebSettings webSettings = mWebView.getSettings();
 		webSettings.setJavaScriptEnabled(true);
 		webSettings.setSupportZoom(false);
-		webSettings.setUserAgentString(webSettings.getUserAgentString()+" "+getString(R.string.project_name)+"/"+mProjectVersionName+" "+ua_append_1+ua_append_2+ua_append_3);
+		webSettings.setUserAgentString(webSettings.getUserAgentString()+" "+getString(R.string.project_name)+"/"+mProjectVersionName+" "+uaAppend1+uaAppend2+uaAppend3);
 
 		// Load app
 		if(savedInstanceState != null)
@@ -305,9 +300,6 @@ public class WebViewActivity extends Activity
 
 		// JavaScript interface
         mWebView.addJavascriptInterface(new JavaScriptInterface(), "Android");
-
-        // Google API client
-        mGoogleApiClient = new GoogleApiClient.Builder(mContext).addApiIfAvailable(Wearable.API).build();
 	}
 
 	// Pause activity
@@ -325,15 +317,13 @@ public class WebViewActivity extends Activity
 
             if(!nowplaying_artist.equals(getString(R.string.notification_no_music_is_playing_artist)))
             {
-                if(mGoogleApiClient.isConnected())
+                if(mGoogleApiClient != null && mGoogleApiClient.isConnected())
                 {
                     Wearable.NodeApi.getConnectedNodes(mGoogleApiClient).setResultCallback(new ResultCallback<NodeApi.GetConnectedNodesResult>()
                     {
                         @Override
                         public void onResult(@NonNull NodeApi.GetConnectedNodesResult getConnectedNodesResult)
                         {
-                            final Bitmap wearBackground = BitmapFactory.decodeResource(getResources(), R.drawable.notification_background);
-
                             mNotificationBuilder.setWhen(0)
                                     .setSmallIcon(R.drawable.ic_play_arrow_white_24dp)
                                     .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher))
@@ -341,14 +331,17 @@ public class WebViewActivity extends Activity
                                     .setContentIntent(mLaunchActivityPendingIntent)
                                     .setTicker(nowplaying_artist+" - "+nowplaying_title)
                                     .extend(new NotificationCompat.WearableExtender()
-                                            .setBackground(wearBackground)
+                                            .setHintHideIcon(true)
+                                            .setBackground(BitmapFactory.decodeResource(getResources(), R.drawable.notification_background))
+                                            .addAction(new NotificationCompat.Action.Builder(R.drawable.notification_icon, getString(R.string.notification_action_play_pause), mPlayPausePendingIntent).build())
                                             .addAction(new NotificationCompat.Action.Builder(R.drawable.ic_skip_previous_white_24dp, getString(R.string.notification_action_previous), mPreviousPendingIntent).build())
-                                            .addAction(new NotificationCompat.Action.Builder(R.drawable.ic_play_arrow_white_24dp, getString(R.string.notification_action_play_pause), mPlayPausePendingIntent).build())
                                             .addAction(new NotificationCompat.Action.Builder(R.drawable.ic_skip_next_white_24dp, getString(R.string.notification_action_next), mNextPendingIntent).build())
                                             .addAction(new NotificationCompat.Action.Builder(R.drawable.ic_volume_mute_white_24dp, getString(R.string.notification_action_volume_mute), mVolumeMutePendingIntent).build())
                                             .addAction(new NotificationCompat.Action.Builder(R.drawable.ic_volume_down_white_24dp, getString(R.string.notification_action_volume_down), mVolumeDownPendingIntent).build())
                                             .addAction(new NotificationCompat.Action.Builder(R.drawable.ic_volume_up_white_24dp, getString(R.string.notification_action_volume_up), mVolumeUpPendingIntent).build())
                                             .addAction(new NotificationCompat.Action.Builder(R.drawable.ic_settings_power_white_24dp, getString(R.string.notification_action_launch_quit), mLaunchQuitPendingIntent).build())
+                                            .setContentIcon(R.drawable.notification_icon)
+                                            .setContentAction(0)
                                     );
 
                             if(getConnectedNodesResult.getNodes().size() > 0)
@@ -409,7 +402,7 @@ public class WebViewActivity extends Activity
 	{
 		super.onResume();
 
-        mGoogleApiClient.connect();
+        if(mGoogleApiClient != null) mGoogleApiClient.connect();
 
 		if(mPersistentNotificationIsSupported) mNotificationManager.cancel(NOTIFICATION_ID);
 
@@ -441,7 +434,7 @@ public class WebViewActivity extends Activity
 	{
 		super.onDestroy();
 
-        mGoogleApiClient.disconnect();
+        if(mGoogleApiClient != null) mGoogleApiClient.disconnect();
 
         ACTIVITY_IS_PAUSED = false;
 	}
@@ -520,7 +513,13 @@ public class WebViewActivity extends Activity
             {
                 if(mHasLongPressedBack) return true;
 
-                if(mWebView.canGoBack() || mTools.getSharedPreferencesBoolean("CAN_CLOSE_COVER"))
+                if(mWebView.canGoBack() && mWebView.getUrl().contains("accounts.spotify.com/") || mWebView.canGoBack() && mWebView.getUrl().contains("facebook.com/"))
+                {
+                    mWebView.goBack();
+
+                    return true;
+                }
+                else if(mWebView.canGoBack() || mTools.getSharedPreferencesBoolean("CAN_CLOSE_COVER"))
                 {
                     mWebView.loadUrl("javascript:nativeAppAction('back')");
 

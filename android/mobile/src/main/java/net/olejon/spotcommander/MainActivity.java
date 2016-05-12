@@ -54,6 +54,10 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.wearable.NodeApi;
+import com.google.android.gms.wearable.Wearable;
 
 import org.json.JSONObject;
 
@@ -65,19 +69,21 @@ public class MainActivity extends AppCompatActivity
 
 	private final MyTools mTools = new MyTools(mContext);
 
+    private GoogleApiClient mGoogleApiClient;
 	private SQLiteDatabase mDatabase;
 	private Cursor mCursor;
 
     private FloatingActionButton mFloatingActionButton;
 	private ListView mListView;
 
-	private String mCurrentNetwork;
-
 	// Create activity
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
+
+        // Google API client
+        mGoogleApiClient = new GoogleApiClient.Builder(mContext).addApiIfAvailable(Wearable.API).build();
 
 		// Allow landscape?
 		if(!mTools.allowLandscape()) setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
@@ -87,11 +93,6 @@ public class MainActivity extends AppCompatActivity
 
 		// Database
 		mDatabase = new MySQLiteHelper(mContext).getWritableDatabase();
-
-		// Open last computer
-        mCurrentNetwork = mTools.getCurrentNetwork();
-
-		if(mTools.getDefaultSharedPreferencesBoolean("OPEN_AUTOMATICALLY") && mCurrentNetwork.equals(mTools.getSharedPreferencesString("LAST_NETWORK_ID")) && savedInstanceState == null) openApp(mTools.getSharedPreferencesLong("LAST_COMPUTER_ID"), false);
 
 		// Layout
 		setContentView(R.layout.activity_main);
@@ -118,7 +119,7 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onItemClick(AdapterView< ?> parent, View view, int position, long id)
             {
-                openApp(id, true);
+                openComputer(id);
             }
         });
 
@@ -254,6 +255,8 @@ public class MainActivity extends AppCompatActivity
 	{
 		super.onResume();
 
+        if(mGoogleApiClient != null) mGoogleApiClient.connect();
+
 		listComputers();
 	}
 
@@ -262,6 +265,8 @@ public class MainActivity extends AppCompatActivity
 	protected void onDestroy()
 	{
 		super.onDestroy();
+
+        if(mGoogleApiClient != null) mGoogleApiClient.disconnect();
 
 		if(mCursor != null && !mCursor.isClosed()) mCursor.close();
 		if(mDatabase != null && mDatabase.isOpen()) mDatabase.close();
@@ -312,14 +317,32 @@ public class MainActivity extends AppCompatActivity
 	}
 
     // Open app
-    private void openApp(long id, boolean animation)
+    private void openComputer(final long id)
     {
         mTools.setSharedPreferencesLong("LAST_COMPUTER_ID", id);
-        mTools.setSharedPreferencesString("LAST_NETWORK_ID", mCurrentNetwork);
+        mTools.setSharedPreferencesString("LAST_NETWORK_ID", mTools.getCurrentNetwork());
 
-        Intent intent = new Intent(mContext, WebViewActivity.class);
-        if(!animation) intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
-        startActivity(intent);
+        if(mGoogleApiClient != null && mGoogleApiClient.isConnected())
+        {
+            Wearable.NodeApi.getConnectedNodes(mGoogleApiClient).setResultCallback(new ResultCallback<NodeApi.GetConnectedNodesResult>()
+            {
+                @Override
+                public void onResult(@NonNull NodeApi.GetConnectedNodesResult getConnectedNodesResult)
+                {
+                    mTools.setSharedPreferencesBoolean("WEAR_CONNECTED", (getConnectedNodesResult.getNodes().size() > 0));
+
+                    Intent intent = new Intent(mContext, WebViewActivity.class);
+                    startActivity(intent);
+                }
+            });
+        }
+        else
+        {
+            mTools.setSharedPreferencesBoolean("WEAR_CONNECTED", false);
+
+            Intent intent = new Intent(mContext, WebViewActivity.class);
+            startActivity(intent);
+        }
     }
 
     // Computers
@@ -339,7 +362,7 @@ public class MainActivity extends AppCompatActivity
         mFloatingActionButton.setVisibility(View.VISIBLE);
     }
 
-    private void removeComputer(long id)
+    private void removeComputer(final long id)
     {
         mDatabase.delete(MySQLiteHelper.TABLE_COMPUTERS, MySQLiteHelper.COLUMN_ID+" = "+id, null);
     }
