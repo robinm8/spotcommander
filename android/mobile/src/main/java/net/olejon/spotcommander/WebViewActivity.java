@@ -219,7 +219,8 @@ public class WebViewActivity extends Activity
 
         mWebView.setWebViewClient(new WebViewClient()
 		{
-			@Override
+			@SuppressWarnings("deprecation")
+            @Override
 			public boolean shouldOverrideUrlLoading(WebView view, String url)
 			{
 				if(url != null && !url.contains(uri) && !url.contains("olejon.net/code/spotcommander/api/1/spotify/") && !url.contains("accounts.spotify.com/") && !url.contains("facebook.com/"))
