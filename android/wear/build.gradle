@@ -3,15 +3,15 @@ apply plugin: 'com.android.application'
 android
 {
     compileSdkVersion 24
-    buildToolsVersion "24.0.2"
+    buildToolsVersion "24.0.3"
 
     defaultConfig
     {
         applicationId "net.olejon.spotcommander"
         minSdkVersion 10
         targetSdkVersion 24
-        versionCode 73
-        versionName "7.3"
+        versionCode 74
+        versionName "7.4"
     }
 
     buildTypes
@@ -21,11 +21,13 @@ android
             minifyEnabled false
         }
     }
+
+    return void
 }
 
 dependencies
 {
     compile 'com.google.android.support:wearable:1.4.0'
-    compile 'com.google.android.gms:play-services-wearable:9.4.0'
+    compile 'com.google.android.gms:play-services-wearable:9.6.1'
     provided 'com.google.android.wearable:wearable:1.0.0'
 }
