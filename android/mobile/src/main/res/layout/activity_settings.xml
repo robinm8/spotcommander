@@ -4,10 +4,6 @@
 
     <android.support.v7.widget.Toolbar android:id="@+id/toolbar" style="@style/toolbar"/>
 
-    <View style="@style/toolbar_shadow"/>
-
-    <LinearLayout style="@style/settings_inner_layout">
-	    <ListView android:id="@android:id/list" style="@style/settings_list"/>
-    </LinearLayout>
+    <ListView android:id="@android:id/list" style="@style/listview"/>
 
 </LinearLayout>

@@ -1,3 +1,3 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<android.support.wearable.view.WatchViewStub xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:tools="http://schemas.android.com/tools" android:id="@+id/watch_view_stub" app:rectLayout="@layout/square_activity_main" app:roundLayout="@layout/round_activity_main" tools:deviceIds="wear" style="@style/wear_main_layout"/>
+<android.support.wearable.view.WatchViewStub xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:tools="http://schemas.android.com/tools" android:id="@+id/watch_view_stub" app:rectLayout="@layout/activity_main_square" app:roundLayout="@layout/activity_main_round" tools:deviceIds="wear" style="@style/wear_main_layout"/>

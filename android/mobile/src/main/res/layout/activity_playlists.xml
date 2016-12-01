@@ -1,17 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" style="@style/playlists_layout">
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android" style="@style/playlists_layout">
 
-    <TextView android:id="@+id/playlists_toolbar" android:text="@string/playlists_title" style="@style/playlists_toolbar"/>
+    <android.support.v7.widget.Toolbar android:id="@+id/playlists_toolbar" android:layout_alignParentTop="true" style="@style/toolbar"/>
 
-    <LinearLayout style="@style/playlists_inner_layout">
+    <ListView android:id="@+id/playlists_list" android:layout_below="@+id/playlists_toolbar" style="@style/playlist_list"/>
 
-        <ListView android:id="@+id/playlists_list" style="@style/playlist_list"/>
+    <ProgressBar android:id="@+id/playlists_progressbar" android:layout_centerInParent="true" style="@style/toolbar_progressbar"/>
 
-        <ProgressBar android:id="@+id/playlists_progressbar" style="@style/toolbar_progressbar"/>
+    <TextView android:id="@+id/playlists_error" android:layout_centerInParent="true" android:text="@string/playlists_error" style="@style/playlists_error"/>
 
-        <TextView android:id="@+id/playlists_error" android:text="@string/playlists_error" style="@style/playlists_error"/>
-
-    </LinearLayout>
-
-</LinearLayout>
+</RelativeLayout>

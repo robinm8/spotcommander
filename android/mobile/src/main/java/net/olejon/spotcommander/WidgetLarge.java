@@ -39,51 +39,51 @@ public class WidgetLarge extends AppWidgetProvider
         {
             String id = String.valueOf(appWidgetId);
 
-            Intent launchActivityIntent = new Intent(context, MainActivity.class);
+            final Intent launchActivityIntent = new Intent(context, MainActivity.class);
             launchActivityIntent.setAction("android.intent.action.MAIN");
             launchActivityIntent.addCategory("android.intent.category.LAUNCHER");
-            PendingIntent launchActivityPendingIntent = PendingIntent.getActivity(context, appWidgetId, launchActivityIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+            final PendingIntent launchActivityPendingIntent = PendingIntent.getActivity(context, appWidgetId, launchActivityIntent, PendingIntent.FLAG_CANCEL_CURRENT);
 
-            Intent previousIntent = new Intent(context, WidgetLarge.class);
+            final Intent previousIntent = new Intent(context, WidgetLarge.class);
             previousIntent.setAction("previous");
             previousIntent.putExtra(WIDGET_LARGE_INTENT_EXTRA, new String[] {id, "previous", ""});
-            PendingIntent previousPendingIntent = PendingIntent.getBroadcast(context, appWidgetId, previousIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+            final PendingIntent previousPendingIntent = PendingIntent.getBroadcast(context, appWidgetId, previousIntent, PendingIntent.FLAG_CANCEL_CURRENT);
 
-            Intent playPauseIntent = new Intent(context, WidgetLarge.class);
+            final Intent playPauseIntent = new Intent(context, WidgetLarge.class);
             playPauseIntent.setAction("play_pause");
             playPauseIntent.putExtra(WIDGET_LARGE_INTENT_EXTRA, new String[] {id, "play_pause", ""});
-            PendingIntent playPausePendingIntent = PendingIntent.getBroadcast(context, appWidgetId, playPauseIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+            final PendingIntent playPausePendingIntent = PendingIntent.getBroadcast(context, appWidgetId, playPauseIntent, PendingIntent.FLAG_CANCEL_CURRENT);
 
-            Intent nextIntent = new Intent(context, WidgetLarge.class);
+            final Intent nextIntent = new Intent(context, WidgetLarge.class);
             nextIntent.setAction("next");
             nextIntent.putExtra(WIDGET_LARGE_INTENT_EXTRA, new String[] {id, "next", ""});
-            PendingIntent nextPendingIntent = PendingIntent.getBroadcast(context, appWidgetId, nextIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+            final PendingIntent nextPendingIntent = PendingIntent.getBroadcast(context, appWidgetId, nextIntent, PendingIntent.FLAG_CANCEL_CURRENT);
 
-            Intent launchQuitIntent = new Intent(context, WidgetLarge.class);
+            final Intent launchQuitIntent = new Intent(context, WidgetLarge.class);
             launchQuitIntent.setAction("launch_quit");
             launchQuitIntent.putExtra(WIDGET_LARGE_INTENT_EXTRA, new String[] {id, "launch_quit", ""});
-            PendingIntent launchQuitPendingIntent = PendingIntent.getBroadcast(context, appWidgetId, launchQuitIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+            final PendingIntent launchQuitPendingIntent = PendingIntent.getBroadcast(context, appWidgetId, launchQuitIntent, PendingIntent.FLAG_CANCEL_CURRENT);
 
-            Intent volumeMuteIntent = new Intent(context, WidgetLarge.class);
+            final Intent volumeMuteIntent = new Intent(context, WidgetLarge.class);
             volumeMuteIntent.setAction("volume_mute");
             volumeMuteIntent.putExtra(WIDGET_LARGE_INTENT_EXTRA, new String[] {id, "adjust_spotify_volume", "mute"});
-            PendingIntent volumeMutePendingIntent = PendingIntent.getBroadcast(context, appWidgetId, volumeMuteIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+            final PendingIntent volumeMutePendingIntent = PendingIntent.getBroadcast(context, appWidgetId, volumeMuteIntent, PendingIntent.FLAG_CANCEL_CURRENT);
 
-            Intent volumeDownIntent = new Intent(context, WidgetLarge.class);
+            final Intent volumeDownIntent = new Intent(context, WidgetLarge.class);
             volumeDownIntent.setAction("volume_down");
             volumeDownIntent.putExtra(WIDGET_LARGE_INTENT_EXTRA, new String[] {id, "adjust_spotify_volume", "down"});
-            PendingIntent volumeDownPendingIntent = PendingIntent.getBroadcast(context, appWidgetId, volumeDownIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+            final PendingIntent volumeDownPendingIntent = PendingIntent.getBroadcast(context, appWidgetId, volumeDownIntent, PendingIntent.FLAG_CANCEL_CURRENT);
 
-            Intent volumeUpIntent = new Intent(context, WidgetLarge.class);
+            final Intent volumeUpIntent = new Intent(context, WidgetLarge.class);
             volumeUpIntent.setAction("volume_up");
             volumeUpIntent.putExtra(WIDGET_LARGE_INTENT_EXTRA, new String[] {id, "adjust_spotify_volume", "up"});
-            PendingIntent volumeUpPendingIntent = PendingIntent.getBroadcast(context, appWidgetId, volumeUpIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+            final PendingIntent volumeUpPendingIntent = PendingIntent.getBroadcast(context, appWidgetId, volumeUpIntent, PendingIntent.FLAG_CANCEL_CURRENT);
 
-            Intent playlistsIntent = new Intent(context, PlaylistsActivity.class);
+            final Intent playlistsIntent = new Intent(context, PlaylistsActivity.class);
             playlistsIntent.putExtra(WIDGET_LARGE_INTENT_EXTRA, id);
-            PendingIntent playlistsPendingIntent = PendingIntent.getActivity(context, appWidgetId, playlistsIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+            final PendingIntent playlistsPendingIntent = PendingIntent.getActivity(context, appWidgetId, playlistsIntent, PendingIntent.FLAG_CANCEL_CURRENT);
 
-            RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_large);
+            final RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_large);
 
             views.setOnClickPendingIntent(R.id.widget_launcher_button, launchActivityPendingIntent);
             views.setOnClickPendingIntent(R.id.widget_previous_button, previousPendingIntent);
@@ -105,11 +105,11 @@ public class WidgetLarge extends AppWidgetProvider
     {
         super.onReceive(context, intent);
 
-        MyTools mTools = new MyTools(context);
+        final MyTools mTools = new MyTools(context);
 
         if(!intent.getAction().contains("android"))
         {
-            String[] action = intent.getStringArrayExtra(WIDGET_LARGE_INTENT_EXTRA);
+            final String[] action = intent.getStringArrayExtra(WIDGET_LARGE_INTENT_EXTRA);
 
             mTools.remoteControl(mTools.getSharedPreferencesLong("WIDGET_"+action[0]+"_COMPUTER_ID"), action[1], action[2]);
         }

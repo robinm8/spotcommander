@@ -37,7 +37,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -47,13 +46,20 @@ import android.widget.ListView;
 
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.android.volley.Cache;
 import com.android.volley.DefaultRetryPolicy;
+import com.android.volley.Network;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.android.volley.toolbox.BasicNetwork;
+import com.android.volley.toolbox.DiskBasedCache;
+import com.android.volley.toolbox.HurlStack;
 import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.Volley;
+import com.google.android.gms.analytics.GoogleAnalytics;
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.wearable.NodeApi;
@@ -70,6 +76,7 @@ public class MainActivity extends AppCompatActivity
 	private final MyTools mTools = new MyTools(mContext);
 
     private GoogleApiClient mGoogleApiClient;
+
 	private SQLiteDatabase mDatabase;
 	private Cursor mCursor;
 
@@ -82,17 +89,17 @@ public class MainActivity extends AppCompatActivity
 	{
 		super.onCreate(savedInstanceState);
 
+        // Settings
+        PreferenceManager.setDefaultValues(mContext, R.xml.settings, false);
+
+        // Allow landscape?
+        if(!mTools.allowLandscape()) setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+
         // Google API client
         mGoogleApiClient = new GoogleApiClient.Builder(mContext).addApiIfAvailable(Wearable.API).build();
 
-		// Allow landscape?
-		if(!mTools.allowLandscape()) setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-
-		// Settings
-		PreferenceManager.setDefaultValues(mContext, R.xml.settings, false);
-
 		// Database
-		mDatabase = new MySQLiteHelper(mContext).getWritableDatabase();
+		mDatabase = new MainSQLiteHelper(mContext).getWritableDatabase();
 
 		// Layout
 		setContentView(R.layout.activity_main);
@@ -106,16 +113,16 @@ public class MainActivity extends AppCompatActivity
 		// Listview
         mListView = (ListView) findViewById(R.id.main_list);
 
-		View listViewHeader = getLayoutInflater().inflate(R.layout.activity_main_subheader, mListView, false);
+		final View listViewHeader = getLayoutInflater().inflate(R.layout.activity_main_subheader, mListView, false);
         mListView.addHeaderView(listViewHeader, null, false);
 
-        View listViewEmpty = findViewById(R.id.main_empty);
+        final View listViewEmpty = findViewById(R.id.main_empty);
         mListView.setEmptyView(listViewEmpty);
 
         mListView.setLongClickable(true);
 
-        mListView.setOnItemClickListener(new OnItemClickListener() {
-
+        mListView.setOnItemClickListener(new OnItemClickListener()
+        {
             @Override
             public void onItemClick(AdapterView< ?> parent, View view, int position, long id)
             {
@@ -128,7 +135,7 @@ public class MainActivity extends AppCompatActivity
             @Override
             public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, final long id)
             {
-                new MaterialDialog.Builder(mContext).title(getString(R.string.main_remove_computer_dialog_title)).content(getString(R.string.main_remove_computer_dialog_message)).positiveText(getString(R.string.main_remove_computer_dialog_positive_button)).negativeText(getString(R.string.main_remove_computer_dialog_negative_button)).onPositive(new MaterialDialog.SingleButtonCallback()
+                new MaterialDialog.Builder(mContext).title(R.string.main_remove_computer_dialog_title).content(getString(R.string.main_remove_computer_dialog_message)).positiveText(R.string.main_remove_computer_dialog_positive_button).negativeText(R.string.main_remove_computer_dialog_negative_button).onPositive(new MaterialDialog.SingleButtonCallback()
                 {
                     @Override
                     public void onClick(@NonNull MaterialDialog materialDialog, @NonNull DialogAction dialogAction)
@@ -156,8 +163,8 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        // Make donation button
-        Button button = (Button) findViewById(R.id.main_make_donation_button);
+        // Donate button
+        final Button button = (Button) findViewById(R.id.main_make_donation_button);
 
         button.setOnClickListener(new View.OnClickListener()
         {
@@ -169,27 +176,24 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        // Dialog
+        // Information dialog
         if(Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT)
         {
-            if(!mTools.getSharedPreferencesBoolean("SKIP_INFORMATION_DIALOG"))
+            if(!mTools.getSharedPreferencesBoolean("HIDE_INFORMATION_DIALOG_75"))
             {
-                new MaterialDialog.Builder(mContext).title(getString(R.string.main_information_dialog_title)).content(getString(R.string.main_information_dialog_message)).positiveText(getString(R.string.main_information_dialog_positive_button)).onPositive(new MaterialDialog.SingleButtonCallback()
+                new MaterialDialog.Builder(mContext).title(R.string.main_information_dialog_title).content(getString(R.string.main_information_dialog_message)).positiveText(R.string.main_information_dialog_positive_button).onPositive(new MaterialDialog.SingleButtonCallback()
                 {
                     @Override
                     public void onClick(@NonNull MaterialDialog materialDialog, @NonNull DialogAction dialogAction)
                     {
-                        mTools.setSharedPreferencesBoolean("SKIP_INFORMATION_DIALOG", true);
+                        mTools.setSharedPreferencesBoolean("HIDE_INFORMATION_DIALOG_75", true);
                     }
                 }).contentColorRes(R.color.black).show();
             }
         }
 
-        // Message
-        RequestQueue requestQueue = Volley.newRequestQueue(mContext);
-
-        String projectVersionName = mTools.getProjectVersionName();
-
+        // Message dialog
+        String version = mTools.getProjectVersionName();
         String device = "";
 
         try
@@ -201,31 +205,41 @@ public class MainActivity extends AppCompatActivity
             Log.e("MainActivity", Log.getStackTraceString(e));
         }
 
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, getString(R.string.project_website)+"api/1/android/message/?version_name="+projectVersionName+"&device="+device, null, new Response.Listener<JSONObject>()
+        final Cache cache = new DiskBasedCache(getCacheDir(), 0);
+
+        final Network network = new BasicNetwork(new HurlStack());
+
+        final RequestQueue requestQueue = new RequestQueue(cache, network);
+
+        requestQueue.start();
+
+        final JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, getString(R.string.project_website)+"api/1/android/message/?version_name="+version+"&device="+device, null, new Response.Listener<JSONObject>()
         {
             @Override
             public void onResponse(JSONObject response)
             {
+                requestQueue.stop();
+
                 try
                 {
                     final long id = response.getLong("id");
                     final String title = response.getString("title");
                     final String message = response.getString("message");
 
-                    final long lastId = mTools.getSharedPreferencesLong("MESSAGE_LAST_ID");
+                    final long lastId = mTools.getSharedPreferencesLong("LAST_MESSAGE_ID");
 
                     if(lastId == 0)
                     {
-                        mTools.setSharedPreferencesLong("MESSAGE_LAST_ID", id);
+                        mTools.setSharedPreferencesLong("LAST_MESSAGE_ID", id);
                     }
                     else if(id != lastId)
                     {
-                        new MaterialDialog.Builder(mContext).title(title).content(message).positiveText(getString(R.string.main_message_dialog_positive_button)).onPositive(new MaterialDialog.SingleButtonCallback()
+                        new MaterialDialog.Builder(mContext).title(title).content(message).positiveText(R.string.main_message_dialog_positive_button).onPositive(new MaterialDialog.SingleButtonCallback()
                         {
                             @Override
                             public void onClick(@NonNull MaterialDialog materialDialog, @NonNull DialogAction dialogAction)
                             {
-                                mTools.setSharedPreferencesLong("MESSAGE_LAST_ID", id);
+                                mTools.setSharedPreferencesLong("LAST_MESSAGE_ID", id);
                             }
                         }).contentColorRes(R.color.black).show();
                     }
@@ -240,6 +254,8 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onErrorResponse(VolleyError error)
             {
+                requestQueue.stop();
+
                 Log.e("MainActivity", error.toString());
             }
         });
@@ -247,6 +263,11 @@ public class MainActivity extends AppCompatActivity
         jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(10000, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 
         requestQueue.add(jsonObjectRequest);
+
+        // Google analytics
+        final GoogleAnalytics googleAnalytics = GoogleAnalytics.getInstance(mContext);
+        final Tracker tracker = googleAnalytics.newTracker(R.xml.app_tracker);
+        tracker.send(new HitBuilders.ScreenViewBuilder().build());
 	}
 
 	// Resume activity
@@ -291,6 +312,12 @@ public class MainActivity extends AppCompatActivity
                 startActivity(intent);
                 return true;
             }
+            case R.id.main_menu_make_donation:
+            {
+                Intent intent = new Intent(mContext, DonateActivity.class);
+                startActivity(intent);
+                return true;
+            }
             case R.id.main_menu_troubleshooting:
             {
                 Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.olejon.net/code/spotcommander/?troubleshooting"));
@@ -303,12 +330,6 @@ public class MainActivity extends AppCompatActivity
                 startActivity(intent);
                 return true;
             }
-            case R.id.main_menu_make_donation:
-            {
-                Intent intent = new Intent(mContext, DonateActivity.class);
-                startActivity(intent);
-                return true;
-            }
             default:
             {
                 return super.onOptionsItemSelected(item);
@@ -316,7 +337,21 @@ public class MainActivity extends AppCompatActivity
         }
 	}
 
-    // Open app
+    // Computers
+    private void listComputers()
+    {
+        final String[] queryColumns = {MainSQLiteHelper.COLUMN_ID, MainSQLiteHelper.COLUMN_NAME};
+        mCursor = mDatabase.query(MainSQLiteHelper.TABLE_COMPUTERS, queryColumns, null, null, null, null, MainSQLiteHelper.COLUMN_NAME+" COLLATE NOCASE");
+
+        final String[] fromColumns = {MainSQLiteHelper.COLUMN_NAME};
+        final int[] toViews = {R.id.main_list_item};
+
+        mListView.setAdapter(new SimpleCursorAdapter(mContext, R.layout.activity_main_list_item, mCursor, fromColumns, toViews, 0));
+
+        mFloatingActionButton.startAnimation(AnimationUtils.loadAnimation(mContext, R.anim.fab));
+        mFloatingActionButton.setVisibility(View.VISIBLE);
+    }
+
     private void openComputer(final long id)
     {
         mTools.setSharedPreferencesLong("LAST_COMPUTER_ID", id);
@@ -345,25 +380,8 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    // Computers
-    private void listComputers()
-    {
-        String[] queryColumns = {MySQLiteHelper.COLUMN_ID, MySQLiteHelper.COLUMN_NAME};
-        mCursor = mDatabase.query(MySQLiteHelper.TABLE_COMPUTERS, queryColumns, null, null, null, null, MySQLiteHelper.COLUMN_NAME);
-
-        String[] fromColumns = {MySQLiteHelper.COLUMN_NAME};
-        int[] toViews = {R.id.main_list_item};
-
-        mListView.setAdapter(new SimpleCursorAdapter(mContext, R.layout.activity_main_list_item, mCursor, fromColumns, toViews, 0));
-
-        Animation animation = AnimationUtils.loadAnimation(mContext, R.anim.fab);
-
-        mFloatingActionButton.startAnimation(animation);
-        mFloatingActionButton.setVisibility(View.VISIBLE);
-    }
-
     private void removeComputer(final long id)
     {
-        mDatabase.delete(MySQLiteHelper.TABLE_COMPUTERS, MySQLiteHelper.COLUMN_ID+" = "+id, null);
+        mDatabase.delete(MainSQLiteHelper.TABLE_COMPUTERS, MainSQLiteHelper.COLUMN_ID+" = "+id, null);
     }
 }

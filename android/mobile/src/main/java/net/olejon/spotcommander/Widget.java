@@ -31,7 +31,6 @@ public class Widget extends AppWidgetProvider
 {
 	private final static String WIDGET_INTENT_EXTRA = "net.olejon.spotcommander.WIDGET_INTENT_EXTRA";
 
-	// Update
 	@Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds)
     {
@@ -39,27 +38,27 @@ public class Widget extends AppWidgetProvider
         {
             String id = String.valueOf(appWidgetId);
 
-            Intent launchActivityIntent = new Intent(context, MainActivity.class);
+            final Intent launchActivityIntent = new Intent(context, MainActivity.class);
             launchActivityIntent.setAction("android.intent.action.MAIN");
             launchActivityIntent.addCategory("android.intent.category.LAUNCHER");
-            PendingIntent launchActivityPendingIntent = PendingIntent.getActivity(context, appWidgetId, launchActivityIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+            final PendingIntent launchActivityPendingIntent = PendingIntent.getActivity(context, appWidgetId, launchActivityIntent, PendingIntent.FLAG_CANCEL_CURRENT);
 
-            Intent previousIntent = new Intent(context, Widget.class);
+            final Intent previousIntent = new Intent(context, Widget.class);
             previousIntent.setAction("previous");
             previousIntent.putExtra(WIDGET_INTENT_EXTRA, new String[] {id, "previous", ""});
-            PendingIntent previousPendingIntent = PendingIntent.getBroadcast(context, appWidgetId, previousIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+            final PendingIntent previousPendingIntent = PendingIntent.getBroadcast(context, appWidgetId, previousIntent, PendingIntent.FLAG_CANCEL_CURRENT);
 
-            Intent playPauseIntent = new Intent(context, Widget.class);
+            final Intent playPauseIntent = new Intent(context, Widget.class);
             playPauseIntent.setAction("play_pause");
             playPauseIntent.putExtra(WIDGET_INTENT_EXTRA, new String[] {id, "play_pause", ""});
-            PendingIntent playPausePendingIntent = PendingIntent.getBroadcast(context, appWidgetId, playPauseIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+            final PendingIntent playPausePendingIntent = PendingIntent.getBroadcast(context, appWidgetId, playPauseIntent, PendingIntent.FLAG_CANCEL_CURRENT);
 
-            Intent nextIntent = new Intent(context, Widget.class);
+            final Intent nextIntent = new Intent(context, Widget.class);
             nextIntent.setAction("next");
             nextIntent.putExtra(WIDGET_INTENT_EXTRA, new String[] {id, "next", ""});
-            PendingIntent nextPendingIntent = PendingIntent.getBroadcast(context, appWidgetId, nextIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+            final PendingIntent nextPendingIntent = PendingIntent.getBroadcast(context, appWidgetId, nextIntent, PendingIntent.FLAG_CANCEL_CURRENT);
 
-            RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget);
+            final RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget);
 
             views.setOnClickPendingIntent(R.id.widget_launcher_button, launchActivityPendingIntent);
             views.setOnClickPendingIntent(R.id.widget_previous_button, previousPendingIntent);
@@ -70,17 +69,16 @@ public class Widget extends AppWidgetProvider
         }
     }
 
-	// Receive
 	@Override
 	public void onReceive(@NonNull Context context, @NonNull Intent intent)
 	{
 		super.onReceive(context, intent);
 
-		MyTools mTools = new MyTools(context);
+		final MyTools mTools = new MyTools(context);
 
         if(!intent.getAction().contains("android"))
         {
-            String[] action = intent.getStringArrayExtra(WIDGET_INTENT_EXTRA);
+            final String[] action = intent.getStringArrayExtra(WIDGET_INTENT_EXTRA);
 
             mTools.remoteControl(mTools.getSharedPreferencesLong("WIDGET_"+action[0]+"_COMPUTER_ID"), action[1], action[2]);
         }

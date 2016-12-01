@@ -62,7 +62,7 @@ public class MainActivity extends WearableActivity
         mGoogleApiClient = new GoogleApiClient.Builder(mContext).addApiIfAvailable(Wearable.API).build();
     }
 
-    // Start activity
+    // Resume activity
     @Override
     protected void onResume()
     {
@@ -89,7 +89,6 @@ public class MainActivity extends WearableActivity
     }
 
     // Buttons
-    @SuppressWarnings("unused")
     public void onButtonClick(View view)
     {
         switch(view.getId())
@@ -114,7 +113,7 @@ public class MainActivity extends WearableActivity
                 sendMessage("previous");
                 break;
             }
-            case R.id.wear_play_pause_button:
+            case R.id.wear_play_button:
             {
                 sendMessage("play_pause");
                 break;
@@ -132,7 +131,7 @@ public class MainActivity extends WearableActivity
         }
     }
 
-    // Message
+    // Send message
     private void sendMessage(final String message)
     {
         if(mGoogleApiClient != null && mGoogleApiClient.isConnected())

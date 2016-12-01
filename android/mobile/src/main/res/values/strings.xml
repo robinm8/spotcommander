@@ -5,7 +5,7 @@
     <!-- Project -->
     <string name="project_name">SpotCommander</string>
     <string name="project_website">http://www.olejon.net/code/spotcommander/</string>
-    <string name="project_minimum_version">12.5</string>
+    <string name="project_minimum_version">12.8</string>
 
     <!-- Main -->
     <string name="main_title">Computers</string>
@@ -52,11 +52,14 @@
     <string name="add_computer_invalid_uri">Not a valid URL</string>
     <string name="add_computer_wifi_not_connected">You must be connected to Wi-Fi</string>
     <string name="add_computer_scanning_network">Scanning… This may take a while depending on the IP address</string>
-    <string name="add_computer_scanning">Scanning</string>
-    <string name="add_computer_trying">Trying</string>
-    <string name="add_computer_installation_found">SpotCommander installation found on</string>
-    <string name="add_computer_installation_not_found">SpotCommander installation not found</string>
-    <string name="add_computer_computer_with_authentication_enabled">computer with authentication enabled</string>
+    <string name="add_computer_scanning">Scanning…</string>
+    <string name="add_computer_trying">Trying %1$s…</string>
+    <string name="add_computer_uri">http://%1$s/spotcommander/</string>
+    <string name="add_computer_computer">Computer</string>
+    <string name="add_computer_unknown">Unknown</string>
+    <string name="add_computer_found">SpotCommander found on %1$s</string>
+    <string name="add_computer_found_with_authentication">computer with authentication enabled</string>
+    <string name="add_computer_not_found">SpotCommander not found</string>
     <string name="add_computer_menu_add_computer">Add computer</string>
     <string name="add_computer_menu_scan_network">Scan</string>
     <string name="add_computer_menu_scan">Scan</string>
@@ -70,11 +73,12 @@
     <string name="webview_dialog_ssl_error_title">Error</string>
     <string name="webview_dialog_ssl_error_message">You are using an insecure HTTPS connection with a nonissued certificate. This is not allowed according to Google\'s guidelines.</string>
     <string name="webview_dialog_ssl_error_positive_button">CLOSE</string>
+    <string name="webview_user_agent">%1$s SpotCommander/%2$s %3$s%4$s%5$s</string>
 
     <!-- Donate -->
     <string name="donate_title">Donate</string>
     <string name="donate_getting_product">GETTING PRODUCT…</string>
-    <string name="donate_donate">DONATE</string>
+    <string name="donate_donate">DONATE %1$s</string>
     <string name="donate_information">Tapping one of the buttons will open a dialog where you can confirm or cancel the donation.\n\nThank you very much!</string>
     <string name="donate_thank_you">Thank you for your donation!</string>
     <string name="donate_something_went_wrong">Something went wrong. Please try again.</string>
@@ -96,19 +100,19 @@
     <string name="notification_action_previous">Previous</string>
     <string name="notification_action_play_pause">Play</string>
     <string name="notification_action_next">Next</string>
-    <string name="notification_action_volume_mute">Mute</string>
     <string name="notification_action_volume_down">Volume down</string>
     <string name="notification_action_volume_up">Volume up</string>
-    <string name="notification_action_launch_quit">Launch or Quit</string>
     <string name="notification_no_music_is_playing_artist">Unknown</string>
+
+    <!-- Shortcuts -->
+    <string name="shortcut_last_computer">Last Computer</string>
 
     <!-- Remote control -->
     <string name="remote_control_computer_not_found">SpotCommander: Computer not found. You should re-add this widget.</string>
-    <string name="remote_control_error">SpotCommander: HTTP status code</string>
+    <string name="remote_control_error">SpotCommander: HTTP status code\u0020</string>
     <string name="remote_control_authentication_failed">SpotCommander: Authentication failed. Make sure you are using the correct username and password.</string>
 
     <!-- Various -->
-    <string name="ellipsis">…</string>
     <string name="image_content_description">Image</string>
 
 </resources>

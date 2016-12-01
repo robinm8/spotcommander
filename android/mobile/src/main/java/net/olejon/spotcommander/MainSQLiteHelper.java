@@ -23,7 +23,7 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-final class MySQLiteHelper extends SQLiteOpenHelper
+final class MainSQLiteHelper extends SQLiteOpenHelper
 {
 	public static final String TABLE_COMPUTERS = "computers";
 
@@ -35,7 +35,7 @@ final class MySQLiteHelper extends SQLiteOpenHelper
 	public static final String COLUMN_NETWORK_NAME = "network_name";
 	public static final String COLUMN_NETWORK_DEFAULT = "network_default";
 
-	public MySQLiteHelper(Context context)
+	public MainSQLiteHelper(Context context)
 	{
 		super(context, "database.db", null, 9);
 	}

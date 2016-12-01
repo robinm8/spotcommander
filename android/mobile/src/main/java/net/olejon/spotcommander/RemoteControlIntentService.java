@@ -39,7 +39,7 @@ public class RemoteControlIntentService extends IntentService
 	@Override
 	protected void onHandleIntent(Intent intent)
 	{
-		NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+		final NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
 		final long computerId = intent.getLongExtra(REMOTE_CONTROL_INTENT_SERVICE_EXTRA, 0);
 

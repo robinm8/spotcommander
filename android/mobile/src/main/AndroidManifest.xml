@@ -2,28 +2,32 @@
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools" package="net.olejon.spotcommander">
 
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
     <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
     <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
-    <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <uses-permission android:name="com.android.vending.BILLING"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
 
     <application
         android:allowBackup="true"
         android:fullBackupContent="true"
-        android:icon="@drawable/ic_launcher"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher"
         android:label="@string/project_name"
         android:theme="@style/app_theme"
-        android:resizeableActivity="false"
-        tools:ignore="UnusedAttribute">
+        tools:ignore="ExportedReceiver,ManifestResource,UnusedAttribute">
         <activity
             android:name=".MainActivity"
             android:label="@string/project_name"
             android:launchMode="singleTop">
+            <!--suppress AndroidElementNotAllowed -->
+            <layout android:defaultWidth="1200dp" android:defaultHeight="600dp" android:minWidth="240dp" android:minHeight="240dp"/>
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+            <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts"/>
         </activity>
         <activity
             android:name=".SettingsActivity"
@@ -55,7 +59,6 @@
         <activity
             android:name=".PlaylistsActivity"
             android:label="@string/playlists_title"
-            android:theme="@style/transparent_theme"
             android:launchMode="singleInstance"
             android:excludeFromRecents="true"
             android:noHistory="true">
@@ -102,6 +105,10 @@
             <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_large"/>
         </receiver>
 
+        <receiver android:name="com.google.android.gms.analytics.AnalyticsReceiver" android:enabled="true">
+            <intent-filter><action android:name="com.google.android.gms.analytics.ANALYTICS_DISPATCH"/></intent-filter>
+        </receiver>
+
         <service android:name=".RemoteControlService"/>
         <service android:name=".RemoteControlIntentService"/>
 
@@ -113,6 +120,7 @@
         </service>
 
         <meta-data android:name="com.google.android.gms.version" android:value="@integer/google_play_services_version"/>
+        <meta-data android:name="com.google.android.gms.analytics.globalConfigResource" android:resource="@xml/global_tracker"/>
 
     </application>
 

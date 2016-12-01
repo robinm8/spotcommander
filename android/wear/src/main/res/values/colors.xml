@@ -2,8 +2,8 @@
 
 <resources>
 
-    <color name="green">#689f38</color>
-    <color name="button">#8bc34a</color>
+    <color name="green">#689F38</color>
+    <color name="button">#8BC34A</color>
     <color name="black">#000000</color>
 
 </resources>

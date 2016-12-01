@@ -4,14 +4,12 @@
 
     <android.support.v7.widget.Toolbar android:id="@+id/main_toolbar" android:layout_alignParentTop="true" style="@style/toolbar"/>
 
-    <LinearLayout android:layout_below="@+id/main_toolbar" android:layout_centerHorizontal="true" style="@style/main_inner_layout">
+    <LinearLayout android:layout_below="@+id/main_toolbar" style="@style/main_inner_layout">
 
         <ListView android:id="@+id/main_list" style="@style/listview"/>
         <TextView android:id="@+id/main_empty" android:drawableTop="@drawable/ic_new_releases_grey600_48dp" android:text="@string/main_list_empty" style="@style/listview_empty"/>
 
     </LinearLayout>
-
-    <View android:layout_below="@+id/main_toolbar" style="@style/toolbar_shadow"/>
 
     <Button android:id="@+id/main_make_donation_button" android:layout_alignParentBottom="true" android:text="@string/main_make_donation" style="@style/main_make_donation_button"/>
 

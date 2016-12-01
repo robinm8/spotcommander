@@ -6,13 +6,17 @@
     <style name="donate_button_base"/>
 
     <!-- Playlists -->
-    <style name="playlists_toolbar_base">
+    <style name="playlists_error_base">
         <item name="android:fontFamily">sans-serif-medium</item>
     </style>
 
     <!-- Subheaders -->
     <style name="subheader_base">
         <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
+    <style name="toolbar_base">
+        <item name="android:elevation">2dp</item>
     </style>
 
     <!-- Collapsing toolbar -->

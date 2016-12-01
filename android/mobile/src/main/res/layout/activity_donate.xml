@@ -2,8 +2,6 @@
 
     <android.support.v7.widget.Toolbar android:id="@+id/donate_toolbar" style="@style/toolbar"/>
 
-    <View style="@style/toolbar_shadow"/>
-
     <LinearLayout style="@style/donate_inner_layout">
 
         <Button android:id="@+id/donate_make_small_donation" android:text="@string/donate_getting_product" style="@style/donate_button"/>

@@ -35,6 +35,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 
 import com.android.vending.billing.IInAppBillingService;
@@ -58,6 +59,12 @@ public class DonateActivity extends AppCompatActivity
         // Allow landscape?
         if(!mTools.allowLandscape()) setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
+        // Hide status bar?
+        if(mTools.getDefaultSharedPreferencesBoolean("HIDE_STATUS_BAR")) getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
+        // Transition
+        overridePendingTransition(R.anim.donate_start, R.anim.none);
+
         // Layout
         setContentView(R.layout.activity_donate);
 
@@ -68,9 +75,9 @@ public class DonateActivity extends AppCompatActivity
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         // In-app billing
-        Intent serviceIntent = new Intent("com.android.vending.billing.InAppBillingService.BIND");
-        serviceIntent.setPackage("com.android.vending");
-        bindService(serviceIntent, mServiceConnection, Context.BIND_AUTO_CREATE);
+        Intent intent = new Intent("com.android.vending.billing.InAppBillingService.BIND");
+        intent.setPackage("com.android.vending");
+        bindService(intent, mServiceConnection, Context.BIND_AUTO_CREATE);
     }
 
     // Activity result
@@ -79,14 +86,14 @@ public class DonateActivity extends AppCompatActivity
     {
         if(requestCode == 1)
         {
-            String purchaseData = data.getStringExtra("INAPP_PURCHASE_DATA");
+            final String purchaseData = data.getStringExtra("INAPP_PURCHASE_DATA");
 
             if(resultCode == RESULT_OK)
             {
                 try
                 {
-                    JSONObject jo = new JSONObject(purchaseData);
-                    String purchaseToken = jo.getString("purchaseToken");
+                    final JSONObject purchaseDataJsonObject = new JSONObject(purchaseData);
+                    final String purchaseToken = purchaseDataJsonObject.getString("purchaseToken");
 
                     consumeDonation(purchaseToken);
 
@@ -113,6 +120,15 @@ public class DonateActivity extends AppCompatActivity
         if(mServiceConnection != null) unbindService(mServiceConnection);
     }
 
+    // Back button
+    @Override
+    public void onBackPressed()
+    {
+        super.onBackPressed();
+
+        overridePendingTransition(0, R.anim.donate_finish);
+    }
+
     // Menu
     @Override
     public boolean onCreateOptionsMenu(Menu menu)
@@ -129,6 +145,7 @@ public class DonateActivity extends AppCompatActivity
             case android.R.id.home:
             {
                 finish();
+                overridePendingTransition(0, R.anim.donate_finish);
                 return true;
             }
             case R.id.donate_menu_reset:
@@ -143,15 +160,16 @@ public class DonateActivity extends AppCompatActivity
         }
     }
 
-    // Donations
-    private void makeDonation(String product)
+    // Donate
+    private void makeDonation(final String product)
     {
         try
         {
-            Bundle buyIntentBundle = mIInAppBillingService.getBuyIntent(3, getPackageName(), product, "inapp", "");
-            PendingIntent pendingIntent = buyIntentBundle.getParcelable("BUY_INTENT");
+            final Bundle buyIntentBundle = mIInAppBillingService.getBuyIntent(3, getPackageName(), product, "inapp", "");
 
-            IntentSender intentSender = (pendingIntent != null) ? pendingIntent.getIntentSender() : null;
+            final PendingIntent pendingIntent = buyIntentBundle.getParcelable("BUY_INTENT");
+
+            final IntentSender intentSender = (pendingIntent != null) ? pendingIntent.getIntentSender() : null;
 
             startIntentSenderForResult(intentSender, 1, new Intent(), 0, 0, 0);
         }
@@ -163,7 +181,7 @@ public class DonateActivity extends AppCompatActivity
         }
     }
 
-    private void consumeDonation(String purchaseToken)
+    private void consumeDonation(final String purchaseToken)
     {
         try
         {
@@ -181,23 +199,19 @@ public class DonateActivity extends AppCompatActivity
     {
         try
         {
-            Bundle ownedItems = mIInAppBillingService.getPurchases(3, getPackageName(), "inapp", null);
+            final Bundle purchasesBundle = mIInAppBillingService.getPurchases(3, getPackageName(), "inapp", null);
 
-            int response = ownedItems.getInt("RESPONSE_CODE");
+            final int responseCode = purchasesBundle.getInt("RESPONSE_CODE");
 
-            if(response == 0)
+            if(responseCode == 0)
             {
-                ArrayList<String> purchaseDataList = ownedItems.getStringArrayList("INAPP_PURCHASE_DATA_LIST");
+                final ArrayList<String> purchaseDataList = purchasesBundle.getStringArrayList("INAPP_PURCHASE_DATA_LIST");
 
                 if(purchaseDataList != null)
                 {
                     for(String purchaseData : purchaseDataList)
                     {
-                        JSONObject jsonObject = new JSONObject(purchaseData);
-
-                        String purchaseToken = jsonObject.getString("purchaseToken");
-
-                        consumeDonation(purchaseToken);
+                        consumeDonation(new JSONObject(purchaseData).getString("purchaseToken"));
                     }
                 }
 
@@ -216,13 +230,12 @@ public class DonateActivity extends AppCompatActivity
         }
     }
 
-    // Get products
-    private class GetProductsTask extends AsyncTask<Void, Void, Bundle>
+    private class GetDonationsTask extends AsyncTask<Void, Void, Bundle>
     {
         @Override
-        protected void onPostExecute(Bundle skuDetails)
+        protected void onPostExecute(final Bundle donationsBundle)
         {
-            if(skuDetails == null)
+            if(donationsBundle == null)
             {
                 mTools.showToast(getString(R.string.donate_something_went_wrong), 1);
             }
@@ -230,30 +243,30 @@ public class DonateActivity extends AppCompatActivity
             {
                 try
                 {
-                    int responseCode = skuDetails.getInt("RESPONSE_CODE");
+                    final int responseCode = donationsBundle.getInt("RESPONSE_CODE");
 
                     if(responseCode == 0)
                     {
-                        Button makeSmallDonationButton = (Button) findViewById(R.id.donate_make_small_donation);
-                        Button makeMediumDonationButton = (Button) findViewById(R.id.donate_make_medium_donation);
-                        Button makeBigDonationButton = (Button) findViewById(R.id.donate_make_big_donation);
+                        final Button makeSmallDonationButton = (Button) findViewById(R.id.donate_make_small_donation);
+                        final Button makeMediumDonationButton = (Button) findViewById(R.id.donate_make_medium_donation);
+                        final Button makeBigDonationButton = (Button) findViewById(R.id.donate_make_big_donation);
 
-                        ArrayList<String> responseArrayList = skuDetails.getStringArrayList("DETAILS_LIST");
+                        final ArrayList<String> detailsArrayList = donationsBundle.getStringArrayList("DETAILS_LIST");
 
-                        if(responseArrayList != null)
+                        if(detailsArrayList != null)
                         {
-                            for(String details : responseArrayList)
+                            for(String details : detailsArrayList)
                             {
                                 JSONObject detailsJsonObject = new JSONObject(details);
 
-                                String sku = detailsJsonObject.getString("productId");
+                                String productId = detailsJsonObject.getString("productId");
                                 String price = detailsJsonObject.getString("price");
 
-                                switch(sku)
+                                switch(productId)
                                 {
                                     case "small_donation":
                                     {
-                                        makeSmallDonationButton.setText(getString(R.string.donate_donate)+" "+price);
+                                        makeSmallDonationButton.setText(getString(R.string.donate_donate, price));
 
                                         makeSmallDonationButton.setOnClickListener(new View.OnClickListener()
                                         {
@@ -268,7 +281,7 @@ public class DonateActivity extends AppCompatActivity
                                     }
                                     case "medium_donation":
                                     {
-                                        makeMediumDonationButton.setText(getString(R.string.donate_donate)+" "+price);
+                                        makeMediumDonationButton.setText(getString(R.string.donate_donate, price));
 
                                         makeMediumDonationButton.setOnClickListener(new View.OnClickListener()
                                         {
@@ -283,7 +296,7 @@ public class DonateActivity extends AppCompatActivity
                                     }
                                     case "big_donation":
                                     {
-                                        makeBigDonationButton.setText(getString(R.string.donate_donate)+" "+price);
+                                        makeBigDonationButton.setText(getString(R.string.donate_donate, price));
 
                                         makeBigDonationButton.setOnClickListener(new View.OnClickListener()
                                         {
@@ -313,33 +326,32 @@ public class DonateActivity extends AppCompatActivity
         @Override
         protected Bundle doInBackground(Void... voids)
         {
-            ArrayList<String> skuList = new ArrayList<>();
+            final ArrayList<String> productIdArrayList = new ArrayList<>();
 
-            skuList.add("small_donation");
-            skuList.add("medium_donation");
-            skuList.add("big_donation");
+            productIdArrayList.add("small_donation");
+            productIdArrayList.add("medium_donation");
+            productIdArrayList.add("big_donation");
 
-            Bundle querySkus = new Bundle();
-            querySkus.putStringArrayList("ITEM_ID_LIST", skuList);
+            final Bundle productIdBundle = new Bundle();
+            productIdBundle.putStringArrayList("ITEM_ID_LIST", productIdArrayList);
 
-            Bundle skuDetails;
+            Bundle productDetailsBundle;
 
             try
             {
-                skuDetails = mIInAppBillingService.getSkuDetails(3, getPackageName(), "inapp", querySkus);
+                productDetailsBundle = mIInAppBillingService.getSkuDetails(3, getPackageName(), "inapp", productIdBundle);
             }
             catch(Exception e)
             {
                 Log.e("DonateActivity", Log.getStackTraceString(e));
 
-                skuDetails = null;
+                productDetailsBundle = null;
             }
 
-            return skuDetails;
+            return productDetailsBundle;
         }
     }
 
-    // Service
     private final ServiceConnection mServiceConnection = new ServiceConnection()
     {
         @Override
@@ -353,8 +365,8 @@ public class DonateActivity extends AppCompatActivity
         {
             mIInAppBillingService = IInAppBillingService.Stub.asInterface(service);
 
-            GetProductsTask getProductsTask = new GetProductsTask();
-            getProductsTask.execute();
+            GetDonationsTask getDonationsTask = new GetDonationsTask();
+            getDonationsTask.execute();
         }
     };
 }

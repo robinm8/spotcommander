@@ -52,7 +52,6 @@ import com.afollestad.materialdialogs.MaterialDialog;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -68,7 +67,7 @@ public class AddComputerActivity extends AppCompatActivity
 
 	private PowerManager.WakeLock mWakeLock;
 
-	private MenuItem mMenuItem;
+	private MenuItem mScanNetworkMenuItem;
 	private ProgressBar mProgressBar;
     private TextInputLayout mAddComputerNameInputLayout;
     private TextInputLayout mAddComputerUriInputLayout;
@@ -81,14 +80,14 @@ public class AddComputerActivity extends AppCompatActivity
 	{
 		super.onCreate(savedInstanceState);
 
-		// Allow landscape?
-		if(!mTools.allowLandscape()) setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-
-		// Power manager
-		PowerManager powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
+        // Power manager
+        final PowerManager powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
 
         //noinspection deprecation
         mWakeLock = powerManager.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, "wakeLock");
+
+		// Allow landscape?
+		if(!mTools.allowLandscape()) setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
 		// Layout
 		setContentView(R.layout.activity_add_computer);
@@ -109,11 +108,11 @@ public class AddComputerActivity extends AppCompatActivity
         mProgressBar = (ProgressBar) findViewById(R.id.add_computer_progressbar);
 
         // Information
-        TextView textView = (TextView) findViewById(R.id.add_computer_information);
+        final TextView textView = (TextView) findViewById(R.id.add_computer_information);
         textView.setMovementMethod(LinkMovementMethod.getInstance());
 
-        // Dialog
-        new MaterialDialog.Builder(mContext).title(getString(R.string.add_computer_scan_dialog_title)).content(getString(R.string.add_computer_scan_dialog_message)).positiveText(getString(R.string.add_computer_scan_dialog_positive_button)).negativeText(getString(R.string.add_computer_scan_dialog_negative_button)).onPositive(new MaterialDialog.SingleButtonCallback()
+        // Scan dialog
+        new MaterialDialog.Builder(mContext).title(R.string.add_computer_scan_dialog_title).content(getString(R.string.add_computer_scan_dialog_message)).positiveText(R.string.add_computer_scan_dialog_positive_button).negativeText(R.string.add_computer_scan_dialog_negative_button).onPositive(new MaterialDialog.SingleButtonCallback()
         {
             @Override
             public void onClick(@NonNull MaterialDialog materialDialog, @NonNull DialogAction dialogAction)
@@ -140,9 +139,9 @@ public class AddComputerActivity extends AppCompatActivity
 	{
 		getMenuInflater().inflate(R.menu.menu_add_computer, menu);
 
-        mMenuItem = menu.findItem(R.id.add_computer_menu_scan_network);
+        mScanNetworkMenuItem = menu.findItem(R.id.add_computer_menu_scan_network);
 
-        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.ICE_CREAM_SANDWICH) mMenuItem.setIcon(R.drawable.ic_speaker_phone_white_24dp);
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.ICE_CREAM_SANDWICH) mScanNetworkMenuItem.setIcon(R.drawable.ic_speaker_phone_white_24dp);
 
 		return true;
 	}
@@ -177,12 +176,12 @@ public class AddComputerActivity extends AppCompatActivity
 	// Add computer
 	private void addComputer()
 	{
-    	EditText nameEditText = (EditText) findViewById(R.id.add_computer_name);
-    	EditText uriEditText = (EditText) findViewById(R.id.add_computer_uri);
-    	EditText usernameEditText = (EditText) findViewById(R.id.add_computer_username);
-    	EditText passwordEditText = (EditText) findViewById(R.id.add_computer_password);
+    	final EditText computerNameInput = (EditText) findViewById(R.id.add_computer_name);
+    	final EditText computerUriInput = (EditText) findViewById(R.id.add_computer_uri);
+    	final EditText computerUsernameInput = (EditText) findViewById(R.id.add_computer_username);
+    	final EditText computerPasswordInput = (EditText) findViewById(R.id.add_computer_password);
 
-        nameEditText.addTextChangedListener(new TextWatcher()
+        computerNameInput.addTextChangedListener(new TextWatcher()
         {
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2)
@@ -197,7 +196,7 @@ public class AddComputerActivity extends AppCompatActivity
             public void afterTextChanged(Editable editable) { }
         });
 
-        uriEditText.addTextChangedListener(new TextWatcher()
+        computerUriInput.addTextChangedListener(new TextWatcher()
         {
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2)
@@ -206,50 +205,46 @@ public class AddComputerActivity extends AppCompatActivity
             }
 
             @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2)
-            {
-            }
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) { }
 
             @Override
-            public void afterTextChanged(Editable editable)
-            {
-            }
+            public void afterTextChanged(Editable editable) { }
         });
 
-    	String name = nameEditText.getText().toString();
-    	String uri = uriEditText.getText().toString();
-    	String username = usernameEditText.getText().toString();
-    	String password = passwordEditText.getText().toString();
+    	final String computerName = computerNameInput.getText().toString().trim();
+    	final String computerUri = computerUriInput.getText().toString().trim();
+    	final String computerUsername = computerUsernameInput.getText().toString().trim();
+    	final String computerPassword = computerPasswordInput.getText().toString().trim();
 
-        InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-        inputMethodManager.hideSoftInputFromWindow(nameEditText.getWindowToken(), InputMethodManager.HIDE_IMPLICIT_ONLY);
+        final InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        inputMethodManager.hideSoftInputFromWindow(computerNameInput.getWindowToken(), InputMethodManager.HIDE_IMPLICIT_ONLY);
 
     	if(mNetworkScanTask != null && mNetworkScanTask.getStatus() == AsyncTask.Status.RUNNING)
     	{
     		mTools.showToast(getString(R.string.add_computer_scanning_network), 0);
     	}
-    	else if(name.equals(""))
+    	else if(computerName.equals(""))
     	{
             mAddComputerNameInputLayout.setError(getString(R.string.add_computer_invalid_name));
     	}
-        else if(!uri.startsWith("http://") && !uri.startsWith("https://"))
+        else if(!computerUri.matches("^https?://.*"))
         {
             mAddComputerUriInputLayout.setError(getString(R.string.add_computer_invalid_uri));
         }
     	else
     	{
-            ContentValues contentValues = new ContentValues();
+            final ContentValues contentValues = new ContentValues();
 
-    		contentValues.put(MySQLiteHelper.COLUMN_NAME, name);
-    		contentValues.put(MySQLiteHelper.COLUMN_URI, uri);
-    		contentValues.put(MySQLiteHelper.COLUMN_USERNAME, username);
-    		contentValues.put(MySQLiteHelper.COLUMN_PASSWORD, password);
-            contentValues.put(MySQLiteHelper.COLUMN_NETWORK_NAME, "");
-            contentValues.put(MySQLiteHelper.COLUMN_NETWORK_DEFAULT, 0);
+    		contentValues.put(MainSQLiteHelper.COLUMN_NAME, computerName);
+    		contentValues.put(MainSQLiteHelper.COLUMN_URI, computerUri);
+    		contentValues.put(MainSQLiteHelper.COLUMN_USERNAME, computerUsername);
+    		contentValues.put(MainSQLiteHelper.COLUMN_PASSWORD, computerPassword);
+            contentValues.put(MainSQLiteHelper.COLUMN_NETWORK_NAME, "");
+            contentValues.put(MainSQLiteHelper.COLUMN_NETWORK_DEFAULT, 0);
 
-    		SQLiteDatabase database = new MySQLiteHelper(mContext).getWritableDatabase();
+    		final SQLiteDatabase database = new MainSQLiteHelper(mContext).getWritableDatabase();
 
-    		database.insert(MySQLiteHelper.TABLE_COMPUTERS, null, contentValues);
+    		database.insert(MainSQLiteHelper.TABLE_COMPUTERS, null, contentValues);
 
     		database.close();
 
@@ -266,15 +261,15 @@ public class AddComputerActivity extends AppCompatActivity
 		}
 		else
 		{
-			WifiManager wifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
+			final WifiManager wifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
 
 			if(wifiManager.isWifiEnabled())
 			{	
-				WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+				final WifiInfo wifiInfo = wifiManager.getConnectionInfo();
 
-				int wifiIpAddress = wifiInfo.getIpAddress();
+				final int wifiIpAddress = wifiInfo.getIpAddress();
 
-				String wifiSubnet = String.format("%d.%d.%d", (wifiIpAddress & 0xff), (wifiIpAddress >> 8 & 0xff), (wifiIpAddress >> 16 & 0xff));
+				final String wifiSubnet = String.format("%d.%d.%d", (wifiIpAddress & 0xff), (wifiIpAddress >> 8 & 0xff), (wifiIpAddress >> 16 & 0xff));
 
 				if(wifiSubnet.equals("0.0.0"))
 				{
@@ -295,60 +290,58 @@ public class AddComputerActivity extends AppCompatActivity
 
     public class NetworkScanTask extends AsyncTask<String, String, String[]>
 	{
-    	final EditText nameEditText = (EditText) findViewById(R.id.add_computer_name);
-    	final EditText uriEditText = (EditText) findViewById(R.id.add_computer_uri);
+    	final EditText computerNameInput = (EditText) findViewById(R.id.add_computer_name);
+    	final EditText computerUriInput = (EditText) findViewById(R.id.add_computer_uri);
 
         @Override
         protected void onPreExecute()
         {
         	if(!mWakeLock.isHeld()) mWakeLock.acquire();
 
-            mMenuItem.setTitle(getString(R.string.add_computer_menu_stop));
+            mScanNetworkMenuItem.setTitle(getString(R.string.add_computer_menu_stop));
 
             mProgressBar.setVisibility(View.VISIBLE);
 
-        	mTools.showToast(getString(R.string.add_computer_scanning_network), 0);
+            computerNameInput.setEnabled(false);
+            computerNameInput.setText(getString(R.string.add_computer_scanning), TextView.BufferType.EDITABLE);
 
-			nameEditText.setEnabled(false);
-			nameEditText.setText(getString(R.string.add_computer_scanning)+getString(R.string.ellipsis), TextView.BufferType.EDITABLE);
-
-			uriEditText.setEnabled(false);
+            computerUriInput.setEnabled(false);
         }
 
         @Override
         protected void onProgressUpdate(String... strings)
         {
-        	uriEditText.setText(getString(R.string.add_computer_trying)+" "+strings[0]+getString(R.string.ellipsis), TextView.BufferType.EDITABLE);
+            computerUriInput.setText(getString(R.string.add_computer_trying, strings[0]), TextView.BufferType.EDITABLE);
         }
 
         @Override
         protected void onPostExecute(String[] string)
         {
-            mMenuItem.setTitle(getString(R.string.add_computer_menu_scan));
+            mScanNetworkMenuItem.setTitle(getString(R.string.add_computer_menu_scan));
 
             mProgressBar.setVisibility(View.GONE);
 
-        	String computerIpAddress = string[0];
-        	String computerHostname = (string[1].equals("")) ? "Unknown" : string[1];
+            computerNameInput.setEnabled(true);
+            computerUriInput.setEnabled(true);
 
-        	nameEditText.setEnabled(true);
-        	uriEditText.setEnabled(true);
+        	final String computerIpAddress = string[0];
+        	final String computerHostname = (string[1].equals("")) ? getString(R.string.add_computer_unknown) : string[1];
 
         	if(computerIpAddress.equals(""))
         	{
-        		mTools.showToast(getString(R.string.add_computer_installation_not_found), 1);
+                computerNameInput.setText(getString(R.string.add_computer_name_text), TextView.BufferType.EDITABLE);
+                computerUriInput.setText(getString(R.string.add_computer_uri_text), TextView.BufferType.EDITABLE);
 
-        		nameEditText.setText(getString(R.string.add_computer_name_text), TextView.BufferType.EDITABLE);
-        		uriEditText.setText(getString(R.string.add_computer_uri_text), TextView.BufferType.EDITABLE);
+        		mTools.showToast(getString(R.string.add_computer_not_found), 1);
         	}
         	else
         	{
-        		String foundOn = (computerHostname.equals("Computer")) ? getString(R.string.add_computer_computer_with_authentication_enabled) : computerHostname;
+                computerNameInput.setText(computerHostname, TextView.BufferType.EDITABLE);
+                computerUriInput.setText(getString(R.string.add_computer_uri, computerIpAddress), TextView.BufferType.EDITABLE);
 
-        		mTools.showToast(getString(R.string.add_computer_installation_found)+" "+foundOn, 1);
+        		final String computerFound = (computerHostname.equals(getString(R.string.add_computer_computer))) ? getString(R.string.add_computer_found_with_authentication) : computerHostname;
 
-        		nameEditText.setText(computerHostname, TextView.BufferType.EDITABLE);
-        		uriEditText.setText("http://"+computerIpAddress+"/spotcommander/", TextView.BufferType.EDITABLE);
+        		mTools.showToast(getString(R.string.add_computer_found, computerFound), 1);
         	}
         }
 
@@ -357,29 +350,29 @@ public class AddComputerActivity extends AppCompatActivity
         {
         	if(mWakeLock.isHeld()) mWakeLock.release();
 
-            mMenuItem.setTitle(getString(R.string.add_computer_menu_scan));
+            mScanNetworkMenuItem.setTitle(getString(R.string.add_computer_menu_scan));
 
             mProgressBar.setVisibility(View.GONE);
 
-			nameEditText.setEnabled(true);
-			nameEditText.setText(getString(R.string.add_computer_name_text), TextView.BufferType.EDITABLE);
+            computerNameInput.setEnabled(true);
+            computerNameInput.setText(getString(R.string.add_computer_name_text), TextView.BufferType.EDITABLE);
 
-			uriEditText.setEnabled(true);
-			uriEditText.setText(getString(R.string.add_computer_uri_text), TextView.BufferType.EDITABLE);
+            computerUriInput.setEnabled(true);
+            computerUriInput.setText(getString(R.string.add_computer_uri_text), TextView.BufferType.EDITABLE);
         }
 
         @Override
         protected String[] doInBackground(String... strings)
         {
-        	String wifiSubnet = strings[0];
+        	final String computerSubnet = strings[0];
 
-            String[] networkScanResult = {"", ""};
+            final String[] computerScanResult = {"", ""};
 
             outerLoop: for(int i = 1; i <= 254; i++)
             {
                 if(isCancelled()) break;
 
-                String computerIpAddress = wifiSubnet+"."+i;
+                String computerIpAddress = computerSubnet+"."+i;
 
                 publishProgress(computerIpAddress);
 
@@ -394,17 +387,15 @@ public class AddComputerActivity extends AppCompatActivity
                     httpURLConnection.setConnectTimeout(500);
                     httpURLConnection.setReadTimeout(2500);
 
-                    InputStream inputStream = new BufferedInputStream(httpURLConnection.getInputStream());
-
-                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new BufferedInputStream(httpURLConnection.getInputStream())));
 
                     StringBuilder stringBuilder = new StringBuilder();
 
-                    String line;
+                    String bufferedReaderLine;
 
-                    while((line = bufferedReader.readLine()) != null)
+                    while((bufferedReaderLine = bufferedReader.readLine()) != null)
                     {
-                        stringBuilder.append(line);
+                        stringBuilder.append(bufferedReaderLine);
                     }
 
                     String computerHostname = stringBuilder.toString();
@@ -421,8 +412,8 @@ public class AddComputerActivity extends AppCompatActivity
 
                     if(computerHostname.contains("html")) continue;
 
-                    networkScanResult[0] = computerIpAddress;
-                    networkScanResult[1] = computerHostname;
+                    computerScanResult[0] = computerIpAddress;
+                    computerScanResult[1] = computerHostname;
 
                     break;
                 }
@@ -432,18 +423,12 @@ public class AddComputerActivity extends AppCompatActivity
                     {
                         if(httpURLConnection != null)
                         {
-                            int responseCode = httpURLConnection.getResponseCode();
-
-                            if(responseCode == 401)
+                            if(httpURLConnection.getResponseCode() == 401)
                             {
-                                String computerHostname = "Computer";
+                                if(!httpURLConnection.getHeaderField("WWW-Authenticate").contains(getString(R.string.project_name))) continue;
 
-                                String headerField = httpURLConnection.getHeaderField("WWW-Authenticate");
-
-                                if(!headerField.contains(getString(R.string.project_name))) continue;
-
-                                networkScanResult[0] = computerIpAddress;
-                                networkScanResult[1] = computerHostname;
+                                computerScanResult[0] = computerIpAddress;
+                                computerScanResult[1] = "Computer";
 
                                 break;
                             }
@@ -451,7 +436,7 @@ public class AddComputerActivity extends AppCompatActivity
                     }
                     catch(Exception e2)
                     {
-                        Log.w("AddComputerActivity", getString(R.string.add_computer_installation_not_found)+": "+computerIpAddress);
+                        Log.w("AddComputerActivity", computerIpAddress);
                     }
                 }
                 finally
@@ -460,7 +445,7 @@ public class AddComputerActivity extends AppCompatActivity
                 }
             }
 
-            return networkScanResult;
+            return computerScanResult;
         }
     }
 }

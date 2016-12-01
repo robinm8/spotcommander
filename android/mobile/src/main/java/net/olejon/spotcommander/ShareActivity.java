@@ -19,12 +19,13 @@ along with this program. If not, see http://www.gnu.org/licenses/.
 
 */
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.support.v7.app.AppCompatActivity;
 
-public class ShareActivity extends Activity
+public class ShareActivity extends AppCompatActivity
 {
     private final Context mContext = this;
 
@@ -35,6 +36,9 @@ public class ShareActivity extends Activity
 	protected void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
+
+		// Settings
+		PreferenceManager.setDefaultValues(mContext, R.xml.settings, false);
 
 		// Intent
 		final Intent intent = getIntent();
@@ -59,20 +63,9 @@ public class ShareActivity extends Activity
         {
             mTools.setSharedPreferencesString("SHARE_URI", shareUri);
 
-			if(WebViewActivity.ACTIVITY_IS_PAUSED)
-			{
-				Intent launchActivityIntent = new Intent(mContext, WebViewActivity.class);
-				launchActivityIntent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
-				startActivity(launchActivityIntent);
-			}
-			else
-			{
-				Intent launchActivityIntent = new Intent(mContext, MainActivity.class);
-				launchActivityIntent.setAction("android.intent.action.MAIN");
-				launchActivityIntent.addCategory("android.intent.category.LAUNCHER");
-				launchActivityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_SINGLE_TOP|Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_NO_ANIMATION);
-				startActivity(launchActivityIntent);
-			}
+			final Intent launchActivityIntent = new Intent(mContext, WebViewActivity.class);
+			launchActivityIntent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+			startActivity(launchActivityIntent);
 		}
 	}
 }

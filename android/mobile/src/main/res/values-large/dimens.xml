@@ -5,9 +5,5 @@
     <dimen name="add_computer_body_layout_padding_top">16dp</dimen>
     <dimen name="add_computer_body_layout_padding_right">8dp</dimen>
     <dimen name="add_computer_body_layout_padding_left">8dp</dimen>
-    <dimen name="playlists_layout_padding_top">32dp</dimen>
-    <dimen name="playlists_layout_padding_right">96dp</dimen>
-    <dimen name="playlists_layout_padding_bottom">32dp</dimen>
-    <dimen name="playlists_layout_padding_left">96dp</dimen>
 
 </resources>
