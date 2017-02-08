@@ -76,10 +76,10 @@
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.BROWSABLE"/>
-                <data android:host="open.spotify.com" android:scheme="http"/>
-                <data android:host="open.spotify.com" android:scheme="https"/>
-                <data android:host="play.spotify.com" android:scheme="http"/>
-                <data android:host="play.spotify.com" android:scheme="https"/>
+                <data android:scheme="http" android:host="open.spotify.com"/>
+                <data android:scheme="https" android:host="open.spotify.com"/>
+                <data android:scheme="http" android:host="play.spotify.com"/>
+                <data android:scheme="https" android:host="play.spotify.com"/>
                 <data android:scheme="spotify"/>
             </intent-filter>
         </activity>
@@ -118,6 +118,8 @@
                 <data android:scheme="wear" android:host="*" android:path="/remote_control"/>
             </intent-filter>
         </service>
+
+        <service android:name="com.google.android.gms.analytics.AnalyticsService" android:enabled="true" android:exported="false"/>
 
         <meta-data android:name="com.google.android.gms.version" android:value="@integer/google_play_services_version"/>
         <meta-data android:name="com.google.android.gms.analytics.globalConfigResource" android:resource="@xml/global_tracker"/>

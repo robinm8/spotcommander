@@ -19,9 +19,12 @@ along with this program. If not, see http://www.gnu.org/licenses/.
 
 */
 
+import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
@@ -30,6 +33,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.widget.SimpleCursorAdapter;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -71,6 +75,10 @@ import java.net.URLEncoder;
 
 public class MainActivity extends AppCompatActivity
 {
+    private final int PERMISSIONS_REQUEST_READ_PHONE_STATE = 0;
+
+    private final Activity mActivity = this;
+
     private final Context mContext = this;
 
 	private final MyTools mTools = new MyTools(mContext);
@@ -264,6 +272,9 @@ public class MainActivity extends AppCompatActivity
 
         requestQueue.add(jsonObjectRequest);
 
+        // Permissions
+        grantPermissions();
+
         // Google analytics
         final GoogleAnalytics googleAnalytics = GoogleAnalytics.getInstance(mContext);
         final Tracker tracker = googleAnalytics.newTracker(R.xml.app_tracker);
@@ -330,6 +341,12 @@ public class MainActivity extends AppCompatActivity
                 startActivity(intent);
                 return true;
             }
+            case R.id.main_menu_privacy_policy:
+            {
+                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.project_privacy_policy)));
+                startActivity(intent);
+                return true;
+            }
             default:
             {
                 return super.onOptionsItemSelected(item);
@@ -383,5 +400,25 @@ public class MainActivity extends AppCompatActivity
     private void removeComputer(final long id)
     {
         mDatabase.delete(MainSQLiteHelper.TABLE_COMPUTERS, MainSQLiteHelper.COLUMN_ID+" = "+id, null);
+    }
+
+    // Permissions
+    private void grantPermissions()
+    {
+        if(ActivityCompat.checkSelfPermission(mContext, Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED)
+        {
+            String[] permissions = {Manifest.permission.READ_PHONE_STATE};
+
+            ActivityCompat.requestPermissions(mActivity, permissions, PERMISSIONS_REQUEST_READ_PHONE_STATE);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
+    {
+        if(requestCode == PERMISSIONS_REQUEST_READ_PHONE_STATE && grantResults[0] != PackageManager.PERMISSION_GRANTED)
+        {
+            mTools.showToast(getString(R.string.main_permissions_not_granted), 1);
+        }
     }
 }
