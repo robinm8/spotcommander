@@ -55,7 +55,7 @@ if(spotify_is_running())
 		$album = (empty($nowplaying['album'])) ? $album : $nowplaying['album'];
 		$uri = ($is_local) ? preg_replace('/:\d*$/', '', $nowplaying['url']) . ':' : url_to_uri($nowplaying['url']);
 		$length = convert_length($nowplaying['length'], 'mc');
-		$cover_art = (empty($nowplaying['artUrl'])) ? 'img/no-cover-art-640.png?' . project_serial : str_replace(array('https', 'open.spotify.com', '/thumb/'), array('http', 'i.scdn.co', '/image/'), $nowplaying['artUrl']);
+		$cover_art = (empty($nowplaying['artUrl'])) ? 'img/no-cover-art-640.png?' . project_serial : str_replace(array('http', 'open.spotify.com', '/thumb/'), array('https', 'i.scdn.co', '/image/'), $nowplaying['artUrl']);
 		$released = (empty($nowplaying['contentCreated'])) ? 'Unknown' : substr($nowplaying['contentCreated'], 0, 4);
 		$popularity = (empty($nowplaying['autoRating'])) ? 'Unknown' : convert_popularity($nowplaying['autoRating']);
 
